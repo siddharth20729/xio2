@@ -1,65 +1,49 @@
 package com.xjeffrose.xio2.http;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-
 public class HttpResponse extends HttpObject {
 
   public HttpResponse() { }
 
-  public enum Version {
-    HTTP1_0("HTTP/1.0"),
-    HTTP1_1("HTTP/1.1"),
-    HTTP2("HTTP/2");
+  public static HttpResponse DefaultResponse(Http.Version version, Http.Status status) {
+    final HttpResponse resp = new HttpResponse();
 
-    private String version;
+    resp.setVersion(version);
+    resp.setStatus(status);
+    resp.headers.set("Content-Type", "text/html; charset=UTF-8");
+    resp.headers.set("Date", resp.date());
+    resp.headers.set("Server", "xio2");
 
-    Version(String version) {
-      this.version = version;
-    }
-
-    public String toString() {
-      return version;
-    }
+    return resp;
   }
 
-  public enum Status {
-    OK(200, "OK"),
-    CREATED(201, "Created"),
-    ACCEPTED(202, "Accepted"),
-    NO_CONTENT(204, "No Content"),
-    MOVED_PERMANENTLY(301, "Moved Permanently"),
-    SEE_OTHER(303, "See Other"),
-    NOT_MODIFIED(304, "Not Modified"),
-    TEMPORARY_REDIRECT(307, "Temporary Redirect"),
-    BAD_REQUEST(400, "Bad Request"),
-    UNAUTHORIZED(401, "Unauthorized"),
-    FORBIDDEN(403, "Forbidden"),
-    NOT_FOUND(404, "Not Found"),
-    NOT_ACCEPTABLE(406, "Not Acceptable"),
-    CONFLICT(409, "Conflict"),
-    GONE(410, "Gone"),
-    PRECONDITION_FAILED(412, "Precondition Failed"),
-    INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
-    SERVICE_UNAVAILABLE(503, "Service Unavailable");
+  public static HttpResponse DefaultResponse(
+      Http.Version version,
+      Http.Status status,
+      String body) {
+    final HttpResponse resp = new HttpResponse();
 
-    private int code;
-    private String responseString;
+    resp.setVersion(version);
+    resp.setStatus(status);
+    resp.headers.set("Content-Type", "text/html; charset=UTF-8");
+    resp.headers.set("Date", resp.date());
+    resp.headers.set("Server", "xio2");
+    resp.headers.set("Content-Length", Integer.toString(body.length()));
 
-    Status(int code, String responseString) {
-      this.code = code;
-      this.responseString = responseString;
-    }
-
-    public String toString() {
-      return Integer.toString(code) + " " + responseString;
-    }
-  }
-
-    public String date() {
-     return ZonedDateTime
-      .now(ZoneId.of("UTC"))
-      .format(DateTimeFormatter.RFC_1123_DATE_TIME);
+    return resp;
   }
 }
+
+
+
+//< HTTP/1.1 301 Moved Permanently
+//< Location: http://www.google.com/
+//< Content-Type: text/html; charset=UTF-8
+//< Date: Sun, 19 Jul 2015 19:45:14 GMT
+//< Expires: Tue, 18 Aug 2015 19:45:14 GMT
+//< Cache-Control: public, max-age=2592000
+//    * Server gws is not blacklisted
+//< Server: gws
+//< Content-Length: 219
+//< X-XSS-Protection: 1; mode=block
+//< X-Frame-Options: SAMEORIGIN
+//< Alternate-Protocol: 80:quic,p=0

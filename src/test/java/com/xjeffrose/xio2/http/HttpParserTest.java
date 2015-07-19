@@ -41,7 +41,7 @@ public class HttpParserTest {
     assertEquals(request.getMethod(), "GET");
     assertEquals(request.getUri().toString(), "/");
     assertEquals(request.getHttpVersion(),"HTTP/1.1");
-    assertEquals(request.headers.headerMap.size(), 3);
+    assertEquals(request.headers.size(), 3);
     assertEquals(request.headers.get("User-Agent"), "curl/7.35.0");
     assertEquals(request.headers.get("Host"), "localhost:8000");
     assertEquals(request.headers.get("Accept"), "*/*");
@@ -58,7 +58,7 @@ public class HttpParserTest {
     assertEquals(request.getMethod(), "POST");
     assertEquals(request.getUri().toString(), "/");
     assertEquals(request.getHttpVersion(),"HTTP/1.1");
-    assertEquals(request.headers.headerMap.size(), 4);
+    assertEquals(request.headers.size(), 4);
     assertEquals(request.headers.get("User-Agent"), "curl/7.35.0");
     assertEquals(request.headers.get("Host"), "localhost:8000");
     assertEquals(request.headers.get("Accept"), "*/*");

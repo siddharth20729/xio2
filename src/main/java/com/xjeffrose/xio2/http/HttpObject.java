@@ -7,14 +7,12 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class HttpObject {
+public class HttpObject extends Http {
   private static final Logger log = Log.getLogger(HttpObject.class.getName());
 
   public final ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
@@ -25,19 +23,26 @@ public class HttpObject {
   public Headers headers = new Headers();
   public Body body = new Body();
   public HttpMethod method_ = HttpMethod.GET;
+  private Version version;
+  private Status status;
 
   public HttpObject() { }
 
   public String getHttpVersion() {
-    return "HTTP"
-        +
-        "/"
-        +
-        http_version_major
-        +
-        "."
-        +
-        http_version_minor;
+
+    if (http_version_major == 1) {
+      return "HTTP"
+          +
+          "/"
+          +
+          http_version_major
+          +
+          "."
+          +
+          http_version_minor;
+    }
+
+    return version.toString();
   }
 
   public URI getUri() {
@@ -54,6 +59,20 @@ public class HttpObject {
 
   public String getBody() {
     return body.getBody();
+  }
+
+  public void setVersion(Version version) {
+
+    this.version = version;
+  }
+
+  public void setStatus(Status status) {
+
+    this.status = status;
+  }
+
+  public String getStatus() {
+    return status.toString();
   }
 
   public enum HttpMethod {
@@ -155,81 +174,51 @@ public class HttpObject {
     }
   }
 
-  class Headers {
-    private final Deque<Header> header_list = new ArrayDeque<Header>();
+  class Headers extends Picker {
+    private String name;
+    public Map<String, String> headerMap = new HashMap<>();
 
-    // TODO prefer list of Header objects to minimize String objects at parse time.
-    public Map<String, Header> headerMap = new HashMap<String, Header>();
-    private Header currentHeader = null;
-
-    Headers() {
-
-    }
-
-    public void newHeader() {
-      if (currentHeader != null) {
-        done();
-      }
-      currentHeader = new Header();
-    }
-
-    public void done() {
-      headerMap.put(currentHeader.name(), currentHeader);
-    }
-
-    public void newValue() {
-      currentHeader.startValue();
-    }
-
-    public void tick(int currentPos) {
-      currentHeader.tick(currentPos);
-    }
-
-    public boolean empty() {
-      return header_list.size() == 0;
+    public void set(String name, String value) {
+      headerMap.put(name, value);
     }
 
     public String get(String name) {
-      Header header = headerMap.get(name);
-      if (header != null) {
-        return header.value();
+      final String val = headerMap.get(name);
+      if (val != null) {
+        return val;
       } else {
         return "";
       }
     }
 
-    public void set(String name, String value) {
-      headerMap.putIfAbsent(name, new Header(name, value));
-    }
-  }
-
-  class Header {
-
-    private final Picker name = new Picker();
-    private final Picker value = new Picker();
-    private Picker currentPicker;
-
-    public Header() {
-      currentPicker = name;
+    public int size() {
+      return headerMap.size();
     }
 
-    public Header(String name, String value) {
+    public boolean empty() {
+      return headerMap.isEmpty();
     }
 
-    public String name() {
-      return name.get();
+    private void reset() {
+      position = -1;
+      limit = 0;
     }
 
-    public String value() {
-      return value.get();
+    public void newHeader() {
+      if (name != null) {
+        headerMap.put(name, get());
+        reset();
+      }
     }
 
-    public void tick(int currentPos) {
-      currentPicker.tick(currentPos);
+    public void newValue() {
+      name = get();
+      reset();
     }
 
-    public void startValue() {
-      currentPicker = value;
+    public void done() {
+      headerMap.put(name, get());
+      reset();
     }
   }
 
