@@ -20,19 +20,13 @@ public class HttpObject {
   public final ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
   public int http_version_major = 0;
   public int http_version_minor = 0;
-  public Method method;
-  public Uri uri;
-  public Headers headers;
-  public Body body;
+  public Method method = new Method();
+  public Uri uri = new Uri();
+  public Headers headers = new Headers();
+  public Body body = new Body();
   public HttpMethod method_ = HttpMethod.GET;
 
-  public HttpObject() {
-
-    method = new Method();
-    uri = new Uri();
-    headers = new Headers();
-    body = new Body();
-  }
+  public HttpObject() { }
 
   public String getHttpVersion() {
     return "HTTP"
@@ -248,7 +242,6 @@ public class HttpObject {
       final int size = new Integer(headers.get("Content-Length"));
       this.position = position + 1;
       this.limit = size - 1;
-      //buf = ByteBuffer.allocateDirect(size);
     }
 
     public void set(String body) {

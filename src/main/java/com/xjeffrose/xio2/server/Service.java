@@ -11,39 +11,35 @@ public class Service {
 
   private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
 
-  public Service() {
-  }
+  protected Service() { }
 
   public void handle(Route route, HttpRequest req, HttpResponse resp) {
     this.route = route;
     this.req = req;
     this.resp = resp;
-  }
 
-  public void handle() {
-
-//    switch(req.method) {
-//      case HttpObject.HttpMethod.GET:
-//        handleGet();
-//        serviceStream();
-//        return;
-//      case POST:
-//        handlePost();
-//        serviceStream();
-//        return;
-//      case PUT:
-//        handlePut();
-//        serviceStream();
-//        return;
-//      case DELETE:
-//        handleDelete();
-//        serviceStream();
-//        return;
-//      default:
-//        handleGet();
-//        serviceStream();
-//        return;
-//    }
+    switch (req.method_) {
+      case GET:
+        handleGet();
+        serviceStream();
+        return;
+      case POST:
+        handlePost();
+        serviceStream();
+        return;
+      case PUT:
+        handlePut();
+        serviceStream();
+        return;
+      case DELETE:
+        handleDelete();
+        serviceStream();
+        return;
+      default:
+        handleGet();
+        serviceStream();
+        return;
+    }
   }
 
   public void handleGet() { }
@@ -60,7 +56,7 @@ public class Service {
 
   private void serviceStream() {
     while (serviceList.size() > 0) {
-      //serviceList.removeLast().handle(route,req,resp);
+      serviceList.removeLast().handle(route, req, resp);
     }
   }
 }

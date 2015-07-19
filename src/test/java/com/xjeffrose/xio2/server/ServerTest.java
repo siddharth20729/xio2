@@ -27,7 +27,7 @@ public class ServerTest {
   @Test
   public void testAddRoute() throws Exception {
     s.serve(9001);
-    s.addRoute("/test", new Service());
+    //s.addRoute("/test", ;
   }
 
 }

@@ -4,5 +4,4 @@ public class HttpRequest extends HttpObject {
 
   public HttpRequest() { }
 
-
 }
