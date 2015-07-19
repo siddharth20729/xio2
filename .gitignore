@@ -1,0 +1,55 @@
+
+# Compiled source #
+###################
+*.class
+*.o
+*.so
+
+# Logs and databases #
+######################
+*.log
+
+# OS generated files #
+######################
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Editor Files #
+################
+*~
+*.swp
+
+# Gradle Files #
+################
+.gradle
+.gradletasknamecache
+.m2
+
+# Build output directies
+target/
+build/
+
+# IntelliJ specific files/directories
+out
+.idea
+*.ipr
+*.iws
+*.iml
+atlassian-ide-plugin.xml
+
+# Eclipse specific files/directories
+.classpath
+.project
+.settings
+.metadata
+
+# NetBeans specific files/directories
+.nbattrs
+/.nb-gradle/profiles/private/
+.nb-gradle-properties
+
+# Scala build
+*.cache
+/.nb-gradle/private/
