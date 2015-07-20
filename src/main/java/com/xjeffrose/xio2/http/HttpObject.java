@@ -234,7 +234,7 @@ public class HttpObject extends Http {
     }
 
     public void set(String body) {
-      buf = ByteBuffer.allocateDirect(body.length() + 1);
+      buf = ByteBuffer.allocateDirect(body.length());
       buf.put(body.getBytes());
     }
 

@@ -1,22 +1,24 @@
 package com.xjeffrose.xio2.server;
 
 import com.xjeffrose.log.Log;
+import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpParser;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpResponse;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
+  public final AtomicBoolean writeOK = new AtomicBoolean(false);
+
   public final HttpParser parser = new HttpParser();
   public final HttpRequest req = new HttpRequest();
-  public final HttpResponse resp = new HttpResponse();
 
   private State state = State.got_request;
-  private Service service;
   private boolean parserOk;
   public SocketChannel channel;
   private Map<Route, Service> routes;
@@ -37,7 +39,7 @@ class ChannelContext {
   public void read() {
     int nread = 1;
 
-    while (nread > 0) {
+    while (nread > 0 && state == State.got_request) {
       try {
         nread = channel.read(req.inputBuffer);
         parserOk = parser.parse(req);
@@ -62,19 +64,37 @@ class ChannelContext {
   private void handleReq() {
     final String uri = req.getUri().toString();
     if (state == State.finished_parse) {
-      routes.entrySet()
-          .stream()
-          .parallel()
-          .filter(entry -> entry.getKey().matches(uri))
-          .forEach(entry -> entry.getValue().handle(entry.getKey(), req, resp));
+      for (Map.Entry<Route, Service> entry : routes.entrySet()) {
+        if (entry.getKey().matches(uri)) {
+          state = State.start_response;
+          entry.getValue().handle(this, req);
+        }
+      }
+      if (state == State.finished_parse) {
+        state = State.start_response;
+        write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
+      }
     }
   }
 
-  public void write() {
+//  public void write() {
+//    try {
+//      if (state == State.finished_parse) {
+//        state = State.start_response;
+//        channel.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK).toBB());
+//        channel.close();
+//      }
+//    } catch (Exception e) {
+//      throw new RuntimeException(e);
+//    }
+//    state = State.finished_response;
+//  }
+
+  public void write(HttpResponse resp) {
     try {
-      if (state == State.finished_parse) {
-        state = State.start_response;
-        channel.write(resp.inputBuffer);
+//      log.info(state.toString() + "  " + Boolean.toString(writeOK.get()));
+      if (state == State.start_response) { // && writeOK.get()) {
+        channel.write(resp.toBB());
         channel.close();
       }
     } catch (Exception e) {

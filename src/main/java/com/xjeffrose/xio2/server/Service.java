@@ -1,22 +1,19 @@
 package com.xjeffrose.xio2.server;
 
 import com.xjeffrose.xio2.http.HttpRequest;
-import com.xjeffrose.xio2.http.HttpResponse;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class Service {
-  public Route route;
   public HttpRequest req;
-  public HttpResponse resp;
+  public ChannelContext ctx;
 
   private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
 
   protected Service() { }
 
-  public void handle(Route route, HttpRequest req, HttpResponse resp) {
-    this.route = route;
+  public void handle(ChannelContext ctx, HttpRequest req) {
+    this.ctx = ctx;
     this.req = req;
-    this.resp = resp;
 
     switch (req.method_) {
       case GET:
@@ -36,11 +33,12 @@ public class Service {
         serviceStream();
         return;
       default:
-        handleGet();
-        serviceStream();
+        handleNotFound();
         return;
     }
   }
+
+  private void handleNotFound() { }
 
   public void handleGet() { }
 
@@ -56,7 +54,7 @@ public class Service {
 
   private void serviceStream() {
     while (serviceList.size() > 0) {
-      serviceList.removeLast().handle(route, req, resp);
+      serviceList.removeLast().handle(ctx, req);
     }
   }
 }

@@ -58,9 +58,9 @@ public class HttpParser {
     return false;
   }
 
- public HttpRequest request() {
-    return req;
-  }
+// public HttpRequest request() {
+//    return req;
+//  }
 
 
   private boolean is_char(int c) {

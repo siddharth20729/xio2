@@ -18,7 +18,7 @@ public class BB {
   public static ByteBuffer StringtoBB(String s) {
     final ByteBuffer bb = ByteBuffer.allocateDirect(s.length());
     bb.put(s.getBytes());
+    bb.flip();
     return bb;
   }
-
 }
