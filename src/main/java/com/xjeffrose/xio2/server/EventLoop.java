@@ -59,14 +59,12 @@ class EventLoop extends Thread {
             ChannelContext ctx = (ChannelContext) key.attachment();
             ctx.read();
           }
-
           if (key.isValid() && key.isWritable()) {
             ChannelContext ctx = (ChannelContext) key.attachment();
-            //TODO: FIXME This is not ok (maybe this is ok)
-            ctx.writeOK.set(true);
-            //ctx.write();
+            ctx.flush();
           }
         } catch (Exception e) {
+          key.cancel();
           throw new RuntimeException(e);
         }
         if (!running()) {

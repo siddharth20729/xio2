@@ -38,7 +38,7 @@ public class Service {
     }
   }
 
-  private void handleNotFound() { }
+  public void handleNotFound() { }
 
   public void handleGet() { }
 

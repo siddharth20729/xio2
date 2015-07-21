@@ -14,18 +14,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-class TestService extends Service {
-  private static final Logger log = Log.getLogger(TestService.class.getName());
-
-  private void handleNotFound() {
-    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
-  }
-
-  public void handleGet() {
-    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK));
-  }
-}
-
 public class ServiceTest {
   Server s = new Server();
   OkHttpClient client = new OkHttpClient();

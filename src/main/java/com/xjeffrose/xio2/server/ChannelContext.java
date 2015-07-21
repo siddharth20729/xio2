@@ -5,17 +5,18 @@ import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpParser;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
 
 class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
-  public final AtomicBoolean writeOK = new AtomicBoolean(false);
+  private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<>();
 
-  public final HttpParser parser = new HttpParser();
+  private final HttpParser parser = new HttpParser();
   public final HttpRequest req = new HttpRequest();
 
   private State state = State.got_request;
@@ -77,29 +78,23 @@ class ChannelContext {
     }
   }
 
-//  public void write() {
-//    try {
-//      if (state == State.finished_parse) {
-//        state = State.start_response;
-//        channel.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK).toBB());
-//        channel.close();
-//      }
-//    } catch (Exception e) {
-//      throw new RuntimeException(e);
-//    }
-//    state = State.finished_response;
-//  }
-
-  public void write(HttpResponse resp) {
+  public void flush() {
     try {
-//      log.info(state.toString() + "  " + Boolean.toString(writeOK.get()));
-      if (state == State.start_response) { // && writeOK.get()) {
-        channel.write(resp.toBB());
-        channel.close();
+      if (!bbList.isEmpty()) {
+        for (int i = 0; i < bbList.size(); i++) {
+          channel.write(bbList.removeFirst());
+        }
       }
+      channel.close();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
     state = State.finished_response;
+  }
+
+  public void write(HttpResponse resp) {
+    if (state == State.start_response) {
+      bbList.addLast(resp.toBB());
+    }
   }
 }

@@ -15,19 +15,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-
-class TestServerService extends Service {
-  private static final Logger log = Log.getLogger(TestService.class.getName());
-
-  private void handleNotFound() {
-    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
-  }
-
-  public void handleGet() {
-    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK));
-  }
-}
-
 public class ServerTest {
   Server s;
   OkHttpClient client = new OkHttpClient();
@@ -45,6 +32,8 @@ public class ServerTest {
   @Test(expected = IOException.class)
   public void testServe() throws Exception {
     s.serve(9000);
+    // For AB Testing
+//    Thread.sleep(100000);
     Request request = new Request.Builder()
         .url("http://localhost:9000/")
         .build();
@@ -56,9 +45,27 @@ public class ServerTest {
   }
 
   @Test
+  public void testServeMany () throws Exception {
+    s.serve(9000);
+    Request request = new Request.Builder()
+        .url("http://localhost:9000/")
+        .build();
+
+    // Simulate 100 req's / second
+    final int reqs = 100;
+
+    for (int i = 0; i < reqs; i++) {
+      Response response = client.newCall(request).execute();
+      assertEquals(response.code(), 404);
+    }
+  }
+
+  @Test
   public void testAddRoute() throws Exception {
+    s.addRoute("/test", new TestService());
     s.serve(9001);
-    s.addRoute("/test", new TestServerService());
+    // For AB Testing
+//    Thread.sleep(100000);
 
     Request request = new Request.Builder()
         .url("http://localhost:9001/test")
@@ -69,6 +76,27 @@ public class ServerTest {
 
     assertTrue(response.isSuccessful());
     assertEquals(response.code(), 200);
+  }
+
+  @Test
+  public void testAddRouteMany() throws Exception {
+    s.serve(9001);
+    s.addRoute("/test", new TestService());
+
+    Request request = new Request.Builder()
+        .url("http://localhost:9001/test")
+        .build();
+
+    // Simulate 100 req's / second
+    final int reqs = 100;
+
+    for (int i = 0; i < reqs; i++) {
+      Response response = client.newCall(request).execute();
+      if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+      assertTrue(response.isSuccessful());
+      assertEquals(response.code(), 200);
+    }
   }
 
 }
