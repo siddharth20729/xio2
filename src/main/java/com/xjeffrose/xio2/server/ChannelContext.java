@@ -5,6 +5,7 @@ import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpParser;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpResponse;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
@@ -23,6 +24,7 @@ class ChannelContext {
   private boolean parserOk;
   public SocketChannel channel;
   private Map<Route, Service> routes;
+  int nread = 1;
 
   ChannelContext(SocketChannel channel, Map<Route, Service> routes) {
     this.channel = channel;
@@ -38,8 +40,6 @@ class ChannelContext {
   };
 
   public void read() {
-    int nread = 1;
-
     while (nread > 0 && state == State.got_request) {
       try {
         nread = channel.read(req.inputBuffer);
@@ -78,23 +78,26 @@ class ChannelContext {
     }
   }
 
-  public void flush() {
+  public void flush() throws IOException {
     try {
       if (!bbList.isEmpty()) {
         for (int i = 0; i < bbList.size(); i++) {
           channel.write(bbList.removeFirst());
         }
+        channel.close();
       }
-      channel.close();
     } catch (Exception e) {
+      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR));
+      log.severe("This isn't correct - " + channel);
+      //channel.close();
       throw new RuntimeException(e);
     }
-    state = State.finished_response;
   }
 
   public void write(HttpResponse resp) {
     if (state == State.start_response) {
       bbList.addLast(resp.toBB());
     }
+    state = State.finished_response;
   }
 }

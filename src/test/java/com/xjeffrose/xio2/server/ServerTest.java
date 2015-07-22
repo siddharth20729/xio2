@@ -51,8 +51,8 @@ public class ServerTest {
         .url("http://localhost:9000/")
         .build();
 
-    // Simulate 100 req's / second
-    final int reqs = 100;
+    // Simulate 1500 req's / second
+    final int reqs = 1500;
 
     for (int i = 0; i < reqs; i++) {
       Response response = client.newCall(request).execute();
@@ -87,8 +87,8 @@ public class ServerTest {
         .url("http://localhost:9001/test")
         .build();
 
-    // Simulate 100 req's / second
-    final int reqs = 100;
+    // Simulate 1500 req's / second
+    final int reqs = 1500;
 
     for (int i = 0; i < reqs; i++) {
       Response response = client.newCall(request).execute();

@@ -5,6 +5,26 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class Http {
+
+  private Http() { }
+
+  public enum Method {
+    GET("GET"),
+    POST("POST"),
+    PUT("PUT"),
+    DELETE("DELETE");
+
+    private String method;
+
+    Method(String method) {
+      this.method = method;
+    }
+
+    public String toString() {
+      return method;
+    }
+  }
+
   public enum Version {
     HTTP1_0("HTTP/1.0"),
     HTTP1_1("HTTP/1.1"),
@@ -22,6 +42,7 @@ public class Http {
   }
 
   public enum Status {
+    SWITCHING_PROTOCOLS(101, "Switching Protocols"),
     OK(200, "OK"),
     CREATED(201, "Created"),
     ACCEPTED(202, "Accepted"),
@@ -54,7 +75,7 @@ public class Http {
     }
   }
 
-  public String date() {
+  public static String date() {
     return ZonedDateTime
         .now(ZoneId.of("UTC"))
         .format(DateTimeFormatter.RFC_1123_DATE_TIME);

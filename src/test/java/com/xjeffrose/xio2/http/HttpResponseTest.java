@@ -9,7 +9,7 @@ public class HttpResponseTest {
 
   @Test
   public void testToString() throws Exception {
-    assertEquals(HttpResponse.Status.NOT_FOUND.toString(), "404 Not Found");
+    assertEquals(Http.Status.NOT_FOUND.toString(), "404 Not Found");
   }
 
   @Test

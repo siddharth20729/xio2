@@ -64,8 +64,14 @@ class EventLoop extends Thread {
             ctx.flush();
           }
         } catch (Exception e) {
+          log.severe("Terminating connection to - " + key.channel());
+          try {
+            key.channel().close();
+          } catch (IOException e1) {
+            e1.printStackTrace();
+          }
           key.cancel();
-          throw new RuntimeException(e);
+          //throw new RuntimeException(e);
         }
         if (!running()) {
           break;

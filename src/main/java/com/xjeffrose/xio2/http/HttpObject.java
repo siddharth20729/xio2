@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class HttpObject extends Http {
+public class HttpObject {
   private static final Logger log = Log.getLogger(HttpObject.class.getName());
 
   public final ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
@@ -22,9 +22,9 @@ public class HttpObject extends Http {
   public Uri uri = new Uri();
   public Headers headers = new Headers();
   public Body body = new Body();
-  public HttpMethod method_ = HttpMethod.GET;
-  private Version version;
-  private Status status;
+  public Http.Method method_ = Http.Method.GET;
+  private Http.Version version;
+  private Http.Status status;
 
   public HttpObject() { }
 
@@ -61,12 +61,12 @@ public class HttpObject extends Http {
     return body.getBody();
   }
 
-  public void setVersion(Version version) {
+  public void setVersion(Http.Version version) {
 
     this.version = version;
   }
 
-  public void setStatus(Status status) {
+  public void setStatus(Http.Status status) {
 
     this.status = status;
   }
@@ -75,36 +75,21 @@ public class HttpObject extends Http {
     return status.toString();
   }
 
-  public enum HttpMethod {
-    GET,
-    POST,
-    PUT,
-    DELETE
-  }
-
   public void setMethod() {
     String meth = method.getMethod();
     if (meth.equalsIgnoreCase("get")) {
-      method_ = HttpMethod.GET;
+      method_ = Http.Method.GET;
     } else if (meth.equalsIgnoreCase("post")) {
-      method_ = HttpMethod.POST;
+      method_ = Http.Method.POST;
     } else if (meth.equalsIgnoreCase("put")) {
-      method_ = HttpMethod.PUT;
+      method_ = Http.Method.PUT;
     } else if (meth.equalsIgnoreCase("delete")) {
-      method_ = HttpMethod.DELETE;
+      method_ = Http.Method.DELETE;
     }
   }
 
-  public void setMethod(String meth) {
-    if (meth.equalsIgnoreCase("get")) {
-      method_ = HttpMethod.GET;
-    } else if (meth.equalsIgnoreCase("post")) {
-      method_ = HttpMethod.POST;
-    } else if (meth.equalsIgnoreCase("put")) {
-      method_ = HttpMethod.PUT;
-    } else if (meth.equalsIgnoreCase("delete")) {
-      method_ = HttpMethod.DELETE;
-    }
+  public void setMethod(Http.Method method) {
+    method_ = method;
   }
 
   class Picker {
