@@ -14,3 +14,10 @@
  * Abstracts away the implementation details of java nio.
  * Implements an event loop that just deals with accept events.
  * Accepts incoming connections, builds a channel context, attaches the context to an event loop from the pool.
+
+# ChannelContext
+
+ * Composes socket reading with http parsing to build an http request object.
+ * Maintains a simple state machine that represents the status of the request/response cycle.
+ * Finds a service in the routes map and dispatches it to handle the request, otherwise issues a 404
+ * Provides an abstraction to write http responses to the wire.
