@@ -38,3 +38,7 @@
  * Abstracts away the implementation details of java nio read/write events.
  * Runs inside of it's own thread.
  * Composes channel contexts with nio events to cause i/o.
+
+# EventLoopPool
+
+ * Convenience class to work with multiple event loops, starting, stopping and cycling through them.
