@@ -42,3 +42,8 @@
 # EventLoopPool
 
  * Convenience class to work with multiple event loops, starting, stopping and cycling through them.
+
+# Service
+
+ * Base class for defining how to respond to a request.
+ * Allows multiple Services to be chained together.
