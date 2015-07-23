@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Xio2 by xjdr</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Xio2</h1>
+        <p class="header">High performance I/O for the JVM</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/xjdr/xio2/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/xjdr/xio2/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/xjdr/xio2">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/xjdr">xjdr</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a id="xio2" class="anchor" href="#xio2" aria-hidden="true"><span class="octicon octicon-link"></span></a>xio2</h1>
+
+<p>High performance I/O for the JVM</p>
+
+<h1>
+<a id="overview" class="anchor" href="#overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview</h1>
+
+<ul>
+<li>Server Start</li>
+<li>Acceptor receives connection</li>
+<li>Channel Context parses request</li>
+<li>Service issues response</li>
+</ul>
+
+<h1>
+<a id="server" class="anchor" href="#server" aria-hidden="true"><span class="octicon octicon-link"></span></a>Server</h1>
+
+<blockquote>
+<p>One Server to rule them all, One Server to find them,</p>
+
+<p>One Server to bring them all and in the darkness bind them</p>
+</blockquote>
+
+<ul>
+<li>Composes the routes map, server socket channel, acceptor, and event loop pool.</li>
+<li>Provides a method to add routes to the map.</li>
+<li>Configures event loop pool to use all of the available cores and starts it.</li>
+<li>Runs acceptor event loop until it terminates (effectively forever).</li>
+</ul>
+
+<h1>
+<a id="acceptor" class="anchor" href="#acceptor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acceptor</h1>
+
+<ul>
+<li>Abstracts away the implementation details of java nio accept events.</li>
+<li>Implements an event loop that just deals with accept events.</li>
+<li>Accepts incoming connections, builds a channel context, attaches the context to an event loop from the pool.</li>
+</ul>
+
+<h1>
+<a id="channelcontext" class="anchor" href="#channelcontext" aria-hidden="true"><span class="octicon octicon-link"></span></a>ChannelContext</h1>
+
+<ul>
+<li>Composes socket reading with http parsing to build an http request object.</li>
+<li>Maintains a simple state machine that represents the status of the request/response cycle.</li>
+<li>Finds a service in the routes map and dispatches it to handle the request, otherwise issues a 404</li>
+<li>Provides an abstraction to write http responses to the wire.</li>
+</ul>
+
+<h1>
+<a id="route" class="anchor" href="#route" aria-hidden="true"><span class="octicon octicon-link"></span></a>Route</h1>
+
+<ul>
+<li>Implements a sinatra style url matcher using regex.</li>
+</ul>
+
+<h1>
+<a id="eventloop" class="anchor" href="#eventloop" aria-hidden="true"><span class="octicon octicon-link"></span></a>EventLoop</h1>
+
+<ul>
+<li>Abstracts away the implementation details of java nio read/write events.</li>
+<li>Runs inside of it's own thread.</li>
+<li>Composes channel contexts with nio events to cause i/o.</li>
+</ul>
+
+<h1>
+<a id="eventlooppool" class="anchor" href="#eventlooppool" aria-hidden="true"><span class="octicon octicon-link"></span></a>EventLoopPool</h1>
+
+<ul>
+<li>Convenience class to work with multiple event loops, starting, stopping and cycling through them.</li>
+</ul>
+
+<h1>
+<a id="service" class="anchor" href="#service" aria-hidden="true"><span class="octicon octicon-link"></span></a>Service</h1>
+
+<ul>
+<li>Base class for defining how to respond to a request.</li>
+<li>Allows multiple Services to be chained together.</li>
+</ul>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
