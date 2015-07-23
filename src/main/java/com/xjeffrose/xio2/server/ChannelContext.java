@@ -22,9 +22,9 @@ class ChannelContext {
 
   private State state = State.got_request;
   private boolean parserOk;
-  public SocketChannel channel;
+  protected SocketChannel channel;
   private Map<Route, Service> routes;
-  int nread = 1;
+  private int nread = 1;
 
   ChannelContext(SocketChannel channel, Map<Route, Service> routes) {
     this.channel = channel;
@@ -37,7 +37,7 @@ class ChannelContext {
     finished_parse,
     start_response,
     finished_response,
-  };
+  }
 
   public void read() {
     while (nread > 0 && state == State.got_request) {
@@ -71,10 +71,8 @@ class ChannelContext {
           entry.getValue().handle(this, req);
         }
       }
-      if (state == State.finished_parse) {
-        state = State.start_response;
-        write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
-      }
+      state = State.start_response;
+      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
     }
   }
 
