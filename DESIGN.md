@@ -28,3 +28,7 @@
  * Maintains a simple state machine that represents the status of the request/response cycle.
  * Finds a service in the routes map and dispatches it to handle the request, otherwise issues a 404
  * Provides an abstraction to write http responses to the wire.
+
+# Route
+
+ * Implements a sinatra style url matcher using regex.
