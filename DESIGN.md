@@ -18,7 +18,7 @@
  
 # Acceptor
 
- * Abstracts away the implementation details of java nio.
+ * Abstracts away the implementation details of java nio accept events.
  * Implements an event loop that just deals with accept events.
  * Accepts incoming connections, builds a channel context, attaches the context to an event loop from the pool.
 
@@ -32,3 +32,9 @@
 # Route
 
  * Implements a sinatra style url matcher using regex.
+
+# EventLoop
+
+ * Abstracts away the implementation details of java nio read/write events.
+ * Runs inside of it's own thread.
+ * Composes channel contexts with nio events to cause i/o.
