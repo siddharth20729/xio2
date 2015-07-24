@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
 
-class ChannelContext {
+public class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
   private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<>();
@@ -22,7 +22,7 @@ class ChannelContext {
 
   private State state = State.got_request;
   private boolean parserOk;
-  protected SocketChannel channel;
+  public SocketChannel channel;
   private Map<Route, Service> routes;
   private int nread = 1;
 
@@ -76,7 +76,7 @@ class ChannelContext {
     }
   }
 
-  public void flush() throws IOException {
+  public void flush() {
     try {
       if (!bbList.isEmpty()) {
         for (int i = 0; i < bbList.size(); i++) {

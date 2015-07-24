@@ -33,7 +33,7 @@ public class ServerTest {
   public void testServe() throws Exception {
     s.serve(9000);
     // For AB Testing
-//    Thread.sleep(100000);
+    Thread.sleep(100000);
     Request request = new Request.Builder()
         .url("http://localhost:9000/")
         .build();

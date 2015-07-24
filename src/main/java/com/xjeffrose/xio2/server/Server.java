@@ -16,7 +16,7 @@ public class Server {
   private Acceptor acceptor;
   private EventLoopPool pool;
 
-  Server() { }
+  public Server() { }
 
   private void schedule(ServerSocketChannel channel) {
     final int cores = Runtime.getRuntime().availableProcessors();

@@ -48,8 +48,9 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
-
         <dependencies>
+            <!-- Junit and okhttp are only required for development and testing -->
+
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
