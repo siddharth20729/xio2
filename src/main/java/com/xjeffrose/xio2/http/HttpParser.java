@@ -9,7 +9,7 @@ public class HttpParser {
   private static final Logger log = Log.getLogger(HttpParser.class.getName());
 
   private int lastByteRead;
-  private HttpRequest req;
+  private HttpObject obj;
 
   private state state_ = state.method_start;
   public boolean done = false;
@@ -41,9 +41,9 @@ public class HttpParser {
     expecting_newline_3
   }
 
-  public boolean parse(HttpRequest req) {
-    this.req = req;
-    final ByteBuffer temp = req.inputBuffer.duplicate();
+  public boolean parse(HttpObject obj) {
+    this.obj = obj;
+    final ByteBuffer temp = obj.inputBuffer.duplicate();
 
     ParseState result = ParseState.good;
     temp.flip();
@@ -108,7 +108,7 @@ public class HttpParser {
           return ParseState.bad;
         } else {
           state_ = state.method;
-          req.method.tick(lastByteRead);
+          obj.method.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case method:
@@ -118,7 +118,7 @@ public class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          req.method.tick(lastByteRead);
+          obj.method.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case uri:
@@ -128,8 +128,8 @@ public class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
-          req.setMethod();
-          req.uri.tick(lastByteRead);
+          obj.setMethod();
+          obj.uri.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case http_version_h:
@@ -169,7 +169,7 @@ public class HttpParser {
         }
       case http_version_major_start:
         if (is_digit((char) input)) {
-          req.http_version_major = (char) input - '0';
+          obj.http_version_major = (char) input - '0';
           state_ = state.http_version_major;
           return ParseState.indeterminate;
         } else {
@@ -180,14 +180,14 @@ public class HttpParser {
           state_ = state.http_version_minor_start;
           return ParseState.indeterminate;
         } else if (is_digit((char) input)) {
-          req.http_version_major = req.http_version_major * 10 + (char) input - '0';
+          obj.http_version_major = obj.http_version_major * 10 + (char) input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
         }
       case http_version_minor_start:
         if (is_digit((char) input)) {
-          req.http_version_minor = (char) input - '0';
+          obj.http_version_minor = (char) input - '0';
           state_ = state.http_version_minor;
           return ParseState.indeterminate;
         } else {
@@ -198,7 +198,7 @@ public class HttpParser {
           state_ = state.expecting_newline_1;
           return ParseState.indeterminate;
         } else if (is_digit((char) input)) {
-          req.http_version_minor = req.http_version_minor * 10 + (char) input - '0';
+          obj.http_version_minor = obj.http_version_minor * 10 + (char) input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -214,14 +214,14 @@ public class HttpParser {
         if (input == '\r') {
           state_ = state.expecting_newline_3;
           return ParseState.indeterminate;
-        } else if (!req.headers.empty() && (input == ' ' || input == '\t')) {
+        } else if (!obj.headers.empty() && (input == ' ' || input == '\t')) {
           state_ = state.header_lws;
           return ParseState.indeterminate;
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          req.headers.newHeader();
-          req.headers.tick(lastByteRead);
+          obj.headers.newHeader();
+          obj.headers.tick(lastByteRead);
           state_ = state.header_name;
           return ParseState.indeterminate;
         }
@@ -235,8 +235,8 @@ public class HttpParser {
           return ParseState.bad;
         } else {
           state_ = state.header_value;
-          req.headers.newValue();
-          req.headers.tick(lastByteRead);
+          obj.headers.newValue();
+          obj.headers.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case header_name:
@@ -246,13 +246,13 @@ public class HttpParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          req.headers.tick(lastByteRead);
+          obj.headers.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case space_before_header_value:
         if (input == ' ') {
           state_ = state.header_value;
-          req.headers.newValue();
+          obj.headers.newValue();
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -264,7 +264,7 @@ public class HttpParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
-          req.headers.tick(lastByteRead);
+          obj.headers.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case expecting_newline_2:
@@ -283,13 +283,13 @@ public class HttpParser {
   }
 
   private void finish() {
-    req.headers.done();
+    obj.headers.done();
     done = true;
-    switch (req.method_) {
+    switch (obj.method_) {
       case GET:
         return;
       case POST:
-        req.body.set(lastByteRead);
+        obj.body.set(lastByteRead);
         return;
       case PUT:
         return;

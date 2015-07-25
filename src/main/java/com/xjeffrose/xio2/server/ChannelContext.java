@@ -25,7 +25,6 @@ public class ChannelContext {
   public SSLEngine engine;
   public boolean ssl = false;
   public SocketChannel channel;
-  public boolean handshakeOK = false;
 
   private int nread = 1;
   private boolean parserOk;

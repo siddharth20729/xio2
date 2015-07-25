@@ -3,6 +3,7 @@ package com.xjeffrose.xio2.TLS;
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.server.ChannelContext;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.logging.Logger;
@@ -18,7 +19,6 @@ public class TLS {
 
   private SSLContext sslCtx;
   private SSLEngine engine;
-  private ChannelContext ctx;
   private SSLEngineResult sslResult;
 
   private ByteBuffer encryptedRequest;
@@ -28,9 +28,17 @@ public class TLS {
 
   private char[] passphrase = "changeit".toCharArray();
   private SSLEngineResult.HandshakeStatus handshakeStatus;
+  private SocketChannel channel;
+  public boolean client;
 
   public TLS(ChannelContext ctx) {
-    this.ctx = ctx;
+    this.channel = ctx.channel;
+    genEngine();
+    ctx.engine = engine;
+  }
+
+  public TLS(SocketChannel channel) {
+    this.channel = channel;
     genEngine();
   }
 
@@ -62,7 +70,7 @@ public class TLS {
 
     switch (sslResult.getStatus()) {
       case OK:
-        ctx.handshakeOK = true;
+//        ctx.handshakeOK = true;
         break;
       case BUFFER_UNDERFLOW:
         read();
@@ -86,7 +94,7 @@ public class TLS {
     int nread = 1;
     while (nread > 0) {
       try {
-        nread = ctx.channel.read(encryptedRequest);
+        nread = channel.read(encryptedRequest);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -103,7 +111,7 @@ public class TLS {
 
   private void write() {
     try {
-      ctx.channel.write(encryptedResponse);
+      channel.write(encryptedResponse);
       handleSSLResult(true);
     } catch (Exception e) {
       log.severe("Pooo face" + e);
@@ -111,7 +119,7 @@ public class TLS {
   }
 
   public void doHandshake() {
-    ctx.engine = engine;
+//    ctx.engine = engine;
     encryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
     decryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
     rawResponse = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
@@ -155,7 +163,7 @@ public class TLS {
 
         case FINISHED:
           log.info("Successful TLS Handshake");
-          ctx.handshakeOK = true;
+//          ctx.handshakeOK = true;
       }
     }
   }

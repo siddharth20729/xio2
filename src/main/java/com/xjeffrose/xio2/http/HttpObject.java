@@ -54,7 +54,7 @@ public class HttpObject {
   }
 
   public String getMethod() {
-    return method.getMethod();
+    return method_.toString();
   }
 
   public String getBody() {
@@ -231,4 +231,9 @@ public class HttpObject {
       return get();
     }
   }
+
+  public ByteBuffer toBB() {
+    return BB.StringtoBB(toString());
+  }
 }
+
