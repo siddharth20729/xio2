@@ -21,8 +21,6 @@ public class ServiceTest {
 
   @Before
   public void setUp() throws Exception {
-    s.addRoute("/", new TestService());
-    s.serve(9002);
   }
 
   @After
@@ -37,8 +35,13 @@ public class ServiceTest {
 
   @Test
   public void testHandleGet() throws Exception {
+    s.addRoute("/test", new TestService());
+    s.ssl(false);
+    s.serve(9002);
+//    Thread.sleep(100000);
+
     Request request = new Request.Builder()
-        .url("http://localhost:9002/")
+        .url("http://localhost:9002/test")
         .build();
 
     Response response = client.newCall(request).execute();

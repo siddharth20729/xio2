@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import javax.net.ssl.SSLEngine;
 
 class EventLoop extends Thread {
   private final Logger log = Log.getLogger(EventLoop.class.getName());
@@ -71,12 +70,12 @@ class EventLoop extends Thread {
           log.severe("Terminating connection to - " + key.channel());
           try {
             key.channel().close();
+            key.cancel();
             throw new RuntimeException(e);
-          } catch (IOException e1) {
-            e1.printStackTrace();
+          } catch (Exception e1) {
+            key.cancel();
+            throw new RuntimeException(e1);
           }
-          key.cancel();
-          //throw new RuntimeException(e);
         }
         if (!running()) {
           break;

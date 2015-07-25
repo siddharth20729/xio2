@@ -1,8 +1,6 @@
 package com.xjeffrose.xio2.TLS;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.http.HttpResponse;
 import com.xjeffrose.xio2.server.ChannelContext;
 import java.nio.ByteBuffer;
 import java.security.KeyStore;
@@ -60,10 +58,11 @@ public class TLS {
     }
   }
 
-  public void handleSSLResult(SSLEngineResult result, boolean network) {
+  public void handleSSLResult(boolean network) {
 
     switch (sslResult.getStatus()) {
       case OK:
+        ctx.handshakeOK = true;
         break;
       case BUFFER_UNDERFLOW:
         read();
@@ -93,8 +92,8 @@ public class TLS {
       }
       if (nread == -1) {
         try {
-          log.severe("FOol tried to close teh channel, yo");
-//                ctx.channel.close();
+          log.severe("Fool tried to close the channel, yo");
+          //ctx.channel.close();
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -105,9 +104,9 @@ public class TLS {
   private void write() {
     try {
       ctx.channel.write(encryptedResponse);
-      handleSSLResult(sslResult, true);
+      handleSSLResult(true);
     } catch (Exception e) {
-      log.severe("POoo face" + e);
+      log.severe("Pooo face" + e);
     }
   }
 
@@ -125,15 +124,15 @@ public class TLS {
       throw new RuntimeException(e);
     }
 
-    while (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED &&
-        handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
+    while (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED
+        && handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
       handshakeStatus = engine.getHandshakeStatus();
       switch (handshakeStatus) {
 
         case NEED_TASK:
           Runnable task;
           while ((task = engine.getDelegatedTask()) != null) {
-            task.run();
+            new Thread(task).start();
           }
           handshakeStatus = engine.getHandshakeStatus();
           break;
@@ -156,7 +155,7 @@ public class TLS {
 
         case FINISHED:
           log.info("Successful TLS Handshake");
-          rawResponse = HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK).toBB();
+          ctx.handshakeOK = true;
       }
     }
   }
@@ -164,7 +163,7 @@ public class TLS {
   private void unwrap() {
     try {
       sslResult = engine.unwrap(encryptedRequest, decryptedRequest);
-      handleSSLResult(sslResult, false);
+      handleSSLResult(false);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -173,7 +172,7 @@ public class TLS {
   private void wrap() {
     try {
       sslResult = engine.wrap(rawResponse, encryptedResponse);
-      handleSSLResult(sslResult, true);
+      handleSSLResult(true);
     } catch (SSLException e) {
       e.printStackTrace();
     }

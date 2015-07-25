@@ -5,7 +5,6 @@ import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpParser;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpResponse;
-import com.xjeffrose.xio2.util.BB;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
@@ -23,15 +22,18 @@ public class ChannelContext {
   private final HttpParser parser = new HttpParser();
   public final HttpRequest req = new HttpRequest();
 
-  private State state = State.got_request;
-  private boolean parserOk;
-  public SocketChannel channel;
-  private Map<Route, Service> routes;
-  private int nread = 1;
   public SSLEngine engine;
   public boolean ssl = false;
-  private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
+  public SocketChannel channel;
+  public boolean handshakeOK = false;
+
+  private int nread = 1;
+  private boolean parserOk;
+  private Map<Route, Service> routes;
+  private State state = State.got_request;
   private SSLEngineResult sslEngineResult;
+  private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
+
 
   ChannelContext(SocketChannel channel, Map<Route, Service> routes) {
     this.channel = channel;
@@ -110,7 +112,10 @@ public class ChannelContext {
   }
 
   public void write(HttpResponse resp) {
-    final ByteBuffer encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+    ByteBuffer encryptedResponse = null;
+    if (ssl) {
+      encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+    }
     if (state == State.start_response) {
       if (ssl && engine != null) {
         try {
@@ -127,5 +132,5 @@ public class ChannelContext {
     }
     state = State.finished_response;
   }
-
 }
+

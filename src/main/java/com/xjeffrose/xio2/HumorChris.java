@@ -3,6 +3,9 @@ package com.xjeffrose.xio2;
 import com.xjeffrose.xio2.server.Server;
 
 public class HumorChris {
+
+  private HumorChris() { }
+
   public static void main(String[] args) {
     Server s = new Server();
 

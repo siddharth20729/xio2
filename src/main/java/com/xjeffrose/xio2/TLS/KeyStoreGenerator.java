@@ -27,6 +27,7 @@ public class KeyStoreGenerator {
   private static final String alias = "xio2";
   private static final char[] keyPass = "changeit".toCharArray();
 
+  private KeyStoreGenerator() { }
 
   public static KeyStore Build() throws Exception {
     KeyStore keyStore = KeyStore.getInstance("JKS");
