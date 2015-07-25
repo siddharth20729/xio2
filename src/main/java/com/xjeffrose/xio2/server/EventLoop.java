@@ -64,13 +64,13 @@ class EventLoop extends Thread {
           }
           if (key.isValid() && key.isWritable()) {
             ChannelContext ctx = (ChannelContext) key.attachment();
-            engine.wrap()
             ctx.flush();
           }
         } catch (Exception e) {
           log.severe("Terminating connection to - " + key.channel());
           try {
             key.channel().close();
+            throw new RuntimeException(e);
           } catch (IOException e1) {
             e1.printStackTrace();
           }
@@ -91,6 +91,7 @@ class EventLoop extends Thread {
         ChannelContext context = contextsToAdd.pop();
         context.channel.configureBlocking(false);
         TLS tls = new TLS(context);
+        context.ssl = true;
         context.channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, context);
         tls.doHandshake();
       } catch (IOException e) {

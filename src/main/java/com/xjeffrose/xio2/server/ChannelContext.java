@@ -5,12 +5,15 @@ import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpParser;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpResponse;
-import java.io.IOException;
+import com.xjeffrose.xio2.util.BB;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLEngineResult;
+import javax.net.ssl.SSLException;
 
 public class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
@@ -25,6 +28,10 @@ public class ChannelContext {
   public SocketChannel channel;
   private Map<Route, Service> routes;
   private int nread = 1;
+  public SSLEngine engine;
+  public boolean ssl = false;
+  private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
+  private SSLEngineResult sslEngineResult;
 
   ChannelContext(SocketChannel channel, Map<Route, Service> routes) {
     this.channel = channel;
@@ -42,7 +49,14 @@ public class ChannelContext {
   public void read() {
     while (nread > 0 && state == State.got_request) {
       try {
-        nread = channel.read(req.inputBuffer);
+        if (ssl && engine != null) {
+          nread = channel.read(encryptedRequest);
+          encryptedRequest.flip();
+          sslEngineResult = engine.unwrap(encryptedRequest, req.inputBuffer);
+          sslEngineResult.getStatus();
+        } else {
+          nread = channel.read(req.inputBuffer);
+        }
         parserOk = parser.parse(req);
         state = State.start_parse;
       } catch (Exception e) {
@@ -59,6 +73,9 @@ public class ChannelContext {
     state = State.finished_parse;
     if (parserOk) {
       handleReq();
+    } else {
+      state = State.start_response;
+      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.BAD_REQUEST));
     }
   }
 
@@ -93,9 +110,22 @@ public class ChannelContext {
   }
 
   public void write(HttpResponse resp) {
+    final ByteBuffer encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
     if (state == State.start_response) {
-      bbList.addLast(resp.toBB());
+      if (ssl && engine != null) {
+        try {
+          sslEngineResult = engine.wrap(resp.toBB(), encryptedResponse);
+          sslEngineResult.getStatus();
+        } catch (SSLException e) {
+          e.printStackTrace();
+        }
+        encryptedResponse.flip();
+        bbList.addLast(encryptedResponse);
+      } else {
+        bbList.addLast(resp.toBB());
+      }
     }
     state = State.finished_response;
   }
+
 }
