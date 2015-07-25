@@ -42,11 +42,11 @@ public class TLS {
       KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
       kmf.init(ks, passphrase);
 
-      sslCtx = SSLContext.getInstance("TLSv1");
+      sslCtx = SSLContext.getInstance("TLSv1.2");
       sslCtx.init(kmf.getKeyManagers(), null, new SecureRandom());
 
       SSLParameters params = new SSLParameters();
-      params.setProtocols(new String[]{"TLSv1"});
+      params.setProtocols(new String[]{"TLSv1.2"});
 
       engine = sslCtx.createSSLEngine();
 

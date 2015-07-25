@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public class Server {
@@ -16,11 +17,17 @@ public class Server {
   private Acceptor acceptor;
   private EventLoopPool pool;
 
+  public AtomicBoolean ssl = new AtomicBoolean(false);
+
   public Server() { }
+
+  public void ssl(boolean b) {
+    ssl.set(b);
+  }
 
   private void schedule(ServerSocketChannel channel) {
     final int cores = Runtime.getRuntime().availableProcessors();
-    pool = new EventLoopPool(cores);
+    pool = new EventLoopPool(cores, ssl);
     acceptor = new Acceptor(channel, pool, routes);
     acceptor.start();
     pool.start();
@@ -55,5 +62,4 @@ public class Server {
       throw new RuntimeException(e);
     }
   }
-
 }
