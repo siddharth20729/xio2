@@ -18,7 +18,6 @@ public class TLS {
   private static final Logger log = Log.getLogger(TLS.class.getName());
 
   private SSLContext sslCtx;
-  private SSLEngine engine;
   private SSLEngineResult sslResult;
 
   private ByteBuffer encryptedRequest;
@@ -29,7 +28,9 @@ public class TLS {
   private char[] passphrase = "changeit".toCharArray();
   private SSLEngineResult.HandshakeStatus handshakeStatus;
   private SocketChannel channel;
+
   public boolean client;
+  public SSLEngine engine;
 
   public TLS(ChannelContext ctx) {
     this.channel = ctx.channel;
@@ -55,11 +56,14 @@ public class TLS {
       params.setProtocols(new String[]{"TLSv1.2"});
 
       engine = sslCtx.createSSLEngine();
-
       engine.setSSLParameters(params);
-
       engine.setNeedClientAuth(false);
-      engine.setUseClientMode(false);
+
+      if (client) {
+        engine.setUseClientMode(true);
+      } else {
+        engine.setUseClientMode(false);
+      }
 
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -126,7 +130,9 @@ public class TLS {
     encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
 
     try {
-      engine.beginHandshake();
+      if (!client) {
+        engine.beginHandshake();
+      }
       handshakeStatus = engine.getHandshakeStatus();
     } catch (Exception e) {
       throw new RuntimeException(e);

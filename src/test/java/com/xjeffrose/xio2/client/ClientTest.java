@@ -1,5 +1,9 @@
 package com.xjeffrose.xio2.client;
 
+import com.xjeffrose.xio2.http.Http;
+import com.xjeffrose.xio2.http.HttpObject;
+import com.xjeffrose.xio2.http.HttpRequest;
+import com.xjeffrose.xio2.http.HttpResponse;
 import com.xjeffrose.xio2.server.Server;
 import org.junit.After;
 import org.junit.Before;
@@ -8,24 +12,37 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ClientTest {
-  Server s = new Server();
-  Client c = new Client();
+//  Server s = new Server();
+//  Client c = new Client();
 
 
   @Before
   public void setUp() throws Exception {
-    s.serve(9007);
+//    s.ssl.set(true);
+//    s.serve(9007);
 
   }
 
   @After
   public void tearDown() throws Exception {
-    s.close();
+//    s.close();
   }
 
   @Test
   public void testGet() throws Exception {
+//    c.ssl = true;
+//    c.connect("localhost", 9007);
 
+//    HttpRequest req = new HttpRequest.Builder()
+//        .url("/")
+//        .build();
+
+    //HttpResponse resp = c.get(req);
+//    assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+//    assertEquals(resp.getStatus(), "404 Not Found");
+//    assertEquals(resp.headers.size(), 3);
+//    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+//    assertEquals(resp.headers.get("Server"), "xio2");
   }
 
   @Test

@@ -53,18 +53,3 @@ public class HttpResponse extends HttpObject {
   }
 }
 
-
-
-
-//< HTTP/1.1 301 Moved Permanently
-//< Location: http://www.google.com/
-//< Content-Type: text/html; charset=UTF-8
-//< Date: Sun, 19 Jul 2015 19:45:14 GMT
-//< Expires: Tue, 18 Aug 2015 19:45:14 GMT
-//< Cache-Control: public, max-age=2592000
-//    * Server gws is not blacklisted
-//< Server: gws
-//< Content-Length: 219
-//< X-XSS-Protection: 1; mode=block
-//< X-Frame-Options: SAMEORIGIN
-//< Alternate-Protocol: 80:quic,p=0

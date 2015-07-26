@@ -29,19 +29,12 @@ public class ServiceTest {
   }
 
   @Test
-  public void testHandle() throws Exception {
-
-  }
-
-  @Test
   public void testHandleGet() throws Exception {
-    s.addRoute("/test", new TestService());
-    s.ssl(false);
-    s.serve(9002);
-//    Thread.sleep(100000);
+    s.addRoute("/service_test", new TestService());
+    s.serve(9011);
 
     Request request = new Request.Builder()
-        .url("http://localhost:9002/test")
+        .url("http://localhost:9011/service_test")
         .build();
 
     Response response = client.newCall(request).execute();
@@ -49,25 +42,5 @@ public class ServiceTest {
 
     assertTrue(response.isSuccessful());
     assertEquals(response.code(), 200);
-  }
-
-  @Test
-  public void testHandlePost() throws Exception {
-
-  }
-
-  @Test
-  public void testHandlePut() throws Exception {
-
-  }
-
-  @Test
-  public void testHandleDelete() throws Exception {
-
-  }
-
-  @Test
-  public void testAndThen() throws Exception {
-
   }
 }

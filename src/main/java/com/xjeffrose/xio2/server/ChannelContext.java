@@ -17,7 +17,7 @@ import javax.net.ssl.SSLException;
 public class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
-  private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<>();
+  private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<ByteBuffer>();
 
   private final HttpParser parser = new HttpParser();
   public final HttpRequest req = new HttpRequest();

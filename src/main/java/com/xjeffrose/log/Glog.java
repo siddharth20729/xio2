@@ -50,8 +50,8 @@ class Glog {
 
     StringBuilder sb = new StringBuilder(messageLength)
         // TODO implement Lambda for checking nonNull logs
-        //.append( (T r) ->
-        // formatter.getLevel(r)  != null ? formatter.getLevel(r) : Level.UNKNOWN.label)
+//        .append( (T r) ->
+//         formatter.getLevel(r)  != null ? formatter.getLevel(r) : Level.UNKNOWN.label)
         .append(formatter.getLevel(record).label)
         .append(LocalDateTime.ofInstant(Instant.ofEpochMilli(formatter.getTimeStamp(record)),
             ZoneOffset.UTC).format(DateTimeFormatter.ofPattern(" MMdd HH:mm:ss.SSS")))

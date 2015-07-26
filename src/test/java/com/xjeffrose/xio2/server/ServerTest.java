@@ -163,16 +163,41 @@ public class ServerTest {
     assertEquals(response.code(), 200);
   }
 
+  @Test
+  public void testSslMany() throws Exception {
+    OkHttpClient unsafeClient = getUnsafeOkHttpClient();
+
+    s.ssl(true);
+    s.serve(9006);
+    s.addRoute("/test", new TestService());
+
+    Request request = new Request.Builder()
+        .url("https://localhost:9006/test")
+        .build();
+
+    // Simulate 100 req's / second
+    final int reqs = 100;
+
+    for (int i = 0; i < reqs; i++) {
+      Response response = unsafeClient.newCall(request).execute();
+      if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+      assertTrue(response.isSuccessful());
+      assertEquals(response.code(), 200);
+    }
+  }
+
+
   @Test(expected = SSLException.class)
   public void testSslFail() throws Exception {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
     s.ssl(false);
     s.addRoute("/test", new TestService());
-    s.serve(9006);
+    s.serve(9007);
 
     Request request = new Request.Builder()
-        .url("https://localhost:9006/test")
+        .url("https://localhost:9007/test")
         .build();
 
     Response response = unsafeClient.newCall(request).execute();

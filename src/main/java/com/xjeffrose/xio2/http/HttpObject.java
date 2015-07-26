@@ -159,9 +159,9 @@ public class HttpObject {
     }
   }
 
-  class Headers extends Picker {
+  public class Headers extends Picker {
     private String name;
-    public Map<String, String> headerMap = new HashMap<>();
+    public Map<String, String> headerMap = new HashMap<String, String>();
 
     public void set(String name, String value) {
       headerMap.put(name, value);
@@ -236,4 +236,3 @@ public class HttpObject {
     return BB.StringtoBB(toString());
   }
 }
-
