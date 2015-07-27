@@ -20,17 +20,24 @@ public class XioClient {
   private HttpRequest req;
   private boolean parserOk;
   private Iterator<SelectionKey> iterator;
-  private ClientTLS tls;
-  private boolean ssl = false;
+  private ClientTLS tls = null;
+
+  public boolean ssl = false;
 
   XioClient() { }
+
+  public void ssl(boolean b) {
+    this.ssl = b;
+  }
 
   public void connect(String host, int port) {
     try {
       channel = SocketChannel.open();
       channel.configureBlocking(false);
       channel.connect(new InetSocketAddress(host, port));
-      tls = new ClientTLS(channel);
+      if (ssl) {
+        tls = new ClientTLS(channel);
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -39,11 +46,19 @@ public class XioClient {
   public HttpObject get(HttpRequest req) {
     this.req = req;
 
-    if (checkConnect()) {
-      if (tls.execute()) {
-        if (write()) {
-          return read();
+    if (ssl) {
+      if (checkConnect()) {
+        if (tls.execute()) {
+          if (write()) {
+            return read();
+          }
         }
+      }
+    } else {
+      if (checkConnect()) {
+          if (write()) {
+            return read();
+          }
       }
     }
     return null;
@@ -98,11 +113,16 @@ public class XioClient {
           iterator.remove();
 
           if (key.isValid() && key.isWritable()) {
-            tls.engine.wrap(req.toBB(), tls.encryptedRequest);
-            tls.encryptedRequest.flip();
-            channel.write(tls.encryptedRequest);
-            tls.encryptedRequest.compact();
-            return true;
+            if (ssl) {
+              tls.engine.wrap(req.toBB(), tls.encryptedRequest);
+              tls.encryptedRequest.flip();
+              channel.write(tls.encryptedRequest);
+              tls.encryptedRequest.compact();
+              return true;
+            } else {
+              channel.write(req.toBB());
+              return true;
+            }
           }
         }
       }
@@ -128,14 +148,20 @@ public class XioClient {
           iterator.remove();
 
           if (key.isValid() && key.isReadable()) {
-            tls.encryptedResponse.clear();
-            while (nread > 0) {
-              nread = channel.read(tls.encryptedResponse);
-            }
-            tls.encryptedResponse.flip();
-            tls.engine.unwrap(tls.encryptedResponse, resp.inputBuffer);
-            tls.encryptedResponse.compact();
+            if (ssl) {
+              tls.encryptedResponse.clear();
 
+              while (nread > 0) {
+                nread = channel.read(tls.encryptedResponse);
+              }
+              tls.encryptedResponse.flip();
+              tls.engine.unwrap(tls.encryptedResponse, resp.inputBuffer);
+              tls.encryptedResponse.compact();
+            } else {
+              while (nread > 0) {
+                nread = channel.read(resp.inputBuffer);
+              }
+            }
             parserOk = parser.parse(resp);
             if (parserOk) {
               return resp;

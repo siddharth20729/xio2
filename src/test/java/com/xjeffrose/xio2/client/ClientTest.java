@@ -16,9 +16,6 @@ public class ClientTest {
 
   @Before
   public void setUp() throws Exception {
-    s.ssl.set(true);
-    s.serve(9007);
-
   }
 
   @After
@@ -28,10 +25,8 @@ public class ClientTest {
 
   @Test
   public void testGet() throws Exception {
-//    c.ssl = true;
-    c.connect("localhost", 9007);
-//    c.connect("localhost", 4433);
-//    c.get();
+    s.serve(9018);
+    c.connect("localhost", 9018);
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
@@ -46,22 +41,22 @@ public class ClientTest {
   }
 
   @Test
-  public void testPost() throws Exception {
+  public void testSSLGet() throws Exception {
+    s.ssl(true);
+    c.ssl(true);
 
-  }
+    s.serve(9017);
+    c.connect("localhost", 9017);
 
-  @Test
-  public void testPut() throws Exception {
+    HttpRequest req = new HttpRequest.Builder()
+        .url("/")
+        .build();
 
-  }
-
-  @Test
-  public void testDelete() throws Exception {
-
-  }
-
-  @Test
-  public void testDelete1() throws Exception {
-
+    HttpObject resp = c.get(req);
+    assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+    assertEquals(resp.getStatus(), "404 Not Found");
+    assertEquals(resp.headers.size(), 4);
+    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(resp.headers.get("Server"), "xio2");
   }
 }
