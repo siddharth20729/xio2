@@ -1,7 +1,7 @@
-package com.xjeffrose.xio2.TLS;
+package com.xjeffrose.xio2.client;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.server.ChannelContext;
+import com.xjeffrose.xio2.TLS.KeyStoreGenerator;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
@@ -15,18 +15,18 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import sun.security.ssl.SSLEngineImpl;
 
-public class TLS {
-  private static final Logger log = Log.getLogger(TLS.class.getName());
+public class ClientTLS {
+  private static final Logger log = Log.getLogger(ClientTLS.class.getName());
 
   private SSLContext sslCtx;
   private SSLEngineResult sslResult;
 
+  private ByteBuffer rawRequest;
   private ByteBuffer encryptedRequest;
-  private ByteBuffer decryptedRequest;
-  private ByteBuffer rawResponse;
+
   private ByteBuffer encryptedResponse;
+  private ByteBuffer rawResponse;
 
   private char[] passphrase = "changeit".toCharArray();
   private SSLEngineResult.HandshakeStatus handshakeStatus;
@@ -35,10 +35,43 @@ public class TLS {
   public boolean client;
   public SSLEngine engine;
 
-  public TLS(ChannelContext ctx) {
-    this.channel = ctx.channel;
+  public ClientTLS(
+      SocketChannel channel,
+      ByteBuffer rawRequest,
+      ByteBuffer encryptedRequest,
+      ByteBuffer encryptedResponse,
+      ByteBuffer rawResponse) {
+    this.channel = channel;
+    this.rawRequest = rawRequest;
+    this.encryptedRequest = encryptedRequest;
+    this.encryptedResponse = encryptedResponse;
+    this.rawResponse = rawResponse;
+    this.client = true;
     genEngine();
-    ctx.engine = engine;
+    try {
+      engine.beginHandshake();
+    } catch (SSLException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private TrustManager[] getTrustAllCerts() {
+    TrustManager[] trustAllCerts = new TrustManager[]{
+        new X509TrustManager() {
+          public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+          }
+
+          public void checkClientTrusted(
+              java.security.cert.X509Certificate[] certs, String authType) {
+          }
+
+          public void checkServerTrusted(
+              java.security.cert.X509Certificate[] certs, String authType) {
+          }
+        }
+    };
+    return trustAllCerts;
   }
 
   private void genEngine() {
@@ -48,15 +81,14 @@ public class TLS {
       kmf.init(ks, passphrase);
 
       sslCtx = SSLContext.getInstance("TLSv1.2");
-      sslCtx.init(kmf.getKeyManagers(), null, new SecureRandom());
+      sslCtx.init(kmf.getKeyManagers(), getTrustAllCerts(), new SecureRandom());
 
       SSLParameters params = new SSLParameters();
       params.setProtocols(new String[]{"TLSv1.2"});
 
-      engine = sslCtx.createSSLEngine();
+      engine = sslCtx.createSSLEngine("localhost", 4433);
       engine.setSSLParameters(params);
-      engine.setNeedClientAuth(false);
-      engine.setUseClientMode(false);
+      engine.setUseClientMode(true);
 
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -67,19 +99,20 @@ public class TLS {
 
     switch (sslResult.getStatus()) {
       case OK:
-//        System.out.println("OKKKKKK");
+        log.info("OKKKKKK");
         break;
+//        ctx.handshakeOK = true;
       case BUFFER_UNDERFLOW:
         read();
         break;
       case BUFFER_OVERFLOW:
         if (network) {
-          rawResponse.flip();
+          encryptedRequest.flip();
           write();
-          rawResponse.compact();
+          encryptedRequest.compact();
         } else {
-          decryptedRequest.flip();
-          decryptedRequest.compact();
+          rawResponse.flip();
+          rawResponse.compact();
         }
         break;
       case CLOSED:
@@ -92,7 +125,7 @@ public class TLS {
     int nread = 1;
     while (nread > 0) {
       try {
-        nread = channel.read(encryptedRequest);
+        nread = channel.read(encryptedResponse);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -109,76 +142,75 @@ public class TLS {
 
   private void write() {
     try {
-      channel.write(encryptedResponse);
+      channel.write(encryptedRequest);
       handleSSLResult(true);
     } catch (Exception e) {
       log.severe("Pooo face" + e);
     }
   }
 
-  public void doHandshake() {
-//    ctx.engine = engine;
-    encryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
-    decryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
-    rawResponse = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
-    encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
-
+  public boolean execute() {
     try {
       engine.beginHandshake();
-      handshakeStatus = engine.getHandshakeStatus();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    } catch (SSLException e) {
+      e.printStackTrace();
     }
-
-    while (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED
-        && handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
+    while (true) {
       handshakeStatus = engine.getHandshakeStatus();
       switch (handshakeStatus) {
-
         case NEED_TASK:
+          log.info("need_task");
+
           Runnable task;
           while ((task = engine.getDelegatedTask()) != null) {
-            new Thread(task).start();
+            task.run();
           }
-          handshakeStatus = engine.getHandshakeStatus();
           break;
 
         case NEED_UNWRAP:
+          log.info("need_unwrap");
           read();
-          encryptedRequest.flip();
+          encryptedResponse.flip();
           unwrap();
-          encryptedRequest.compact();
-          handshakeStatus = engine.getHandshakeStatus();
+          encryptedResponse.compact();
           break;
 
         case NEED_WRAP:
+          log.info("need_wrap");
           wrap();
-          encryptedResponse.flip();
+          encryptedRequest.flip();
           write();
-          encryptedResponse.compact();
-          handshakeStatus = engine.getHandshakeStatus();
+          encryptedRequest.compact();
           break;
 
         case FINISHED:
           log.info("Successful TLS Handshake");
 //          ctx.handshakeOK = true;
+          return true;
+        case NOT_HANDSHAKING:
+          log.info("Not handshaking (whatever that means)");
+          return true;
+        default:
+          log.info("got rando status " + handshakeStatus);
           break;
       }
     }
   }
 
-  private void unwrap() {
+  public void unwrap() {
     try {
-      sslResult = engine.unwrap(encryptedRequest, decryptedRequest);
+      sslResult = engine.unwrap(encryptedResponse, rawResponse);
+      log.info(sslResult.toString());
       handleSSLResult(false);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private void wrap() {
+  public void wrap() {
     try {
-      sslResult = engine.wrap(rawResponse, encryptedResponse);
+      sslResult = engine.wrap(rawRequest, encryptedRequest);
+      log.info(sslResult.toString());
       handleSSLResult(true);
     } catch (SSLException e) {
       e.printStackTrace();

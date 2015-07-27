@@ -42,13 +42,22 @@ public class HttpRequest extends HttpObject {
       return this;
     }
 
-    public HttpRequest build() throws UnknownHostException {
+    public HttpRequest build() {
       if (url == null) throw new IllegalStateException("url == null");
       if (body == null) {
-        return HttpRequest.DefaultRequest(version, method, url, url);
+        try {
+          return HttpRequest.DefaultRequest(version, method, url, url);
+        } catch (UnknownHostException e) {
+          e.printStackTrace();
+        }
       } else {
-        return HttpRequest.DefaultRequest(version, method, url, body);
+        try {
+          return HttpRequest.DefaultRequest(version, method, url, body);
+        } catch (UnknownHostException e) {
+          e.printStackTrace();
+        }
       }
+      return null;
     }
   }
 

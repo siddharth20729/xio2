@@ -1,6 +1,7 @@
-package com.xjeffrose.xio2.http;
+package com.xjeffrose.xio2.client;
 
 import com.xjeffrose.log.Log;
+import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.util.BB;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
