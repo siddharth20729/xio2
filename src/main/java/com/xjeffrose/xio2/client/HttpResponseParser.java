@@ -1,6 +1,7 @@
 package com.xjeffrose.xio2.client;
 
 import com.xjeffrose.log.Log;
+import com.xjeffrose.xio2.http.Http;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
@@ -41,6 +42,7 @@ class HttpResponseParser {
   };
 
   private state state_ = state.http_version_h;
+  private int http_status = 0;
 
   public boolean parse(HttpResponse resp) {
     this.response = resp;
@@ -172,9 +174,11 @@ class HttpResponseParser {
         }
       case status_code:
         if (input == ' ') {
+          response.setStatus(Http.Status.fromCode(http_status));
           state_ = state.reason_phrase;
           return ParseState.indeterminate;
         } else if (is_digit((char)input)) {
+          http_status = http_status * 10 + (char)input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;

@@ -1,5 +1,6 @@
 package com.xjeffrose.xio2.client;
 
+import com.xjeffrose.xio2.http.HttpObject;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.server.Server;
 import org.junit.After;
@@ -37,11 +38,11 @@ public class ClientTest {
         .build();
 
     HttpObject resp = c.get(req);
-//    assertEquals(resp.getHttpVersion(), "HTTP/1.1");
-//    assertEquals(resp.getStatus(), "404 Not Found");
-//    assertEquals(resp.headers.size(), 3);
-//    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
-//    assertEquals(resp.headers.get("Server"), "xio2");
+    assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+    assertEquals(resp.getStatus(), "404 Not Found");
+    assertEquals(resp.headers.size(), 4);
+    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(resp.headers.get("Server"), "xio2");
   }
 
   @Test

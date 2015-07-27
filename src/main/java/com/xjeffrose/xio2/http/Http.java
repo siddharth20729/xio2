@@ -73,6 +73,15 @@ public class Http {
     public String toString() {
       return Integer.toString(code) + " " + responseString;
     }
+
+    static public Status fromCode(int code) {
+      for (Status status : Status.values()) {
+        if (status.code == code) {
+          return status;
+        }
+      }
+      throw new IllegalArgumentException();
+    }
   }
 
   public static String date() {

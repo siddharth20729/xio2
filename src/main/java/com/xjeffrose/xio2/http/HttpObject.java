@@ -124,7 +124,7 @@ public class HttpObject {
     }
   }
 
-  class Method extends Picker {
+  public class Method extends Picker {
     private String method = null;
 
     public String getMethod() {
@@ -214,7 +214,7 @@ public class HttpObject {
     }
   }
 
-  class Body extends Picker {
+  public class Body extends Picker {
     private ByteBuffer buf;
 
     public Body() { }
@@ -230,7 +230,7 @@ public class HttpObject {
       buf.put(body.getBytes());
     }
 
-    private String getBody() {
+    public String getBody() {
       if (position == -1) {
         buf.flip();
         return BB.BBtoString(buf);

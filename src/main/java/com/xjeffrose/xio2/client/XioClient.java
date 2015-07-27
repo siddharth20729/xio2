@@ -1,18 +1,16 @@
 package com.xjeffrose.xio2.client;
 
 import com.xjeffrose.log.Log;
+import com.xjeffrose.xio2.http.HttpObject;
 import com.xjeffrose.xio2.http.HttpRequest;
-import com.xjeffrose.xio2.util.BB;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.net.ssl.SSLEngineResult;
 
 public class XioClient {
   private static final Logger log = Log.getLogger(XioClient.class.getName());
@@ -23,10 +21,7 @@ public class XioClient {
   private boolean parserOk;
   private Iterator<SelectionKey> iterator;
   private ClientTLS tls;
-  ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(20000);
-  ByteBuffer rawRequest = ByteBuffer.allocateDirect(20000);
-  ByteBuffer rawResponse = ByteBuffer.allocateDirect(20000);
-  ByteBuffer encryptedResponse = ByteBuffer.allocateDirect(20000);
+  private boolean ssl = false;
 
   XioClient() { }
 
@@ -35,12 +30,7 @@ public class XioClient {
       channel = SocketChannel.open();
       channel.configureBlocking(false);
       channel.connect(new InetSocketAddress(host, port));
-      tls = new ClientTLS(channel,
-          rawRequest,
-          encryptedRequest,
-          encryptedResponse,
-          rawResponse
-      );
+      tls = new ClientTLS(channel);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -48,7 +38,6 @@ public class XioClient {
 
   public HttpObject get(HttpRequest req) {
     this.req = req;
-
 
     if (checkConnect()) {
       if (tls.execute()) {
@@ -80,7 +69,6 @@ public class XioClient {
           key.cancel();
           throw new RuntimeException();
         }
-//        tls.execute();
         channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
         return true;
       } else if (!key.isValid()) {
@@ -110,13 +98,10 @@ public class XioClient {
           iterator.remove();
 
           if (key.isValid() && key.isWritable()) {
-//            channel.write(req.toBB());
-//            rawRequest.put(req.toBB());
-//            tls.wrap();
-            log.info(tls.engine.wrap(req.toBB(), encryptedRequest).toString());
-            encryptedRequest.flip();
-            channel.write(encryptedRequest);
-            encryptedRequest.compact();
+            tls.engine.wrap(req.toBB(), tls.encryptedRequest);
+            tls.encryptedRequest.flip();
+            channel.write(tls.encryptedRequest);
+            tls.encryptedRequest.compact();
             return true;
           }
         }
@@ -143,21 +128,20 @@ public class XioClient {
           iterator.remove();
 
           if (key.isValid() && key.isReadable()) {
-            encryptedResponse.clear();
+            tls.encryptedResponse.clear();
             while (nread > 0) {
-              nread = channel.read(encryptedResponse);
-              log.info("here " + nread);
+              nread = channel.read(tls.encryptedResponse);
             }
-            encryptedResponse.flip();
-            log.info(tls.engine.unwrap(encryptedResponse, rawResponse).toString());
-            encryptedResponse.compact();
+            tls.encryptedResponse.flip();
+            tls.engine.unwrap(tls.encryptedResponse, resp.inputBuffer);
+            tls.encryptedResponse.compact();
 
-//            parserOk = parser.parse(resp);
-//            System.out.println(resp.toString());
-            System.out.println("HEREEEEE " + parserOk + "  " + BB.BBtoString(rawResponse));
-
-            System.out.println(BB.BBtoString(rawResponse));
-            return resp;
+            parserOk = parser.parse(resp);
+            if (parserOk) {
+              return resp;
+            } else {
+              return null;
+            }
           }
         }
       }

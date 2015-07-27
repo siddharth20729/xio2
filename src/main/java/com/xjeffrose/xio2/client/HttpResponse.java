@@ -2,6 +2,7 @@ package com.xjeffrose.xio2.client;
 
 
 import com.xjeffrose.xio2.http.Http;
+import com.xjeffrose.xio2.http.HttpObject;
 
 public class HttpResponse extends HttpObject {
 
@@ -45,12 +46,14 @@ public class HttpResponse extends HttpObject {
     sb.append("Date" + ": " + headers.get("Date") + "\r\n");
     sb.append("Server" + ": " + headers.get("Server") + "\r\n");
     if (headers.headerMap.containsKey("Content-Length")) {
-      sb.append("Content-Length" + ": " + headers.get("Content-Length") + "\r\n");
-      sb.append("\r\n");
-      sb.append(getBody());
-    } else {
-      sb.append("Content-Length: 0\r\n");
-      sb.append("\r\n");
+      if (headers.get("Content-Length").equals("0")) {
+        sb.append("Content-Length: 0\r\n");
+        sb.append("\r\n");
+      } else {
+        sb.append("Content-Length" + ": " + headers.get("Content-Length") + "\r\n");
+        sb.append("\r\n");
+        sb.append(getBody());
+      }
     }
     return sb.toString();
   }

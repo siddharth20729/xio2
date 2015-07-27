@@ -23,31 +23,24 @@ public class ClientTLS {
   private SSLEngineResult sslResult;
 
   private ByteBuffer rawRequest;
-  private ByteBuffer encryptedRequest;
+  public ByteBuffer encryptedRequest;
 
-  private ByteBuffer encryptedResponse;
+  public ByteBuffer encryptedResponse;
   private ByteBuffer rawResponse;
 
   private char[] passphrase = "changeit".toCharArray();
   private SSLEngineResult.HandshakeStatus handshakeStatus;
   private SocketChannel channel;
 
-  public boolean client;
   public SSLEngine engine;
 
-  public ClientTLS(
-      SocketChannel channel,
-      ByteBuffer rawRequest,
-      ByteBuffer encryptedRequest,
-      ByteBuffer encryptedResponse,
-      ByteBuffer rawResponse) {
+  public ClientTLS(SocketChannel channel) {
     this.channel = channel;
-    this.rawRequest = rawRequest;
-    this.encryptedRequest = encryptedRequest;
-    this.encryptedResponse = encryptedResponse;
-    this.rawResponse = rawResponse;
-    this.client = true;
     genEngine();
+    this.rawRequest = ByteBuffer.allocateDirect(12);
+    this.encryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+    this.encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+    this.rawResponse = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
     try {
       engine.beginHandshake();
     } catch (SSLException e) {
@@ -86,7 +79,7 @@ public class ClientTLS {
       SSLParameters params = new SSLParameters();
       params.setProtocols(new String[]{"TLSv1.2"});
 
-      engine = sslCtx.createSSLEngine("localhost", 4433);
+      engine = sslCtx.createSSLEngine();
       engine.setSSLParameters(params);
       engine.setUseClientMode(true);
 
@@ -99,9 +92,7 @@ public class ClientTLS {
 
     switch (sslResult.getStatus()) {
       case OK:
-        log.info("OKKKKKK");
         break;
-//        ctx.handshakeOK = true;
       case BUFFER_UNDERFLOW:
         read();
         break;
@@ -159,7 +150,6 @@ public class ClientTLS {
       handshakeStatus = engine.getHandshakeStatus();
       switch (handshakeStatus) {
         case NEED_TASK:
-          log.info("need_task");
 
           Runnable task;
           while ((task = engine.getDelegatedTask()) != null) {
@@ -168,7 +158,6 @@ public class ClientTLS {
           break;
 
         case NEED_UNWRAP:
-          log.info("need_unwrap");
           read();
           encryptedResponse.flip();
           unwrap();
@@ -176,7 +165,6 @@ public class ClientTLS {
           break;
 
         case NEED_WRAP:
-          log.info("need_wrap");
           wrap();
           encryptedRequest.flip();
           write();
@@ -184,12 +172,11 @@ public class ClientTLS {
           break;
 
         case FINISHED:
-          log.info("Successful TLS Handshake");
-//          ctx.handshakeOK = true;
           return true;
+
         case NOT_HANDSHAKING:
-          log.info("Not handshaking (whatever that means)");
           return true;
+
         default:
           log.info("got rando status " + handshakeStatus);
           break;
@@ -200,7 +187,6 @@ public class ClientTLS {
   public void unwrap() {
     try {
       sslResult = engine.unwrap(encryptedResponse, rawResponse);
-      log.info(sslResult.toString());
       handleSSLResult(false);
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -210,7 +196,6 @@ public class ClientTLS {
   public void wrap() {
     try {
       sslResult = engine.wrap(rawRequest, encryptedRequest);
-      log.info(sslResult.toString());
       handleSSLResult(true);
     } catch (SSLException e) {
       e.printStackTrace();
