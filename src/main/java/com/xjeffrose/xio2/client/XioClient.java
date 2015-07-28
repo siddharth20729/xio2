@@ -24,7 +24,7 @@ public class XioClient {
 
   public boolean ssl = false;
 
-  XioClient() { }
+  public XioClient() { }
 
   public void ssl(boolean b) {
     this.ssl = b;

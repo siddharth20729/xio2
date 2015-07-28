@@ -5,7 +5,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Log {
+public class  Log {
   private static Logger logger;
   private static Handler handler;
 

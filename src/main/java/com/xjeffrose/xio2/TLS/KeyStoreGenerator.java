@@ -1,12 +1,5 @@
 package com.xjeffrose.xio2.TLS;
 
-//import java.security.KeyStore;
-//import java.security.PrivateKey;
-//import java.security.cert.X509Certificate;
-//import java.util.Date;
-//import sun.security.tools.keytool.CertAndKeyGen;
-//import sun.security.x509.X500Name;
-
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;

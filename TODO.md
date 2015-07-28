@@ -1,8 +1,10 @@
+## Proxy
 TODO
 ====
  
 ## Server 
  - Add http2
+ - Add epoll Socketchannel and Selector
 
 ### Server TLS
  - Accept real certs
@@ -17,7 +19,6 @@ TODO
  - Make configurable truststore
  - Create Server cert validation
 
-## Proxy
  - Have Server parse & rewrite headers as necessary and use the same bytebuffer to send req
  - Have Client parse & rewrite headers as necessary and use the same bytebuffer to send resp
  - Needs to terminate and re-wrap TLS
