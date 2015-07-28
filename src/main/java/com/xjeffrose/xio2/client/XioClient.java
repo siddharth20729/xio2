@@ -8,36 +8,48 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 public class XioClient {
   private static final Logger log = Log.getLogger(XioClient.class.getName());
 
-  private SocketChannel channel;
+  //private SocketChannel channel;
   private Selector selector;
   private HttpRequest req;
   private boolean parserOk;
   private Iterator<SelectionKey> iterator;
   private ClientTLS tls = null;
+  private final LoadBalancingStrategy lbs;
 
   public boolean ssl = false;
 
-  public XioClient() { }
+  public XioClient(String host, int port) {
+    this(new NullLoadBalancer(new InetSocketAddress(host, port)));
+  }
+
+  public XioClient(LoadBalancingStrategy lbs) {
+    this.lbs = lbs;
+  }
 
   public void ssl(boolean b) {
     this.ssl = b;
   }
 
-  public void connect(String host, int port) {
+  private SocketChannel getChannel(InetSocketAddress addr) {
     try {
-      channel = SocketChannel.open();
+      SocketChannel channel = SocketChannel.open();
       channel.configureBlocking(false);
-      channel.connect(new InetSocketAddress(host, port));
+      channel.connect(addr);
       if (ssl) {
         tls = new ClientTLS(channel);
       }
+      return channel;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -46,25 +58,29 @@ public class XioClient {
   public HttpObject get(HttpRequest req) {
     this.req = req;
 
+    return execute(getChannel(lbs.nextAddress()));
+  }
+
+  private HttpObject execute(SocketChannel channel) {
     if (ssl) {
-      if (checkConnect()) {
+      if (checkConnect(channel)) {
         if (tls.execute()) {
-          if (write()) {
-            return read();
+          if (write(channel)) {
+            return read(channel);
           }
         }
       }
     } else {
-      if (checkConnect()) {
-          if (write()) {
-            return read();
-          }
+      if (checkConnect(channel)) {
+        if (write(channel)) {
+          return read(channel);
+        }
       }
     }
     return null;
   }
 
-  private boolean checkConnect() {
+  private boolean checkConnect(SocketChannel channel) {
     try {
       selector = Selector.open();
 
@@ -99,7 +115,7 @@ public class XioClient {
     return false;
   }
 
-  private boolean write() {
+  private boolean write(SocketChannel channel) {
     try {
       while (true) {
 
@@ -131,7 +147,7 @@ public class XioClient {
     }
   }
 
-  private HttpResponse read() {
+  private HttpResponse read(SocketChannel channel) {
     int nread = 1;
     final HttpResponse resp = new HttpResponse();
     final HttpResponseParser parser = new HttpResponseParser();
