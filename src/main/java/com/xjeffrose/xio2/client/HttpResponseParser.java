@@ -5,7 +5,7 @@ import com.xjeffrose.xio2.http.Http;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
-@SuppressWarnings (value={"fallthrough"})
+@SuppressWarnings (value = { "fallthrough" })
 
 // http://tools.ietf.org/html/rfc2616
 class HttpResponseParser {
@@ -55,7 +55,7 @@ class HttpResponseParser {
       lastByteRead = temp.position();
       result = parseSegment(temp.get());
     }
-    if(result == ParseState.good) {
+    if (result == ParseState.good) {
       return true;
     }
     return false;
@@ -137,8 +137,8 @@ class HttpResponseParser {
           return ParseState.bad;
         }
       case http_version_major_start:
-        if (is_digit((char)input)) {
-          response.http_version_major = (char)input - '0';
+        if (is_digit((char) input)) {
+          response.http_version_major = (char) input - '0';
           state_ = state.http_version_major;
           return ParseState.indeterminate;
         } else {
@@ -148,15 +148,15 @@ class HttpResponseParser {
         if (input == '.') {
           state_ = state.http_version_minor_start;
           return ParseState.indeterminate;
-        } else if (is_digit((char)input)) {
-          response.http_version_major = response.http_version_major * 10 + (char)input - '0';
+        } else if (is_digit((char) input)) {
+          response.http_version_major = response.http_version_major * 10 + (char) input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
         }
       case http_version_minor_start:
-        if (is_digit((char)input)) {
-          response.http_version_minor = (char)input - '0';
+        if (is_digit((char) input)) {
+          response.http_version_minor = (char) input - '0';
           state_ = state.http_version_minor;
           return ParseState.indeterminate;
         } else {
@@ -166,8 +166,8 @@ class HttpResponseParser {
         if (input == ' ') {
           state_ = state.status_code;
           return ParseState.indeterminate;
-        } else if (is_digit((char)input)) {
-          response.http_version_minor = response.http_version_minor * 10 + (char)input - '0';
+        } else if (is_digit((char) input)) {
+          response.http_version_minor = response.http_version_minor * 10 + (char) input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -177,8 +177,8 @@ class HttpResponseParser {
           response.setStatus(Http.Status.fromCode(http_status));
           state_ = state.reason_phrase;
           return ParseState.indeterminate;
-        } else if (is_digit((char)input)) {
-          http_status = http_status * 10 + (char)input - '0';
+        } else if (is_digit((char) input)) {
+          http_status = http_status * 10 + (char) input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -271,5 +271,4 @@ class HttpResponseParser {
         return ParseState.bad;
     }
   }
-
 }

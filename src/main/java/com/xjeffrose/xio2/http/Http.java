@@ -74,7 +74,7 @@ public class Http {
       return Integer.toString(code) + " " + responseString;
     }
 
-    static public Status fromCode(int code) {
+    public static Status fromCode(int code) {
       for (Status status : Status.values()) {
         if (status.code == code) {
           return status;

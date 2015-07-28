@@ -17,7 +17,7 @@ public class Server {
   private Acceptor acceptor;
   private EventLoopPool pool;
 
-  public AtomicBoolean ssl = new AtomicBoolean(false);
+  private AtomicBoolean ssl = new AtomicBoolean(false);
 
   public Server() { }
 
@@ -37,7 +37,6 @@ public class Server {
     channel = ServerSocketChannel.open();
     channel.configureBlocking(false);
     channel.bind(addr);
-//    channel.socket().setReuseAddress(true);
     schedule(channel);
   }
 

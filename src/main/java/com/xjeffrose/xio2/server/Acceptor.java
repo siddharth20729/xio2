@@ -16,7 +16,6 @@ class Acceptor extends Thread {
   private static final Logger log = Log.getLogger(Acceptor.class.getName());
 
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
-  private final AtomicBoolean isReady = new AtomicBoolean(true);
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
   private Map<Route, Service> routes;
@@ -33,10 +32,6 @@ class Acceptor extends Thread {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public boolean ready() {
-    return isReady.get();
   }
 
   public boolean running() {
@@ -67,7 +62,6 @@ class Acceptor extends Thread {
           if (key.isValid() && key.isAcceptable()) {
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
-            //log.info("Accepting Connection from: " + channel);
             EventLoop next = eventLoopPool.next();
             next.addContext(new ChannelContext(channel, routes));
           } else if (!key.isValid()) {

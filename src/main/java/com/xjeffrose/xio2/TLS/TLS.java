@@ -1,11 +1,16 @@
 package com.xjeffrose.xio2.TLS;
 
+import com.sun.net.ssl.KeyManagerFactorySpi;
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.server.ChannelContext;
+import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.logging.Logger;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -13,9 +18,8 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import sun.security.ssl.SSLEngineImpl;
+import javax.net.ssl.TrustManagerFactory;
+
 
 public class TLS {
   private static final Logger log = Log.getLogger(TLS.class.getName());
@@ -43,12 +47,28 @@ public class TLS {
 
   private void genEngine() {
     try {
+      // TODO: Get keystore path
       KeyStore ks = KeyStoreGenerator.Build();
+//      KeyStore ks = KeyManagerFactory.getInstance("PKCS12");
+//      ks.load(new FileInputStream("path/to/keystore"), passphrase);
+
       KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
       kmf.init(ks, passphrase);
 
+      // TODO: Allow for truststore and get truststore path
+//      CertificateFactory cf = CertificateFactory.getInstance("X.509");
+//      X509Certificate x509Certificate = (X509Certificate) cf.generateCertificate(new FileInputStream("/path/to/ca"));
+//      KeyStore ts = KeyStore.getInstance("PKCS12");
+//      ts.load(null);
+//      ts.setCertificateEntry("alias", x509Certificate);
+
+      // TrustManagers decide whether to allow connections
+//      TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+//      tmf.init(ts);
+
       sslCtx = SSLContext.getInstance("TLSv1.2");
       sslCtx.init(kmf.getKeyManagers(), null, new SecureRandom());
+//      sslCtx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 
       SSLParameters params = new SSLParameters();
       params.setProtocols(new String[]{"TLSv1.2"});

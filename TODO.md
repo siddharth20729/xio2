@@ -14,7 +14,6 @@ TODO
  - Add http2
  
 ### Client TLS
- - Get it working
  - Make configurable truststore
  - Create Server cert validation
 
