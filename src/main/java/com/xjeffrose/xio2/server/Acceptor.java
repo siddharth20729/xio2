@@ -18,11 +18,11 @@ class Acceptor extends Thread {
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
-  private Map<Route, Service> routes;
+  private Map<Route, HttpHandler> routes;
 
   Acceptor(ServerSocketChannel serverChannel,
            EventLoopPool eventLoopPool,
-           Map<Route, Service> routes) {
+           Map<Route, HttpHandler> routes) {
     this.eventLoopPool = eventLoopPool;
     this.routes = routes;
 

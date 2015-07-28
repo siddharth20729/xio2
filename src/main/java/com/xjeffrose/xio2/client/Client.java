@@ -8,16 +8,12 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class XioClient {
-  private static final Logger log = Log.getLogger(XioClient.class.getName());
+public class Client {
+  private static final Logger log = Log.getLogger(Client.class.getName());
 
   //private SocketChannel channel;
   private Selector selector;
@@ -29,11 +25,11 @@ public class XioClient {
 
   public boolean ssl = false;
 
-  public XioClient(String host, int port) {
+  public Client(String host, int port) {
     this(new NullLoadBalancer(new InetSocketAddress(host, port)));
   }
 
-  public XioClient(LoadBalancingStrategy lbs) {
+  public Client(LoadBalancingStrategy lbs) {
     this.lbs = lbs;
   }
 

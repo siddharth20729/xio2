@@ -1,17 +1,17 @@
 package com.xjeffrose.xio2.server;
 
-import com.xjeffrose.xio2.http.HttpRequest;
+import com.xjeffrose.xio2.http.HttpObject;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class Service {
-  public HttpRequest req;
+public abstract class HttpHandler implements Handler{
+  public HttpObject req;
   public ChannelContext ctx;
 
-  private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
+  private final ConcurrentLinkedDeque<HttpHandler> httpHandlerList = new ConcurrentLinkedDeque<HttpHandler>();
 
-  protected Service() { }
+  protected HttpHandler() { }
 
-  public void handle(ChannelContext ctx, HttpRequest req) {
+  public void handle(ChannelContext ctx, HttpObject req) {
     this.ctx = ctx;
     this.req = req;
 
@@ -48,13 +48,13 @@ public class Service {
 
   public void handleDelete() { }
 
-  public void andThen(Service service) {
-    serviceList.addLast(service);
+  public void andThen(HttpHandler httpHandler) {
+    httpHandlerList.addLast(httpHandler);
   }
 
   private void serviceStream() {
-    while (serviceList.size() > 0) {
-      serviceList.removeLast().handle(ctx, req);
+    while (httpHandlerList.size() > 0) {
+      httpHandlerList.removeLast().handle(ctx, req);
     }
   }
 }

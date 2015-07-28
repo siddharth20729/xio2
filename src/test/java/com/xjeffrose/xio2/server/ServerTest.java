@@ -96,7 +96,7 @@ public class ServerTest {
         .url("http://localhost:9001/")
         .build();
 
-    // Simulate 1500 req's / second
+    // Simulate 1500 obj's / second
     final int reqs = 1500;
 
     for (int i = 0; i < reqs; i++) {
@@ -132,7 +132,7 @@ public class ServerTest {
         .url("http://localhost:9004/test")
         .build();
 
-    // Simulate 1500 req's / second
+    // Simulate 1500 obj's / second
     final int reqs = 1500;
 
     for (int i = 0; i < reqs; i++) {
@@ -203,4 +203,18 @@ public class ServerTest {
     Response response = unsafeClient.newCall(request).execute();
     assertTrue(!response.isSuccessful());
   }
+
+
+//  @Test
+//  public void testChrisServiceAPI() throws Exception {
+//
+//    Server s = new Server();
+//    RouteMap routes;
+//    routes.add("/url", new ProxyingService());
+//
+//    s.serve(9999, routes);
+//
+//    Handler handler = new ProxyingHandler(routes);
+//    s.serve(9999, handler);
+//  }
 }

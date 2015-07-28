@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class XioClientTest {
+public class ClientTest {
   Server s = new Server();
 
   @Before
@@ -29,7 +29,7 @@ public class XioClientTest {
         .url("/")
         .build();
 
-    XioClient c = new XioClient("localhost", 9018);
+    Client c = new Client("localhost", 9018);
 
     HttpObject resp = c.get(req);
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
@@ -41,7 +41,7 @@ public class XioClientTest {
 
   @Test
   public void testSSLGet() throws Exception {
-    XioClient c = new XioClient("localhost", 9017);
+    Client c = new Client("localhost", 9017);
 
     s.ssl(true);
     c.ssl(true);
@@ -74,7 +74,7 @@ public class XioClientTest {
         .addServer("localhost", 9033)
         .build();
 
-    XioClient c = new XioClient(lbs);
+    Client c = new Client(lbs);
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
@@ -104,7 +104,7 @@ public class XioClientTest {
         .addServer("localhost", 9023)
         .build();
 
-    XioClient c = new XioClient(lbs);
+    Client c = new Client(lbs);
 
     c.ssl(true);
 

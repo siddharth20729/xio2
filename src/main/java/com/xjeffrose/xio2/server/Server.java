@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 public class Server {
   private static final Logger log = Log.getLogger(Server.class.getName());
 
-  private final Map<Route, Service> routes = new ConcurrentHashMap<Route, Service>();
+  private final Map<Route, HttpHandler> routes = new ConcurrentHashMap<Route, HttpHandler>();
   private ServerSocketChannel channel;
   private Acceptor acceptor;
   private EventLoopPool pool;
@@ -48,8 +48,8 @@ public class Server {
     }
   }
 
-  public void addRoute(String route, Service service) {
-    routes.putIfAbsent(Route.build(route), service);
+  public void addRoute(String route, HttpHandler httpHandler) {
+    routes.putIfAbsent(Route.build(route), httpHandler);
   }
 
   public void close() {

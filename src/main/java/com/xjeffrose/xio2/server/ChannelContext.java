@@ -28,13 +28,13 @@ public class ChannelContext {
 
   private int nread = 1;
   private boolean parserOk;
-  private Map<Route, Service> routes;
+  private Map<Route, HttpHandler> routes;
   private State state = State.got_request;
   private SSLEngineResult sslEngineResult;
   private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
 
 
-  ChannelContext(SocketChannel channel, Map<Route, Service> routes) {
+  ChannelContext(SocketChannel channel, Map<Route, HttpHandler> routes) {
     this.channel = channel;
     this.routes = routes;
   }
@@ -83,7 +83,7 @@ public class ChannelContext {
   private void handleReq() {
     final String uri = req.getUri().toString();
     if (state == State.finished_parse) {
-      for (Map.Entry<Route, Service> entry : routes.entrySet()) {
+      for (Map.Entry<Route, HttpHandler> entry : routes.entrySet()) {
         if (entry.getKey().matches(uri)) {
           state = State.start_response;
           entry.getValue().handle(this, req);

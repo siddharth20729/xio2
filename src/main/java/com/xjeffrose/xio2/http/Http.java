@@ -60,7 +60,7 @@ public class Http {
     GONE(410, "Gone"),
     PRECONDITION_FAILED(412, "Precondition Failed"),
     INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
-    SERVICE_UNAVAILABLE(503, "Service Unavailable");
+    SERVICE_UNAVAILABLE(503, "HttpHandler Unavailable");
 
     private int code;
     private String responseString;
