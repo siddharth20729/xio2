@@ -1,36 +1,25 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta charset="UTF-8">
     <title>Xio2 by xjdr</title>
-
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/github-light.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">Xio2</h1>
-        <p class="header">High performance I/O for the JVM</p>
+    <section class="page-header">
+      <h1 class="project-name">Xio2</h1>
+      <h2 class="project-tagline">High performance I/O for the JVM</h2>
+      <a href="https://github.com/xjdr/xio2" class="btn">View on GitHub</a>
+      <a href="https://github.com/xjdr/xio2/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/xjdr/xio2/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-        <ul>
-          <li class="download"><a class="buttons" href="https://github.com/xjdr/xio2/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/xjdr/xio2/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/xjdr/xio2">View On GitHub</a></li>
-        </ul>
-
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/xjdr">xjdr</a></p>
-
-
-      </header>
-      <section>
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="xio2" class="anchor" href="#xio2" aria-hidden="true"><span class="octicon octicon-link"></span></a>xio2</h1>
 
 <p>High performance I/O for the JVM</p>
@@ -76,7 +65,7 @@
 <ul>
 <li>Composes socket reading with http parsing to build an http request object.</li>
 <li>Maintains a simple state machine that represents the status of the request/response cycle.</li>
-<li>Finds a service in the routes map and dispatches it to handle the request, otherwise issues a 404</li>
+<li>Finds a httpHandler in the routes map and dispatches it to handle the request, otherwise issues a 404</li>
 <li>Provides an abstraction to write http responses to the wire.</li>
 </ul>
 
@@ -110,9 +99,107 @@
 <li>Base class for defining how to respond to a request.</li>
 <li>Allows multiple Services to be chained together.</li>
 </ul>
-      </section>
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		
+
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h3>
+
+<p>Http Server</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">Server</span> s <span class="pl-k">=</span> <span class="pl-smi">Http</span><span class="pl-k">.</span>newServer();
+
+<span class="pl-smi">HttpHandler</span> awesomeHandler <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">HttpHandler</span>();
+<span class="pl-smi">Service</span> awesomeServ <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">RateLimitServ</span>()<span class="pl-k">.</span>andThen(<span class="pl-k">new</span> <span class="pl-smi">BusinessLogicServ</span>());
+awesomeHandler<span class="pl-k">.</span>addRoute(<span class="pl-s"><span class="pl-pds">"</span>/sweet<span class="pl-pds">"</span></span>, awesomeServ);
+s<span class="pl-k">.</span>ssl(<span class="pl-c1">true</span>);
+
+s<span class="pl-k">.</span>serve(<span class="pl-c1">8443</span>, awesomeHandler);
+
+<span class="pl-c">// and when you are all done</span>
+
+s<span class="pl-k">.</span>close();</pre></div>
+
+<p>Http Client</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">XioClient</span> c <span class="pl-k">=</span> <span class="pl-smi">Http</span><span class="pl-k">.</span>newClient();
+c<span class="pl-k">.</span>ssl(<span class="pl-c1">true</span>);
+c<span class="pl-k">.</span>connect(<span class="pl-s"><span class="pl-pds">"</span>localhost:8443<span class="pl-pds">"</span></span>);
+
+<span class="pl-smi">HttpRequest</span> req <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">HttpRequest</span>.<span class="pl-smi">Builder</span>()
+    .uri(<span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>)
+    .build
+
+<span class="pl-smi">HttpResponse</span> resp <span class="pl-k">=</span> c<span class="pl-k">.</span>get(req);
+<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(resp<span class="pl-k">.</span>getStatus());</pre></div>
+
+<h2>
+<a id="for-dev-on-mac" class="anchor" href="#for-dev-on-mac" aria-hidden="true"><span class="octicon octicon-link"></span></a>For dev on Mac</h2>
+
+<h3>
+<a id="increase-ulimit-for-benchmarking-and-load-testing" class="anchor" href="#increase-ulimit-for-benchmarking-and-load-testing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Increase ulimit for benchmarking and load testing</h3>
+
+<p>modify <code>/Library/LaunchDaemons/limit.maxfiles.plist</code></p>
+
+<div class="highlight highlight-xml"><pre>&lt;?<span class="pl-ent">xml</span><span class="pl-e"> version</span>=<span class="pl-s"><span class="pl-pds">"</span>1.0<span class="pl-pds">"</span></span><span class="pl-e"> encoding</span>=<span class="pl-s"><span class="pl-pds">"</span>UTF-8<span class="pl-pds">"</span></span>?&gt;
+&lt;!<span class="pl-k">DOCTYPE</span> <span class="pl-v">plist</span> PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+  &lt;<span class="pl-ent">plist</span> <span class="pl-e">version</span>=<span class="pl-s"><span class="pl-pds">"</span>1.0<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">dict</span>&gt;
+      &lt;<span class="pl-ent">key</span>&gt;Label&lt;/<span class="pl-ent">key</span>&gt;
+        &lt;<span class="pl-ent">string</span>&gt;limit.maxfiles&lt;/<span class="pl-ent">string</span>&gt;
+      &lt;<span class="pl-ent">key</span>&gt;ProgramArguments&lt;/<span class="pl-ent">key</span>&gt;
+        &lt;<span class="pl-ent">array</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;launchctl&lt;/<span class="pl-ent">string</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;limit&lt;/<span class="pl-ent">string</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;maxfiles&lt;/<span class="pl-ent">string</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;65536&lt;/<span class="pl-ent">string</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;65536&lt;/<span class="pl-ent">string</span>&gt;
+        &lt;/<span class="pl-ent">array</span>&gt;
+      &lt;<span class="pl-ent">key</span>&gt;RunAtLoad&lt;/<span class="pl-ent">key</span>&gt;
+        &lt;<span class="pl-ent">true</span>/&gt;
+      &lt;<span class="pl-ent">key</span>&gt;ServiceIPC&lt;/<span class="pl-ent">key</span>&gt;
+        &lt;<span class="pl-ent">false</span>/&gt;
+    &lt;/<span class="pl-ent">dict</span>&gt;
+  &lt;/<span class="pl-ent">plist</span>&gt;</pre></div>
+
+<p>modify <code>/Library/LaunchDaemons/limit.maxproc.plist</code></p>
+
+<div class="highlight highlight-xml"><pre>&lt;?<span class="pl-ent">xml</span><span class="pl-e"> version</span>=<span class="pl-s"><span class="pl-pds">"</span>1.0<span class="pl-pds">"</span></span><span class="pl-e"> encoding</span>=<span class="pl-s"><span class="pl-pds">"</span>UTF-8<span class="pl-pds">"</span></span>?&gt;
+&lt;!<span class="pl-k">DOCTYPE</span> <span class="pl-v">plist</span> PUBLIC "-//Apple/DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+  &lt;<span class="pl-ent">plist</span> <span class="pl-e">version</span>=<span class="pl-s"><span class="pl-pds">"</span>1.0<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">dict</span>&gt;
+      &lt;<span class="pl-ent">key</span>&gt;Label&lt;/<span class="pl-ent">key</span>&gt;
+        &lt;<span class="pl-ent">string</span>&gt;limit.maxproc&lt;/<span class="pl-ent">string</span>&gt;
+      &lt;<span class="pl-ent">key</span>&gt;ProgramArguments&lt;/<span class="pl-ent">key</span>&gt;
+        &lt;<span class="pl-ent">array</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;launchctl&lt;/<span class="pl-ent">string</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;limit&lt;/<span class="pl-ent">string</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;maxproc&lt;/<span class="pl-ent">string</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;2048&lt;/<span class="pl-ent">string</span>&gt;
+          &lt;<span class="pl-ent">string</span>&gt;2048&lt;/<span class="pl-ent">string</span>&gt;
+        &lt;/<span class="pl-ent">array</span>&gt;
+      &lt;<span class="pl-ent">key</span>&gt;RunAtLoad&lt;/<span class="pl-ent">key</span>&gt;
+        &lt;<span class="pl-ent">true</span> /&gt;
+      &lt;<span class="pl-ent">key</span>&gt;ServiceIPC&lt;/<span class="pl-ent">key</span>&gt;
+        &lt;<span class="pl-ent">false</span> /&gt;
+    &lt;/<span class="pl-ent">dict</span>&gt;
+  &lt;/<span class="pl-ent">plist</span>&gt;</pre></div>
+
+<p>Both plist files must be owned by <code>root:wheel</code> and have permissions <code>-rw-r--r--</code>. This permissions should be in place by default, but you can ensure that they are in place by running <code>sudo chmod 644 &lt;filename&gt;</code>. </p>
+
+<p>Now reboot your computer and run</p>
+
+<div class="highlight highlight-shell"><pre>$ <span class="pl-c1">ulimit</span> -a</pre></div>
+
+<p>to verify that the limits have been changed</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/xjdr/xio2">Xio2</a> is maintained by <a href="https://github.com/xjdr">xjdr</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
   </body>
 </html>
+
