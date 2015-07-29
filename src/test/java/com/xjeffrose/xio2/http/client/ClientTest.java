@@ -30,7 +30,8 @@ public class ClientTest {
         .url("/")
         .build();
 
-    Client c = Http.newClient("localhost", 9018);
+    Client c = Http.newClient("localhost:9018");
+//    c.connect();
 
     HttpObject resp = c.get(req);
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
@@ -42,7 +43,8 @@ public class ClientTest {
 
   @Test
   public void testSSLGet() throws Exception {
-    Client c = Http.newClient("localhost", 9017);
+    Client c = Http.newClient("localhost:9017");
+//    c.connect();
 
     s.ssl(true);
     c.ssl(true);
@@ -69,13 +71,8 @@ public class ClientTest {
     s.serve(9032);
     s.serve(9033);
 
-    LoadBalancingStrategy lbs = RoundRobinLoadBalancer.Builder()
-        .addServer("localhost", 9031)
-        .addServer("localhost", 9032)
-        .addServer("localhost", 9033)
-        .build();
-
-    Client c = new Client(lbs);
+    Client c = new Client("localhost:9031, localhost:9032, localhost:9033");
+//    c.connect();
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
@@ -99,13 +96,8 @@ public class ClientTest {
     s.serve(9022);
     s.serve(9023);
 
-    LoadBalancingStrategy lbs = RoundRobinLoadBalancer.Builder()
-        .addServer("localhost", 9021)
-        .addServer("localhost", 9022)
-        .addServer("localhost", 9023)
-        .build();
-
-    Client c = Http.newClient(lbs);
+    Client c = new Client("localhost:9021, localhost:9022, localhost:9023");
+//    c.connect();
 
     c.ssl(true);
 

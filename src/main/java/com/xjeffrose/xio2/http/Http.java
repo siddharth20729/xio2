@@ -16,13 +16,13 @@ public class Http {
     return s;
   }
 
-  public static Client newClient(String host, int port) {
-    Client c = new Client(host, port);
-    return c;
-  }
+//  public static Client newClient(String host, int port) {
+//    Client c = new Client(host, port);
+//    return c;
+//  }
 
-  public static Client newClient(LoadBalancingStrategy lbs) {
-    Client c = new Client(lbs);
+  public static Client newClient(String hostString) {
+    Client c = new Client(hostString);
     return c;
   }
 

@@ -204,18 +204,4 @@ public class ServerTest {
     Response response = unsafeClient.newCall(request).execute();
     assertTrue(!response.isSuccessful());
   }
-
-
-//  @Test
-//  public void testChrisServiceAPI() throws Exception {
-//
-//    Server s = new Server();
-//    RouteMap routes;
-//    routes.add("/url", new ProxyingService());
-//
-//    s.serve(9999, routes);
-//
-//    Handler handler = new ProxyingHandler(routes);
-//    s.serve(9999, handler);
-//  }
 }
