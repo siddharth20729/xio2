@@ -4,6 +4,7 @@ TODO
  
 ## Server 
  - Add http2
+ - Add Thrift
  - Add epoll Socketchannel and Selector 
   - https://github.com/netty/netty/tree/master/transport-native-epoll/src/main/java/io/netty/channel/epoll
   - https://github.com/netty/netty/tree/master/transport-native-epoll/src/main/c
@@ -12,11 +13,13 @@ TODO
  - Accept real certs
  - Configure TLS options & Certs
  - Show meaningful error messages when TSL fails
- - Setup and configure truststore & client cert validation
+ - Setup and configure truststore
+ - Setup and configure client cert validation
  
 ## Client 
  - Add http2
- 
+ - Add Thrift
+ sudo 
 ### Client TLS
  - Make configurable truststore
  - Create Server cert validation
