@@ -12,18 +12,18 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio2</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio2</name>
     <description>A modern I/O API for Java</description>
     <url>https://github.com/xjdr/xio.git</url>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Constants -->
         <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependencies -->
-        <animal.sniffer.version>1.10</animal.sniffer.version>
         <jmh.version>1.4.1</jmh.version>
 
         <!-- Test Dependencies -->

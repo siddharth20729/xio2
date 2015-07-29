@@ -1,4 +1,4 @@
-package com.xjeffrose.xio2.http.client;
+package com.xjeffrose.xio2.http.client.TLS;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.http.server.TLS.KeyStoreGenerator;

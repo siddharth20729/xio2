@@ -1,4 +1,4 @@
-package com.xjeffrose.xio2.http.client;
+package com.xjeffrose.xio2.http.client.LoadBalancerStrategies;
 
 import java.net.InetSocketAddress;
 

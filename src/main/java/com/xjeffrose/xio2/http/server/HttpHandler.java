@@ -3,7 +3,7 @@ package com.xjeffrose.xio2.http.server;
 import com.xjeffrose.xio2.http.HttpObject;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public abstract class HttpHandler implements Handler{
+public abstract class HttpHandler implements Handler {
   public HttpObject req;
   public ChannelContext ctx;
 

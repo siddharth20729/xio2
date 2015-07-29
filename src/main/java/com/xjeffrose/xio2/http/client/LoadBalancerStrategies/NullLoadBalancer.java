@@ -1,5 +1,6 @@
-package com.xjeffrose.xio2.http.client;
+package com.xjeffrose.xio2.http.client.LoadBalancerStrategies;
 
+import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.LoadBalancingStrategy;
 import java.net.InetSocketAddress;
 
 public class NullLoadBalancer implements LoadBalancingStrategy {

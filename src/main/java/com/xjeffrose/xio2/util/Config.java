@@ -13,7 +13,7 @@ public class Config {
 
   private Pattern sectionMatcher  = Pattern.compile( "\\s*\\[([^]]*)\\]\\s*" );
   private Pattern kvMatcher = Pattern.compile( "\\s*([^=]*)=(.*)" );
-  private Map<String, Map<String, String>> entries  = new HashMap<>();
+  public Map<String, Map<String, String>> entries  = new HashMap<>();
 
 //  public Config() throws IOException {
 //    load("default/path");
@@ -54,6 +54,14 @@ public class Config {
       return null;
     }
     return kv.get(key);
+  }
+
+  public String get(String section, int key) {
+    Map< String, String > kv = entries.get( section );
+    if( kv == null ) {
+      return null;
+    }
+    return kv.get(Integer.toString(key));
   }
 }
 
