@@ -12,18 +12,18 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio2</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio2</name>
     <description>A modern I/O API for Java</description>
     <url>https://github.com/xjdr/xio.git</url>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Constants -->
         <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Dependencies -->
-        <animal.sniffer.version>1.10</animal.sniffer.version>
         <jmh.version>1.4.1</jmh.version>
 
         <!-- Test Dependencies -->
@@ -31,15 +31,15 @@
     </properties>
 
     <scm>
-        <url>https://github.com/xjdr/xio/</url>
-        <connection>scm:git:https://github.com/xjdr/xio.git</connection>
-        <developerConnection>scm:git:git@github.com:xjdr/xio.git</developerConnection>
+        <url>https://github.com/xjdr/xio2/</url>
+        <connection>scm:git:https://github.com/xjdr/xio2.git</connection>
+        <developerConnection>scm:git:git@github.com:xjdr/xio2.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/xjdr/xio/issues</url>
+        <url>https://github.com/xjdr/xio2/issues</url>
     </issueManagement>
 
     <licenses>

@@ -1,5 +1,8 @@
 package com.xjeffrose.xio2.http;
 
+import com.xjeffrose.xio2.http.client.Client;
+;
+import com.xjeffrose.xio2.http.server.Server;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -7,6 +10,21 @@ import java.time.format.DateTimeFormatter;
 public class Http {
 
   private Http() { }
+
+  public static Server newServer() {
+    Server s = new Server();
+    return s;
+  }
+
+//  public static Client newClient(String host, int port) {
+//    Client c = new Client(host, port);
+//    return c;
+//  }
+
+  public static Client newClient(String hostString) {
+    Client c = new Client(hostString);
+    return c;
+  }
 
   public enum Method {
     GET("GET"),
