@@ -1,60 +1,35 @@
 package com.xjeffrose.xio2.http.server;
 
+import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpObject;
+import com.xjeffrose.xio2.http.HttpResponse;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public abstract class HttpHandler implements Handler {
+public class HttpHandler implements Handler {
   public HttpObject req;
   public ChannelContext ctx;
-
-  private final ConcurrentLinkedDeque<HttpHandler> httpHandlerList = new ConcurrentLinkedDeque<HttpHandler>();
+  private final Map<Route, Service> routes = new ConcurrentHashMap<Route, Service>();
 
   protected HttpHandler() { }
 
-  public void handle(ChannelContext ctx, HttpObject req) {
+  public void handle(ChannelContext ctx) {
     this.ctx = ctx;
-    this.req = req;
+    this.req = ctx.req;
 
-    switch (req.method_) {
-      case GET:
-        handleGet();
-        serviceStream();
-        return;
-      case POST:
-        handlePost();
-        serviceStream();
-        return;
-      case PUT:
-        handlePut();
-        serviceStream();
-        return;
-      case DELETE:
-        handleDelete();
-        serviceStream();
-        return;
-      default:
-        handleNotFound();
-        return;
-    }
+    final String uri = req.getUri().toString();
+      for (Map.Entry<Route, Service> entry : routes.entrySet()) {
+        if (entry.getKey().matches(uri)) {
+          ctx.state = ChannelContext.State.start_response;
+          entry.getValue().handle(ctx);
+        }
+      }
+      ctx.state = ChannelContext.State.start_response;
+      ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
   }
 
-  public void handleNotFound() { }
-
-  public void handleGet() { }
-
-  public void handlePost() { }
-
-  public void handlePut() { }
-
-  public void handleDelete() { }
-
-  public void andThen(HttpHandler httpHandler) {
-    httpHandlerList.addLast(httpHandler);
-  }
-
-  private void serviceStream() {
-    while (httpHandlerList.size() > 0) {
-      httpHandlerList.removeLast().handle(ctx, req);
-    }
+  void addRoute(String route, Service service) {
+    routes.putIfAbsent(Route.build(route), service);
   }
 }

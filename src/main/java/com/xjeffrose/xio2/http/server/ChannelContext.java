@@ -25,21 +25,21 @@ public class ChannelContext {
   public SSLEngine engine;
   public boolean ssl = false;
   public SocketChannel channel;
+  private Handler handler;
 
   private int nread = 1;
   private boolean parserOk;
-  private Map<Route, HttpHandler> routes;
-  private State state = State.got_request;
+  protected State state = State.got_request;
   private SSLEngineResult sslEngineResult;
   private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
 
 
-  ChannelContext(SocketChannel channel, Map<Route, HttpHandler> routes) {
+  ChannelContext(SocketChannel channel, Handler handler) {
     this.channel = channel;
-    this.routes = routes;
+    this.handler = handler;
   }
 
-  private enum State {
+  protected enum State {
     got_request,
     start_parse,
     finished_parse,
@@ -73,24 +73,16 @@ public class ChannelContext {
     }
     state = State.finished_parse;
     if (parserOk) {
-      handleReq();
+      handle();
     } else {
       state = State.start_response;
       write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.BAD_REQUEST));
     }
   }
 
-  private void handleReq() {
-    final String uri = req.getUri().toString();
+  private void handle() {
     if (state == State.finished_parse) {
-      for (Map.Entry<Route, HttpHandler> entry : routes.entrySet()) {
-        if (entry.getKey().matches(uri)) {
-          state = State.start_response;
-          entry.getValue().handle(this, req);
-        }
-      }
-      state = State.start_response;
-      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
+      handler.handle(this);
     }
   }
 
@@ -100,6 +92,7 @@ public class ChannelContext {
         for (int i = 0; i < bbList.size(); i++) {
           channel.write(bbList.removeFirst());
         }
+        //TODO: Be smarter about when to close
         channel.close();
       }
     } catch (Exception e) {

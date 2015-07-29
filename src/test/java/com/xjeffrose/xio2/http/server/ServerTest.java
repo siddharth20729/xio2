@@ -23,6 +23,8 @@ public class ServerTest {
   Server s;
   OkHttpClient client = new OkHttpClient();
 
+  HttpHandler testHandler = new HttpHandler();
+
   private OkHttpClient getUnsafeOkHttpClient() {
     try {
       // Create a trust manager that does not validate certificate chains
@@ -68,6 +70,7 @@ public class ServerTest {
   @Before
   public void setUp() throws Exception {
     s = Http.newServer();
+    testHandler.addRoute("/test", new TestService());
   }
 
   @After
@@ -77,9 +80,9 @@ public class ServerTest {
 
   @Test(expected = IOException.class)
   public void testServe() throws Exception {
-    s.serve(9000);
-    // For AB Testing
-//    Thread.sleep(100000);
+    s.bind(9000);
+    s.serve();
+
     Request request = new Request.Builder()
         .url("http://localhost:9000/")
         .build();
@@ -92,7 +95,9 @@ public class ServerTest {
 
   @Test
   public void testServeMany () throws Exception {
-    s.serve(9001);
+    s.bind(9001);
+    s.serve();
+
     Request request = new Request.Builder()
         .url("http://localhost:9001/")
         .build();
@@ -108,10 +113,7 @@ public class ServerTest {
 
   @Test
   public void testAddRoute() throws Exception {
-    s.addRoute("/test", new TestService());
-    s.serve(9003);
-    // For AB Testing
-//    Thread.sleep(100000);
+    s.serve(9003, testHandler);
 
     Request request = new Request.Builder()
         .url("http://localhost:9003/test")
@@ -126,8 +128,8 @@ public class ServerTest {
 
   @Test
   public void testAddRouteMany() throws Exception {
-    s.serve(9004);
-    s.addRoute("/test", new TestService());
+    s.serve(9004, testHandler);
+
 
     Request request = new Request.Builder()
         .url("http://localhost:9004/test")
@@ -150,10 +152,8 @@ public class ServerTest {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
     s.ssl(true);
-    s.addRoute("/test", new TestService());
-    s.serve(9005);
-    // For AB Testing
-//    Thread.sleep(100000);
+    s.serve(9005, testHandler);
+
     Request request = new Request.Builder()
         .url("https://localhost:9005/test")
         .build();
@@ -169,8 +169,8 @@ public class ServerTest {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
     s.ssl(true);
-    s.serve(9006);
-    s.addRoute("/test", new TestService());
+    s.serve(9006, testHandler);
+
 
     Request request = new Request.Builder()
         .url("https://localhost:9006/test")
@@ -194,8 +194,7 @@ public class ServerTest {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
     s.ssl(false);
-    s.addRoute("/test", new TestService());
-    s.serve(9007);
+    s.serve(9007, testHandler);
 
     Request request = new Request.Builder()
         .url("https://localhost:9007/test")

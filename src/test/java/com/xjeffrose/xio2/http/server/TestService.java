@@ -5,7 +5,7 @@ import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpResponse;
 import java.util.logging.Logger;
 
-class TestService extends HttpHandler {
+class TestService extends Service {
   private static final Logger log = Log.getLogger(TestService.class.getName());
 
   public void handleNotFound() {

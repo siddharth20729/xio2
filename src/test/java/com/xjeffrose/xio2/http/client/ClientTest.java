@@ -24,14 +24,14 @@ public class ClientTest {
 
   @Test
   public void testGet() throws Exception {
-    s.serve(9018);
+    s.bind(9018);
+    s.serve();
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
         .build();
 
     Client c = Http.newClient("localhost:9018");
-//    c.connect();
 
     HttpObject resp = c.get(req);
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
@@ -44,12 +44,12 @@ public class ClientTest {
   @Test
   public void testSSLGet() throws Exception {
     Client c = Http.newClient("localhost:9017");
-//    c.connect();
 
     s.ssl(true);
     c.ssl(true);
 
-    s.serve(9017);
+    s.bind(9017);
+    s.serve();
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
@@ -67,12 +67,12 @@ public class ClientTest {
   public void testServerSet() throws Exception {
 
     s.ssl(false);
-    s.serve(9031);
-    s.serve(9032);
-    s.serve(9033);
+    s.bind(9031);
+    s.bind(9032);
+    s.bind(9033);
+    s.serve();
 
     Client c = new Client("localhost:9031, localhost:9032, localhost:9033");
-//    c.connect();
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
@@ -92,12 +92,12 @@ public class ClientTest {
   public void testServerSetSSL() throws Exception {
 
     s.ssl(true);
-    s.serve(9021);
-    s.serve(9022);
-    s.serve(9023);
+    s.bind(9021);
+    s.bind(9022);
+    s.bind(9023);
+    s.serve();
 
     Client c = new Client("localhost:9021, localhost:9022, localhost:9023");
-//    c.connect();
 
     c.ssl(true);
 

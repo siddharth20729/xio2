@@ -18,13 +18,13 @@ class Acceptor extends Thread {
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
-  private Map<Route, HttpHandler> routes;
+  private Handler handler;
 
   Acceptor(ServerSocketChannel serverChannel,
            EventLoopPool eventLoopPool,
-           Map<Route, HttpHandler> routes) {
+           Handler handler) {
     this.eventLoopPool = eventLoopPool;
-    this.routes = routes;
+    this.handler = handler;
 
     try {
       selector = Selector.open();
@@ -63,7 +63,7 @@ class Acceptor extends Thread {
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
             EventLoop next = eventLoopPool.next();
-            next.addContext(new ChannelContext(channel, routes));
+            next.addContext(new ChannelContext(channel, handler));
           } else if (!key.isValid()) {
             key.cancel();
           }
