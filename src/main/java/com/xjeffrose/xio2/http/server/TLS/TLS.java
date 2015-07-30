@@ -2,6 +2,7 @@ package com.xjeffrose.xio2.http.server.TLS;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.http.server.ChannelContext;
+import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
@@ -20,21 +21,42 @@ public class TLS {
 
   private SSLContext sslCtx;
   private SSLEngineResult sslResult;
-
   private ByteBuffer encryptedRequest;
   private ByteBuffer decryptedRequest;
   private ByteBuffer rawResponse;
   private ByteBuffer encryptedResponse;
-
   private char[] passphrase = "changeit".toCharArray();
   private SSLEngineResult.HandshakeStatus handshakeStatus;
   private SocketChannel channel;
+  private String path;
+  private String version = "TLSv1.2";
+  private boolean selfSignedCert = true;
 
-  public boolean client;
   public SSLEngine engine;
 
   public TLS(ChannelContext ctx) {
     this.channel = ctx.channel;
+
+    genEngine();
+    ctx.engine = engine;
+  }
+
+  public TLS(ChannelContext ctx, String version, boolean selfSignedCert) {
+    this.channel = ctx.channel;
+    this.version = version;
+    this.selfSignedCert = selfSignedCert;
+
+    genEngine();
+    ctx.engine = engine;
+  }
+
+  public TLS(ChannelContext ctx, String version, String path, String passphrase) {
+    this.channel = ctx.channel;
+    this.version = version;
+    this.path = path;
+    this.passphrase = passphrase.toCharArray();
+    this.selfSignedCert = false;
+
     genEngine();
     ctx.engine = engine;
   }
@@ -42,14 +64,18 @@ public class TLS {
   private void genEngine() {
     try {
       // TODO: Get keystore path
-      KeyStore ks = KeyStoreGenerator.Build();
-//      KeyStore ks = KeyManagerFactory.getInstance("PKCS12");
-//      ks.load(new FileInputStream("path/to/keystore"), passphrase);
+      KeyStore ks;
+      if (selfSignedCert) {
+        ks = KeyStoreGenerator.Build();
+      } else {
+        ks =  KeyStore.getInstance("PKCS12");
+        ks.load(new FileInputStream(path), passphrase);
+      }
 
       KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
       kmf.init(ks, passphrase);
 
-      // TODO: Allow for truststore and get truststore path
+      // TODO: Allow for truststore and call truststore path
 //      CertificateFactory cf = CertificateFactory.getInstance("X.509");
 //      X509Certificate x509Certificate =
 //        (X509Certificate) cf.generateCertificate(new FileInputStream("/path/to/ca"));
@@ -61,12 +87,12 @@ public class TLS {
 //      TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
 //      tmf.init(ts);
 
-      sslCtx = SSLContext.getInstance("TLSv1.2");
+      sslCtx = SSLContext.getInstance(version);
       sslCtx.init(kmf.getKeyManagers(), null, new SecureRandom());
 //      sslCtx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 
       SSLParameters params = new SSLParameters();
-      params.setProtocols(new String[]{"TLSv1.2"});
+      params.setProtocols(new String[]{version});
 
       engine = sslCtx.createSSLEngine();
       engine.setSSLParameters(params);

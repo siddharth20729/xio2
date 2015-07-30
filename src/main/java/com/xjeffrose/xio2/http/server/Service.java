@@ -4,13 +4,12 @@ import com.xjeffrose.xio2.http.HttpRequest;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public abstract class Service {
-  public HttpRequest req;
-
   private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
+
+  public HttpRequest req;
   public ChannelContext ctx;
 
-  public Service() {
-  }
+  public Service() { }
 
   public void handle(ChannelContext ctx) {
     this.ctx = ctx;
@@ -33,6 +32,22 @@ public abstract class Service {
         handleDelete();
         serviceStream();
         return;
+      case TRACE:
+        handleTrace();
+        serviceStream();
+        return;
+      case OPTION:
+        handleOption();
+        serviceStream();
+        return;
+      case CONNECT:
+        handleConnect();
+        serviceStream();
+        return;
+      case PATCH:
+        handlePatch();
+        serviceStream();
+        return;
       default:
         handleGet();
         serviceStream();
@@ -47,6 +62,14 @@ public abstract class Service {
   public void handlePut() { }
 
   public void handleDelete() { }
+
+  private void handleTrace() { }
+
+  private void handleOption() { }
+
+  private void handleConnect() { }
+
+  private void handlePatch() { }
 
   public void andThen(Service service) {
     serviceList.addLast(service);

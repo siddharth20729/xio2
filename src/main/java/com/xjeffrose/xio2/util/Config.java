@@ -14,32 +14,36 @@ public class Config {
   private Pattern kvMatcher = Pattern.compile("\\s*([^=]*)=(.*)");
   public Map<String, Map<String, String>> entries  = new HashMap<>();
 
-  public Config(String path) throws IOException {
+  public Config(String path) {
     load(path);
   }
 
-  public void load(String path) throws IOException {
+  public void load(String path) {
     BufferedReader br = new BufferedReader(
         new InputStreamReader(getClass().getClassLoader().getResourceAsStream(path)));
     String line;
     String section = null;
 
-    while ((line = br.readLine()) != null) {
-      Matcher m = sectionMatcher.matcher(line);
-      if (m.matches()) {
-        section = m.group(1).trim();
-      } else if (section != null) {
-        m = kvMatcher.matcher(line);
+    try {
+      while ((line = br.readLine()) != null) {
+        Matcher m = sectionMatcher.matcher(line);
         if (m.matches()) {
-          String key = m.group(1).trim();
-          String value = m.group(2).trim();
-          Map<String, String> kv = entries.get(section);
-          if (kv == null) {
-            entries.put(section, kv = new HashMap<>());
+          section = m.group(1).trim();
+        } else if (section != null) {
+          m = kvMatcher.matcher(line);
+          if (m.matches()) {
+            String key = m.group(1).trim();
+            String value = m.group(2).trim();
+            Map<String, String> kv = entries.get(section);
+            if (kv == null) {
+              entries.put(section, kv = new HashMap<>());
+            }
+            kv.put(key, value);
           }
-          kv.put(key, value);
         }
       }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

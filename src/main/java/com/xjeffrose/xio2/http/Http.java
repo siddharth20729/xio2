@@ -16,13 +16,23 @@ public class Http {
     return s;
   }
 
-//  public static Client newClient(String host, int port) {
-//    Client c = new Client(host, port);
-//    return c;
-//  }
+  public static Server newSslServer() {
+    Server s = new Server();
+    String sslVersion = "tlsv1.2";
+    boolean selfSignedCert = true;
+    s.ssl(true);
+    return s;
+  }
 
   public static Client newClient(String hostString) {
     Client c = new Client(hostString);
+    return c;
+  }
+
+  public static Client newSslClient(String hostString) {
+    Client c = new Client(hostString);
+    String sslVersion = "tlsv1.2";
+    c.ssl(true);
     return c;
   }
 
@@ -30,7 +40,11 @@ public class Http {
     GET("GET"),
     POST("POST"),
     PUT("PUT"),
-    DELETE("DELETE");
+    DELETE("DELETE"),
+    TRACE("TRACE"),
+    OPTION("OPTION"),
+    CONNECT("CONNECT"),
+    PATCH("PATCH");
 
     private String method;
 

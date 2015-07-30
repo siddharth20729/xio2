@@ -1,4 +1,5 @@
 settings.xml
+*.gpg
 
 # Compiled source #
 ###################

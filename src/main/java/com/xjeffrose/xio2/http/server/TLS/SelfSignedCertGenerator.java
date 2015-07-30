@@ -72,7 +72,7 @@ final class SelfSignedCertGenerator {
 //
 //    // Update the algorithm and sign again.
 //    info.set(CertificateAlgorithmId.NAME + '.'
-// + CertificateAlgorithmId.ALGORITHM, cert.get(X509CertImpl.SIG_ALG));
+// + CertificateAlgorithmId.ALGORITHM, cert.call(X509CertImpl.SIG_ALG));
 //    cert = new X509CertImpl(info);
 //    cert.sign(key, "SHA1withRSA");
 //    cert.verify(keypair.getPublic());

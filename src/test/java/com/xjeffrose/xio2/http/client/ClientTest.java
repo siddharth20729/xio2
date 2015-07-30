@@ -1,9 +1,10 @@
 package com.xjeffrose.xio2.http.client;
 
-import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.http.HttpObject;
-import com.xjeffrose.xio2.http.HttpRequest;
+import com.xjeffrose.xio2.http.*;
+import com.xjeffrose.xio2.http.server.HttpHandler;
+import com.xjeffrose.xio2.http.server.ProxyService;
 import com.xjeffrose.xio2.http.server.Server;
+import com.xjeffrose.xio2.http.server.Service;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +24,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testGet() throws Exception {
+  public void testCall() throws Exception {
     s.bind(9018);
     s.serve();
 
@@ -33,7 +34,7 @@ public class ClientTest {
 
     Client c = Http.newClient("localhost:9018");
 
-    HttpObject resp = c.get(req);
+    HttpObject resp = c.call(req);
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
     assertEquals(resp.getStatus(), "404 Not Found");
     assertEquals(resp.headers.size(), 4);
@@ -42,7 +43,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testSSLGet() throws Exception {
+  public void testSSLCall() throws Exception {
     Client c = Http.newClient("localhost:9017");
 
     s.ssl(true);
@@ -55,7 +56,7 @@ public class ClientTest {
         .url("/")
         .build();
 
-    HttpObject resp = c.get(req);
+    HttpObject resp = c.call(req);
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
     assertEquals(resp.getStatus(), "404 Not Found");
     assertEquals(resp.headers.size(), 4);
@@ -79,7 +80,7 @@ public class ClientTest {
         .build();
 
     for (int i = 0; i < 4; i++) {
-      HttpObject resp = c.get(req);
+      HttpObject resp = c.call(req);
       assertEquals(resp.getHttpVersion(), "HTTP/1.1");
       assertEquals(resp.getStatus(), "404 Not Found");
       assertEquals(resp.headers.size(), 4);
@@ -106,12 +107,80 @@ public class ClientTest {
         .build();
 
     for (int i = 0; i < 4; i++) {
-      HttpObject resp = c.get(req);
+      HttpObject resp = c.call(req);
       assertEquals(resp.getHttpVersion(), "HTTP/1.1");
       assertEquals(resp.getStatus(), "404 Not Found");
       assertEquals(resp.headers.size(), 4);
       assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
       assertEquals(resp.headers.get("Server"), "xio2");
     }
+  }
+
+  @Test
+  public void testProxy() throws Exception {
+    Server service_int = Http.newServer();
+    HttpHandler proxiedHandler = new HttpHandler();
+    proxiedHandler.addRoute("/", new Service() {
+      @Override
+      public void handleGet() {
+        ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK));
+      }
+    });
+
+    service_int.serve(9041, proxiedHandler);
+
+    Server client_int = Http.newServer();
+    HttpHandler testHandler = new HttpHandler();
+    testHandler.addRoute("/", new ProxyService("localhost:9041"));
+    client_int.serve(9040, testHandler);
+
+    HttpRequest req = new HttpRequest.Builder()
+        .url("/")
+        .build();
+
+    Client client = Http.newClient("localhost:9040");
+    HttpObject resp = client.call(req);
+
+    assertEquals(1, testHandler.requestsHandled());
+    assertEquals(1, proxiedHandler.requestsHandled());
+    assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+    assertEquals(resp.getStatus(), "200 OK");
+    assertEquals(resp.headers.size(), 4);
+    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(resp.headers.get("Server"), "xio2");
+  }
+
+  @Test
+  public void testProxySSL() throws Exception {
+    Server service_int = Http.newSslServer();
+    HttpHandler proxiedHandler = new HttpHandler();
+    proxiedHandler.addRoute("/", new Service() {
+      @Override
+      public void handleGet() {
+        ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK));
+      }
+    });
+
+    service_int.serve(9043, proxiedHandler);
+
+    Server client_int = Http.newSslServer();
+    HttpHandler testHandler = new HttpHandler();
+    testHandler.addRoute("/", new ProxyService("localhost:9043"));
+    client_int.serve(9042, testHandler);
+
+    HttpRequest req = new HttpRequest.Builder()
+        .url("/")
+        .build();
+
+    Client client = Http.newSslClient("localhost:9042");
+    HttpObject resp = client.call(req);
+
+    assertEquals(1, testHandler.requestsHandled());
+    assertEquals(1, proxiedHandler.requestsHandled());
+    assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+    assertEquals(resp.getStatus(), "200 OK");
+    assertEquals(resp.headers.size(), 4);
+    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(resp.headers.get("Server"), "xio2");
   }
 }

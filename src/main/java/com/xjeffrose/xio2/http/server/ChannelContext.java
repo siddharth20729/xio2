@@ -18,7 +18,7 @@ public class ChannelContext {
 
   private HttpHandler handler;
   private int nread = 1;
-  private boolean parserOk;
+  public boolean parserOk;
   private SSLEngineResult sslEngineResult;
   private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
   private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<ByteBuffer>();
@@ -101,6 +101,10 @@ public class ChannelContext {
   }
 
   public void write(HttpResponse resp) {
+    write(resp.toBB());
+  }
+
+  public void write(ByteBuffer bb) {
     ByteBuffer encryptedResponse = null;
     if (ssl) {
       encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
@@ -108,7 +112,7 @@ public class ChannelContext {
     if (state == State.start_response) {
       if (ssl && engine != null) {
         try {
-          sslEngineResult = engine.wrap(resp.toBB(), encryptedResponse);
+          sslEngineResult = engine.wrap(bb, encryptedResponse);
           sslEngineResult.getStatus();
         } catch (SSLException e) {
           e.printStackTrace();
@@ -116,7 +120,7 @@ public class ChannelContext {
         encryptedResponse.flip();
         bbList.addLast(encryptedResponse);
       } else {
-        bbList.addLast(resp.toBB());
+        bbList.addLast(bb);
       }
     }
     state = State.finished_response;

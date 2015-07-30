@@ -1,12 +1,12 @@
 package com.xjeffrose.xio2.http.client;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.HttpObject;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.LoadBalancingStrategy;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.NullLoadBalancer;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.RoundRobinLoadBalancer;
 import com.xjeffrose.xio2.http.client.TLS.TLS;
+import com.xjeffrose.xio2.http.server.ChannelContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
@@ -104,13 +104,21 @@ public class Client {
     }
   }
 
-  public HttpObject get(HttpRequest req) {
+  public HttpResponse call(HttpRequest req) {
     this.req = req;
 
     return execute(getChannel(lbs.nextAddress()));
   }
 
-  private HttpObject execute(SocketChannel channel) {
+  public void proxy(ChannelContext serverCtx) {
+
+    HttpRequest req = HttpRequest.copy(serverCtx.req, serverCtx.ssl);
+    HttpResponse response = call(req);
+
+    serverCtx.write(response.toBB());
+  }
+
+  private HttpResponse execute(SocketChannel channel) {
     if (ssl) {
       if (checkConnect(channel)) {
         if (tls.execute()) {

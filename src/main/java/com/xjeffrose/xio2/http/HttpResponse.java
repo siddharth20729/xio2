@@ -1,5 +1,8 @@
 package com.xjeffrose.xio2.http;
 
+import com.xjeffrose.xio2.util.BB;
+import java.nio.ByteBuffer;
+
 public class HttpResponse extends HttpObject {
 
   public HttpResponse() { }
@@ -51,5 +54,10 @@ public class HttpResponse extends HttpObject {
     }
     return sb.toString();
   }
+
+  public ByteBuffer toBB() {
+    return BB.StringtoBB(toString());
+  }
+
 }
 

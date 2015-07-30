@@ -1,12 +1,27 @@
 package com.xjeffrose.xio2.http;
 
+import com.xjeffrose.xio2.util.BB;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 
 public class HttpRequest extends HttpObject {
 
   public HttpRequest() { }
 
+  public static HttpRequest copy(HttpRequest other, boolean tls) {
+    return HttpRequest.newBuilder()
+        .method(other.method_)
+        .url(other.getUri().toString())
+        .version(other.version)
+        .body(other.getBody())
+        .tls(tls)
+        .build();
+  }
+
+  public static Builder newBuilder() {
+    return new Builder();
+  }
   public static class Builder {
 
     private Http.Method method = Http.Method.GET;
@@ -117,4 +132,9 @@ public class HttpRequest extends HttpObject {
     }
     return sb.toString();
   }
+
+  public ByteBuffer toBB() {
+    return BB.StringtoBB(toString());
+  }
+
 }

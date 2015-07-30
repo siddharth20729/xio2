@@ -23,7 +23,7 @@ public class HttpObject {
   public Headers headers = new Headers();
   public Body body = new Body();
   public Http.Method method_ = Http.Method.GET;
-  private Http.Version version;
+  public Http.Version version;
   private Http.Status status;
 
   public HttpObject() { }
@@ -84,7 +84,7 @@ public class HttpObject {
 
   public void setMethod() {
     String meth = method.getMethod();
-    if (meth.equalsIgnoreCase("get")) {
+    if (meth.equalsIgnoreCase("call")) {
       method_ = Http.Method.GET;
     } else if (meth.equalsIgnoreCase("post")) {
       method_ = Http.Method.POST;
@@ -232,6 +232,9 @@ public class HttpObject {
 
     public String getBody() {
       if (position == -1) {
+        if (buf == null) {
+          return "";
+        }
         buf.flip();
         return BB.BBtoString(buf);
       }
@@ -239,7 +242,5 @@ public class HttpObject {
     }
   }
 
-  public ByteBuffer toBB() {
-    return BB.StringtoBB(toString());
-  }
 }
+

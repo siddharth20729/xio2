@@ -3,6 +3,8 @@ package com.xjeffrose.xio2.http.client;
 
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpObject;
+import com.xjeffrose.xio2.util.BB;
+import java.nio.ByteBuffer;
 
 public class HttpResponse extends HttpObject {
 
@@ -56,6 +58,10 @@ public class HttpResponse extends HttpObject {
       }
     }
     return sb.toString();
+  }
+
+  public ByteBuffer toBB() {
+    return BB.StringtoBB(toString());
   }
 }
 
