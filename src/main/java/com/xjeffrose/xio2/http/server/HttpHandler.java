@@ -5,9 +5,8 @@ import com.xjeffrose.xio2.http.HttpObject;
 import com.xjeffrose.xio2.http.HttpResponse;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
-public class HttpHandler implements Handler {
+public class HttpHandler {
   public HttpObject req;
   public ChannelContext ctx;
   private final Map<Route, Service> routes = new ConcurrentHashMap<Route, Service>();
@@ -29,7 +28,7 @@ public class HttpHandler implements Handler {
       ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
   }
 
-  void addRoute(String route, Service service) {
+  public void addRoute(String route, Service service) {
     routes.putIfAbsent(Route.build(route), service);
   }
 }

@@ -7,7 +7,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -18,11 +17,11 @@ class Acceptor extends Thread {
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
-  private Handler handler;
+  private HttpHandler handler;
 
   Acceptor(ServerSocketChannel serverChannel,
            EventLoopPool eventLoopPool,
-           Handler handler) {
+           HttpHandler handler) {
     this.eventLoopPool = eventLoopPool;
     this.handler = handler;
 

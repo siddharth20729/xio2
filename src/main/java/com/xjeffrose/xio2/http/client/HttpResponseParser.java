@@ -90,7 +90,7 @@ class HttpResponseParser {
     bad,
     indeterminate;
 
-    private static final ParseState fromBoolean(boolean state) {
+    private static ParseState fromBoolean(boolean state) {
       if (state) {
         return ParseState.good;
       } else {

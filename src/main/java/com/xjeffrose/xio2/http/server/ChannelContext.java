@@ -7,7 +7,6 @@ import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLEngine;
@@ -17,24 +16,22 @@ import javax.net.ssl.SSLException;
 public class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
+  private HttpHandler handler;
+  private int nread = 1;
+  private boolean parserOk;
+  private SSLEngineResult sslEngineResult;
+  private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
   private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<ByteBuffer>();
-
   private final HttpParser parser = new HttpParser();
-  public final HttpRequest req = new HttpRequest();
 
+  protected State state = State.got_request;
+
+  public final HttpRequest req = new HttpRequest();
   public SSLEngine engine;
   public boolean ssl = false;
   public SocketChannel channel;
-  private Handler handler;
 
-  private int nread = 1;
-  private boolean parserOk;
-  protected State state = State.got_request;
-  private SSLEngineResult sslEngineResult;
-  private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
-
-
-  ChannelContext(SocketChannel channel, Handler handler) {
+  ChannelContext(SocketChannel channel, HttpHandler handler) {
     this.channel = channel;
     this.handler = handler;
   }

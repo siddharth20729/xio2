@@ -16,7 +16,7 @@ public abstract class Service {
     this.ctx = ctx;
     this.req = ctx.req;
 
-    switch(req.method_) {
+    switch (req.method_) {
       case GET:
         handleGet();
         serviceStream();
@@ -40,13 +40,13 @@ public abstract class Service {
     }
   }
 
-  public void handleGet() {}
+  public void handleGet() { }
 
-  public void handlePost() {}
+  public void handlePost() { }
 
-  public void handlePut() {}
+  public void handlePut() { }
 
-  public void handleDelete() {}
+  public void handleDelete() { }
 
   public void andThen(Service service) {
     serviceList.addLast(service);
@@ -57,5 +57,5 @@ public abstract class Service {
       serviceList.removeLast().handle(ctx);
     }
   }
-
 }
+

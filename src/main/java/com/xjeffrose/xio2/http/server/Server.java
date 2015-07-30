@@ -6,15 +6,12 @@ import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public class Server {
   private static final Logger log = Log.getLogger(Server.class.getName());
 
-//
   private List<Acceptor> acceptorList = new ArrayList<>();
   private final int cores = Runtime.getRuntime().availableProcessors();
   private ServerSocketChannel channel;
@@ -35,16 +32,16 @@ public class Server {
     bind("0.0.0.0", port, new HttpHandler());
   }
 
-  public void bind(int port, Handler handler) {
+  public void bind(int port, HttpHandler handler) {
     bind("0.0.0.0", port, handler);
   }
 
-  public void bind(String ipAddr, int port, Handler handler) {
+  public void bind(String ipAddr, int port, HttpHandler handler) {
     final InetSocketAddress addr = new InetSocketAddress(ipAddr, port);
     bind(addr, handler);
   }
 
-  public void bind(InetSocketAddress addr, Handler handler) {
+  public void bind(InetSocketAddress addr, HttpHandler handler) {
     try {
       channel = ServerSocketChannel.open();
       channel.configureBlocking(false);
@@ -57,7 +54,7 @@ public class Server {
     }
   }
 
-  public void serve(int port, Handler handler) {
+  public void serve(int port, HttpHandler handler) {
     bind(port, handler);
     serve();
   }

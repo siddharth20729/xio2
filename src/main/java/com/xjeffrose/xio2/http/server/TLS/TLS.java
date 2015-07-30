@@ -51,7 +51,8 @@ public class TLS {
 
       // TODO: Allow for truststore and get truststore path
 //      CertificateFactory cf = CertificateFactory.getInstance("X.509");
-//      X509Certificate x509Certificate = (X509Certificate) cf.generateCertificate(new FileInputStream("/path/to/ca"));
+//      X509Certificate x509Certificate =
+//        (X509Certificate) cf.generateCertificate(new FileInputStream("/path/to/ca"));
 //      KeyStore ts = KeyStore.getInstance("PKCS12");
 //      ts.load(null);
 //      ts.setCertificateEntry("alias", x509Certificate);
