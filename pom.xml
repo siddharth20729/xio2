@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.airlift</groupId>
-        <artifactId>airbase</artifactId>
-        <version>42</version>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>9</version>
     </parent>
 
     <groupId>com.xjeffrose</groupId>
@@ -124,6 +124,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.2</version>
                     <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
                         <fork>true</fork>
                         <compilerArgument>-XDignore.symbol.file</compilerArgument>
                     </configuration>
