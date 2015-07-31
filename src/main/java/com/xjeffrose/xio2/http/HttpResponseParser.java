@@ -302,8 +302,8 @@ public class HttpResponseParser {
             }
           } else {
             //TODO: Handle better
-            status = Status.BUFFER_UNDERFLOW;
-            return ParseState.bad;
+            status = Status.FINISHED;
+            return ParseState.good;
           }
         }
       default:

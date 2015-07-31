@@ -82,7 +82,7 @@ class EventLoop extends Thread {
             ctx.flush();
           }
         } catch (Exception e) {
-          log.severe("Terminating connection to - " + key.channel());
+          log.severe("Terminating connection to - " + key.channel() + " " + e.toString());
         }
 //          e.printStackTrace();
 //          log.severe("Terminating connection to - " + key.channel());
