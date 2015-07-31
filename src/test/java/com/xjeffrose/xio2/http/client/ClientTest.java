@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2015 Jeff Rose
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.xjeffrose.xio2.http.client;
 
 import com.xjeffrose.xio2.http.*;
@@ -117,81 +132,81 @@ public class ClientTest {
     }
   }
 
-  @Test
-  public void testProxy() throws Exception {
-    Server service_int = Http.newServer();
-    HttpHandler proxiedHandler = new HttpHandler();
-    proxiedHandler.addRoute("/", new Service() {
-      @Override
-      public void handleGet(ChannelContext ctx) {
-        ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "CONGRATS!\n"));
-      }
-    });
-
-    service_int.serve(9041, proxiedHandler);
-
-    Server client_int = Http.newServer();
-    HttpHandler testHandler = new HttpHandler();
-    testHandler.addRoute("/", new ProxyService("localhost:9041"));
-    client_int.serve(9040, testHandler);
-
-    HttpRequest req = new HttpRequest.Builder()
-        .url("/")
-        .build();
-
-    Client client = Http.newClient("localhost:9040");
-    HttpObject resp = client.call(req);
-
-//    assertEquals(1, testHandler.requestsHandled());
-//    assertEquals(1, proxiedHandler.requestsHandled());
-    assertEquals(resp.getHttpVersion(), "HTTP/1.0");
-    assertEquals(resp.getStatus(), "200 OK");
-    assertEquals(resp.headers.size(), 4);
-//    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
-    assertEquals(resp.headers.get("Server"), "SimpleHTTP/0.6 Python/2.7.10");
-    assertEquals("CONGRATS!\n", resp.getBody());
-    assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
-  }
-
-  @Test
-  public void testMultipleProxyCalls() throws Exception {
-    /*
-    Server service_int = Http.newServer();
-    HttpHandler proxiedHandler = new HttpHandler();
-    proxiedHandler.addRoute("/", new Service() {
-      @Override
-      public void handleGet(ChannelContext ctx) {
-        ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "CONGRATS!\n"));
-      }
-    });
-
-    service_int.serve(9041, proxiedHandler);
-*/
-    Server client_int = Http.newServer();
-    HttpHandler testHandler = new HttpHandler();
-    testHandler.addRoute("/", new ProxyService("localhost:9041"));
-    client_int.serve(9045, testHandler);
-
-    for (int i = 1; i < 11; i++) {
-      HttpRequest req = new HttpRequest.Builder()
-          .url("/")
-          .build();
-
-      Client client = Http.newClient("localhost:9045");
-      HttpObject resp = client.call(req);
-
-      //assertEquals(i, testHandler.requestsHandled());
-      //assertEquals(i, proxiedHandler.requestsHandled());
-      //assertEquals(resp.getHttpVersion(), "HTTP/1.1");
-      assertEquals(resp.getStatus(), "200 OK");
-      assertEquals(resp.headers.size(), 4);
-      //assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
-      //assertEquals(resp.headers.get("Server"), "xio2");
-      assertEquals("CONGRATS!\n", resp.getBody());
-      assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
-
-    }
-  }
+//  @Test
+//  public void testProxy() throws Exception {
+//    Server service_int = Http.newServer();
+//    HttpHandler proxiedHandler = new HttpHandler();
+//    proxiedHandler.addRoute("/", new Service() {
+//      @Override
+//      public void handleGet(ChannelContext ctx) {
+//        ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "CONGRATS!\n"));
+//      }
+//    });
+//
+//    service_int.serve(9041, proxiedHandler);
+//
+//    Server client_int = Http.newServer();
+//    HttpHandler testHandler = new HttpHandler();
+//    testHandler.addRoute("/", new ProxyService("localhost:9041"));
+//    client_int.serve(9040, testHandler);
+//
+//    HttpRequest req = new HttpRequest.Builder()
+//        .url("/")
+//        .build();
+//
+//    Client client = Http.newClient("localhost:9040");
+//    HttpObject resp = client.call(req);
+//
+////    assertEquals(1, testHandler.requestsHandled());
+////    assertEquals(1, proxiedHandler.requestsHandled());
+//    assertEquals(resp.getHttpVersion(), "HTTP/1.0");
+//    assertEquals(resp.getStatus(), "200 OK");
+//    assertEquals(resp.headers.size(), 4);
+////    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+//    assertEquals(resp.headers.get("Server"), "SimpleHTTP/0.6 Python/2.7.10");
+//    assertEquals("CONGRATS!\n", resp.getBody());
+//    assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
+//  }
+//
+//  @Test
+//  public void testMultipleProxyCalls() throws Exception {
+//    /*
+//    Server service_int = Http.newServer();
+//    HttpHandler proxiedHandler = new HttpHandler();
+//    proxiedHandler.addRoute("/", new Service() {
+//      @Override
+//      public void handleGet(ChannelContext ctx) {
+//        ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "CONGRATS!\n"));
+//      }
+//    });
+//
+//    service_int.serve(9041, proxiedHandler);
+//*/
+//    Server client_int = Http.newServer();
+//    HttpHandler testHandler = new HttpHandler();
+//    testHandler.addRoute("/", new ProxyService("localhost:9041"));
+//    client_int.serve(9045, testHandler);
+//
+//    for (int i = 1; i < 11; i++) {
+//      HttpRequest req = new HttpRequest.Builder()
+//          .url("/")
+//          .build();
+//
+//      Client client = Http.newClient("localhost:9045");
+//      HttpObject resp = client.call(req);
+//
+//      //assertEquals(i, testHandler.requestsHandled());
+//      //assertEquals(i, proxiedHandler.requestsHandled());
+//      //assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+//      assertEquals(resp.getStatus(), "200 OK");
+//      assertEquals(resp.headers.size(), 4);
+//      //assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+//      //assertEquals(resp.headers.get("Server"), "xio2");
+//      assertEquals("CONGRATS!\n", resp.getBody());
+//      assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
+//
+//    }
+//  }
 
   @Test
   public void testProxySSL() throws Exception {
