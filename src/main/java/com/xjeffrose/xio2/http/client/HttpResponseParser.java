@@ -15,8 +15,17 @@ class HttpResponseParser {
   private ByteBuffer temp;
   private HttpResponse response;
 
+  public Status status = Status.BUFFER_UNDERFLOW;
+
   HttpResponseParser() {
     lastByteRead = -1;
+  }
+
+  public enum Status {
+    BUFFER_UNDERFLOW,
+    BUFFER_OVERFLOW,
+    NEEDS_PARSE,
+    FINISHED,
   }
 
   private enum state {
@@ -38,7 +47,7 @@ class HttpResponseParser {
     space_before_header_value,
     header_value,
     expecting_newline_2,
-    expecting_newline_3
+    expecting_body, expecting_newline_3
   };
 
   private state state_ = state.http_version_h;
@@ -48,15 +57,15 @@ class HttpResponseParser {
     this.response = resp;
     this.temp = resp.inputBuffer.duplicate();
 
-    ParseState result = ParseState.good;
+    ParseState result = ParseState.indeterminate;
     temp.flip();
     temp.position(lastByteRead + 1);
     while (temp.hasRemaining()) {
       lastByteRead = temp.position();
       result = parseSegment(temp.get());
-    }
-    if (result == ParseState.good) {
-      return true;
+      if (result == ParseState.good) {
+        return true;
+      }
     }
     return false;
   }
@@ -265,8 +274,24 @@ class HttpResponseParser {
           return ParseState.bad;
         }
       case expecting_newline_3:
-        response.headers.done();
-        return ParseState.fromBoolean(input == '\n');
+        if (input == '\n') {
+          response.headers.done();
+          if (response.headers.headerMap.containsKey("Content-Length")) {
+            if (((lastByteRead + 1)
+                + Integer.parseInt(response.headers.get("Content-Length"))) == temp.limit()) {
+              response.body.set(lastByteRead);
+              status = Status.FINISHED;
+              return ParseState.good;
+            } else {
+              status = Status.BUFFER_UNDERFLOW;
+              return ParseState.bad;
+            }
+          } else {
+            //TODO: Handle better
+            status = Status.BUFFER_UNDERFLOW;
+            return ParseState.bad;
+          }
+        }
       default:
         return ParseState.bad;
     }

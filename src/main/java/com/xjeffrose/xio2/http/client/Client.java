@@ -1,6 +1,7 @@
 package com.xjeffrose.xio2.http.client;
 
 import com.xjeffrose.log.Log;
+import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.LoadBalancingStrategy;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.NullLoadBalancer;
@@ -23,11 +24,9 @@ import java.util.logging.Logger;
 public class Client {
   private static final Logger log = Log.getLogger(Client.class.getName());
 
-  //private SocketChannel channel;
   private Selector selector;
   private HttpRequest req;
   private boolean parserOk;
-  private Iterator<SelectionKey> iterator;
   private TLS tls = null;
   public LoadBalancer lb = LoadBalancer.NullLoadBalancer;
   private LoadBalancingStrategy lbs;
@@ -115,7 +114,7 @@ public class Client {
     HttpRequest req = HttpRequest.copy(serverCtx.req, serverCtx.ssl);
     HttpResponse response = call(req);
 
-    serverCtx.write(response.toBB());
+      serverCtx.write(response.toBB());
   }
 
   private HttpResponse execute(SocketChannel channel) {
@@ -146,7 +145,7 @@ public class Client {
 
 
       Set<SelectionKey> connectKeys = selector.selectedKeys();
-      iterator = connectKeys.iterator();
+      Iterator<SelectionKey> iterator = connectKeys.iterator();
 
 
       SelectionKey key = iterator.next();
@@ -179,7 +178,7 @@ public class Client {
         selector.select();
 
         Set<SelectionKey> acceptKeys = selector.selectedKeys();
-        iterator = acceptKeys.iterator();
+        Iterator<SelectionKey> iterator = acceptKeys.iterator();
 
         while (iterator.hasNext()) {
           SelectionKey key = iterator.next();
@@ -214,7 +213,7 @@ public class Client {
         selector.select();
 
         Set<SelectionKey> acceptKeys = selector.selectedKeys();
-        iterator = acceptKeys.iterator();
+        Iterator<SelectionKey> iterator = acceptKeys.iterator();
 
         while (iterator.hasNext()) {
           SelectionKey key = iterator.next();
@@ -238,8 +237,19 @@ public class Client {
             parserOk = parser.parse(resp);
             if (parserOk) {
               return resp;
+            } else if (nread == -1) {
+              return HttpResponse
+                  .DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR);
             } else {
-              return null;
+              switch (parser.status) {
+                case BUFFER_UNDERFLOW:
+                  //PUMP THE BRAKES SPEED RACER
+                  nread = channel.read(resp.inputBuffer);
+                  Thread.sleep(1);
+                  break;
+                case FINISHED:
+                  break;
+              }
             }
           }
         }

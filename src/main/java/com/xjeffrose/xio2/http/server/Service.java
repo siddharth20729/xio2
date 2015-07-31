@@ -1,81 +1,74 @@
 package com.xjeffrose.xio2.http.server;
 
-import com.xjeffrose.xio2.http.HttpRequest;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public abstract class Service {
   private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
 
-  public HttpRequest req;
-  public ChannelContext ctx;
-
   public Service() { }
 
   public void handle(ChannelContext ctx) {
-    this.ctx = ctx;
-    this.req = ctx.req;
-
-    switch (req.method_) {
+    switch (ctx.req.method_) {
       case GET:
-        handleGet();
-        serviceStream();
+        handleGet(ctx);
+        serviceStream(ctx);
         return;
       case POST:
-        handlePost();
-        serviceStream();
+        handlePost(ctx);
+        serviceStream(ctx);
         return;
       case PUT:
-        handlePut();
-        serviceStream();
+        handlePut(ctx);
+        serviceStream(ctx);
         return;
       case DELETE:
-        handleDelete();
-        serviceStream();
+        handleDelete(ctx);
+        serviceStream(ctx);
         return;
       case TRACE:
-        handleTrace();
-        serviceStream();
+        handleTrace(ctx);
+        serviceStream(ctx);
         return;
       case OPTION:
-        handleOption();
-        serviceStream();
+        handleOption(ctx);
+        serviceStream(ctx);
         return;
       case CONNECT:
-        handleConnect();
-        serviceStream();
+        handleConnect(ctx);
+        serviceStream(ctx);
         return;
       case PATCH:
-        handlePatch();
-        serviceStream();
+        handlePatch(ctx);
+        serviceStream(ctx);
         return;
       default:
-        handleGet();
-        serviceStream();
+        handleGet(ctx);
+        serviceStream(ctx);
         return;
     }
   }
 
-  public void handleGet() { }
+  public void handleGet(ChannelContext ctx) { }
 
-  public void handlePost() { }
+  public void handlePost(ChannelContext ctx) { }
 
-  public void handlePut() { }
+  public void handlePut(ChannelContext ctx) { }
 
-  public void handleDelete() { }
+  public void handleDelete(ChannelContext ctx) { }
 
-  private void handleTrace() { }
+  private void handleTrace(ChannelContext ctx) { }
 
-  private void handleOption() { }
+  private void handleOption(ChannelContext ctx) { }
 
-  private void handleConnect() { }
+  private void handleConnect(ChannelContext ctx) { }
 
-  private void handlePatch() { }
+  private void handlePatch(ChannelContext ctx) { }
 
   public void andThen(Service service) {
     serviceList.addLast(service);
   }
 
-  private void serviceStream() {
+  private void serviceStream(ChannelContext ctx) {
     while (serviceList.size() > 0) {
       serviceList.removeLast().handle(ctx);
     }

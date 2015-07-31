@@ -66,10 +66,8 @@ class EventLoop extends Thread {
             ChannelContext ctx = (ChannelContext) key.attachment();
             ctx.flush();
           }
-          if (!key.isValid()) {
-            key.cancel();
-          }
         } catch (Exception e) {
+          e.printStackTrace();
           log.severe("Terminating connection to - " + key.channel());
           try {
             key.channel().close();

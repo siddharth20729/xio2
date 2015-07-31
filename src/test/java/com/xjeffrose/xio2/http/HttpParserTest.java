@@ -16,7 +16,7 @@ public class HttpParserTest {
   public String payload2 = "POST / HTTP/1.1\r\n" +
       "User-Agent: curl/7.35.0\r\n" +
       "Host: localhost:8000\r\n" +
-      "Content-Length: 17\r\n" +
+      "Content-Length: 16\r\n" +
       "Accept: */*\r\n" +
       "\r\n" +
       "This is the body";
@@ -62,8 +62,9 @@ public class HttpParserTest {
     assertEquals(request.headers.get("User-Agent"), "curl/7.35.0");
     assertEquals(request.headers.get("Host"), "localhost:8000");
     assertEquals(request.headers.get("Accept"), "*/*");
-    assertEquals(request.headers.get("Content-Length"), "17");
+    assertEquals(request.headers.get("Content-Length"), "16");
     assertEquals(request.getBody(), "This is the body");
+    assertEquals(request.getBody().length(), Integer.parseInt(request.headers.get("Content-Length")));
   }
 
   @Test

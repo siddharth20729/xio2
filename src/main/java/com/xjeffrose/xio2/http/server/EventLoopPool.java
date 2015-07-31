@@ -14,7 +14,10 @@ class EventLoopPool {
 
   EventLoopPool(int poolSize, AtomicBoolean ssl) {
     for (int i = 0; i < poolSize; i++) {
-      pool.addLast(new EventLoop(ssl));
+      EventLoop loop = new EventLoop(ssl);
+      loop.setName("EventLoop " + i);
+      pool.addLast(loop);
+//      pool.addLast(new EventLoop(ssl));
     }
   }
 

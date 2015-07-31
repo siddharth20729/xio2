@@ -114,12 +114,13 @@ public class HttpObject {
 
     public String get() {
       final byte[] value = new byte[limit];
+      final ByteBuffer _temp = inputBuffer.duplicate();
       if (position > 0) {
-        inputBuffer.position(position);
+        _temp.position(position);
       } else {
-        inputBuffer.position(0);
+        _temp.position(0);
       }
-      inputBuffer.get(value);
+      _temp.get(value);
       return new String(value, Charset.forName("UTF-8"));
     }
   }
@@ -222,7 +223,7 @@ public class HttpObject {
     public void set(int position) {
       final int size = new Integer(headers.get("Content-Length"));
       this.position = position + 1;
-      this.limit = size - 1;
+      this.limit = size;
     }
 
     public void set(String body) {
