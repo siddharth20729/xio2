@@ -134,17 +134,18 @@ public class HttpRequest extends HttpObject {
     sb.append(getUri() + " ");
     sb.append(getHttpVersion() + "\r\n");
 
-    sb.append("User-Agent" + ": " + headers.get("User-Agent") + "\r\n");
-    sb.append("Host" + ": " + headers.get("Host") + "\r\n");
-    sb.append("Accept" + ": " + headers.get("Accept") + "\r\n");
-    if (headers.headerMap.containsKey("Content-Length")) {
-      sb.append("Content-Length" + ": " + headers.get("Content-Length") + "\r\n");
-      sb.append("\r\n");
-      sb.append(getBody());
-    } else {
-      sb.append("Content-Length: 0\r\n");
-      sb.append("\r\n");
+    headers.headerMap.keySet()
+        .stream()
+        .filter(h -> !headers.get(h).equals(""))
+        .forEach(h -> sb.append(h).append(": ").append(headers.get(h)).append("\r\n"));
+    sb.append("\r\n");
+
+    if (!headers.get("Content-Length").equals("")) {
+      if (Integer.parseInt(headers.get("Content-Length")) > 0) {
+        sb.append(getBody());
+      }
     }
+
     return sb.toString();
   }
 

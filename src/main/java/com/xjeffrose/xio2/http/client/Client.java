@@ -18,6 +18,8 @@ package com.xjeffrose.xio2.http.client;
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
+import com.xjeffrose.xio2.http.HttpResponse;
+import com.xjeffrose.xio2.http.HttpResponseParser;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.LoadBalancingStrategy;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.NullLoadBalancer;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.RoundRobinLoadBalancer;

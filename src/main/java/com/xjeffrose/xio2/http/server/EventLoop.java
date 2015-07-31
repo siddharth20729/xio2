@@ -82,17 +82,19 @@ class EventLoop extends Thread {
             ctx.flush();
           }
         } catch (Exception e) {
-          e.printStackTrace();
           log.severe("Terminating connection to - " + key.channel());
-          try {
-            key.channel().close();
-            key.cancel();
-            throw new RuntimeException(e);
-          } catch (Exception e1) {
-            key.cancel();
-            throw new RuntimeException(e1);
-          }
         }
+//          e.printStackTrace();
+//          log.severe("Terminating connection to - " + key.channel());
+//          try {
+//            key.channel().close();
+//            key.cancel();
+//            throw new RuntimeException(e);
+//          } catch (Exception e1) {
+//            key.cancel();
+//            throw new RuntimeException(e1);
+//          }
+//        }
         if (!running()) {
           break;
         }

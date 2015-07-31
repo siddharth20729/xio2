@@ -13,37 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xjeffrose.xio2.http.client;
+package com.xjeffrose.xio2.http;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.Http;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
-@SuppressWarnings (value = { "fallthrough" })
-
-// http://tools.ietf.org/html/rfc2616
-class HttpResponseParser {
-  private static final Logger log = Log.getLogger(HttpResponseParser.class.getName());
+@SuppressWarnings (value = "fallthrough")
+public class HttpRequestParser {
+  private static final Logger log = Log.getLogger(HttpRequestParser.class.getName());
 
   private int lastByteRead;
-  private ByteBuffer temp;
-  private HttpResponse response;
+  private HttpRequest req;
 
-  public Status status = Status.BUFFER_UNDERFLOW;
+  private state state_ = state.method_start;
+  public boolean done = false;
 
-  HttpResponseParser() {
+  public HttpRequestParser() {
     lastByteRead = -1;
   }
 
-  public enum Status {
-    BUFFER_UNDERFLOW,
-    BUFFER_OVERFLOW,
-    NEEDS_PARSE,
-    FINISHED,
-  }
-
   private enum state {
+    method_start,
+    method,
+    uri,
     http_version_h,
     http_version_t_1,
     http_version_t_2,
@@ -53,8 +46,6 @@ class HttpResponseParser {
     http_version_major,
     http_version_minor_start,
     http_version_minor,
-    status_code,
-    reason_phrase,
     expecting_newline_1,
     header_line_start,
     header_lws,
@@ -62,28 +53,30 @@ class HttpResponseParser {
     space_before_header_value,
     header_value,
     expecting_newline_2,
-    expecting_body, expecting_newline_3
-  };
+    expecting_newline_3
+  }
 
-  private state state_ = state.http_version_h;
-  private int http_status = 0;
+  public boolean parse(HttpRequest req) {
+    this.req = req;
+    final ByteBuffer temp = req.inputBuffer.duplicate();
 
-  public boolean parse(HttpResponse resp) {
-    this.response = resp;
-    this.temp = resp.inputBuffer.duplicate();
-
-    ParseState result = ParseState.indeterminate;
+    ParseState result = ParseState.good;
     temp.flip();
     temp.position(lastByteRead + 1);
-    while (temp.hasRemaining()) {
+    while (temp.hasRemaining() && !done) {
       lastByteRead = temp.position();
       result = parseSegment(temp.get());
-      if (result == ParseState.good) {
-        return true;
-      }
+    }
+    if (result == ParseState.good) {
+      return true;
     }
     return false;
   }
+
+// public HttpRequest request() {
+//    return req;
+//  }
+
 
   private boolean is_char(int c) {
     return c >= 0 && c <= 127;
@@ -125,6 +118,35 @@ class HttpResponseParser {
 
   private ParseState parseSegment(byte input) {
     switch (state_) {
+      case method_start:
+        if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
+          return ParseState.bad;
+        } else {
+          state_ = state.method;
+          req.method.tick(lastByteRead);
+          return ParseState.indeterminate;
+        }
+      case method:
+        if (input == ' ') {
+          state_ = state.uri;
+          return ParseState.indeterminate;
+        } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
+          return ParseState.bad;
+        } else {
+          req.method.tick(lastByteRead);
+          return ParseState.indeterminate;
+        }
+      case uri:
+        if (input == ' ') {
+          state_ = state.http_version_h;
+          return ParseState.indeterminate;
+        } else if (is_ctl(input)) {
+          return ParseState.bad;
+        } else {
+          req.setMethod();
+          req.uri.tick(lastByteRead);
+          return ParseState.indeterminate;
+        }
       case http_version_h:
         if (input == 'H') {
           state_ = state.http_version_t_1;
@@ -162,7 +184,7 @@ class HttpResponseParser {
         }
       case http_version_major_start:
         if (is_digit((char) input)) {
-          response.http_version_major = (char) input - '0';
+          req.http_version_major = (char) input - '0';
           state_ = state.http_version_major;
           return ParseState.indeterminate;
         } else {
@@ -173,45 +195,25 @@ class HttpResponseParser {
           state_ = state.http_version_minor_start;
           return ParseState.indeterminate;
         } else if (is_digit((char) input)) {
-          response.http_version_major = response.http_version_major * 10 + (char) input - '0';
+          req.http_version_major = req.http_version_major * 10 + (char) input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
         }
       case http_version_minor_start:
         if (is_digit((char) input)) {
-          response.http_version_minor = (char) input - '0';
+          req.http_version_minor = (char) input - '0';
           state_ = state.http_version_minor;
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
         }
       case http_version_minor:
-        if (input == ' ') {
-          state_ = state.status_code;
-          return ParseState.indeterminate;
-        } else if (is_digit((char) input)) {
-          response.http_version_minor = response.http_version_minor * 10 + (char) input - '0';
-          return ParseState.indeterminate;
-        } else {
-          return ParseState.bad;
-        }
-      case status_code:
-        if (input == ' ') {
-          response.setStatus(Http.Status.fromCode(http_status));
-          state_ = state.reason_phrase;
-          return ParseState.indeterminate;
-        } else if (is_digit((char) input)) {
-          http_status = http_status * 10 + (char) input - '0';
-          return ParseState.indeterminate;
-        } else {
-          return ParseState.bad;
-        }
-      case reason_phrase:
         if (input == '\r') {
           state_ = state.expecting_newline_1;
           return ParseState.indeterminate;
-        } else if (!is_ctl(input)) {
+        } else if (is_digit((char) input)) {
+          req.http_version_minor = req.http_version_minor * 10 + (char) input - '0';
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -227,15 +229,14 @@ class HttpResponseParser {
         if (input == '\r') {
           state_ = state.expecting_newline_3;
           return ParseState.indeterminate;
-        } else if (!response.headers.empty() && (input == ' ' || input == '\t')) {
+        } else if (!req.headers.empty() && (input == ' ' || input == '\t')) {
           state_ = state.header_lws;
           return ParseState.indeterminate;
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          //TODO
-          response.headers.newHeader();
-          response.headers.tick(lastByteRead);
+          req.headers.newHeader();
+          req.headers.tick(lastByteRead);
           state_ = state.header_name;
           return ParseState.indeterminate;
         }
@@ -249,8 +250,8 @@ class HttpResponseParser {
           return ParseState.bad;
         } else {
           state_ = state.header_value;
-          response.headers.newValue();
-          response.headers.tick(lastByteRead);
+          req.headers.newValue();
+          req.headers.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case header_name:
@@ -260,13 +261,13 @@ class HttpResponseParser {
         } else if (!is_char(input) || is_ctl(input) || is_tspecial(input)) {
           return ParseState.bad;
         } else {
-          response.headers.tick(lastByteRead);
+          req.headers.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case space_before_header_value:
         if (input == ' ') {
           state_ = state.header_value;
-          response.headers.newValue();
+          req.headers.newValue();
           return ParseState.indeterminate;
         } else {
           return ParseState.bad;
@@ -278,7 +279,7 @@ class HttpResponseParser {
         } else if (is_ctl(input)) {
           return ParseState.bad;
         } else {
-          response.headers.tick(lastByteRead);
+          req.headers.tick(lastByteRead);
           return ParseState.indeterminate;
         }
       case expecting_newline_2:
@@ -289,26 +290,29 @@ class HttpResponseParser {
           return ParseState.bad;
         }
       case expecting_newline_3:
-        if (input == '\n') {
-          response.headers.done();
-          if (response.headers.headerMap.containsKey("Content-Length")) {
-            if (((lastByteRead + 1)
-                + Integer.parseInt(response.headers.get("Content-Length"))) == temp.limit()) {
-              response.body.set(lastByteRead);
-              status = Status.FINISHED;
-              return ParseState.good;
-            } else {
-              status = Status.BUFFER_UNDERFLOW;
-              return ParseState.bad;
-            }
-          } else {
-            //TODO: Handle better
-            status = Status.BUFFER_UNDERFLOW;
-            return ParseState.bad;
-          }
-        }
+        finish();
+        return ParseState.fromBoolean(input == '\n');
       default:
         return ParseState.bad;
     }
   }
+
+  private void finish() {
+    req.headers.done();
+    done = true;
+    switch (req.method_) {
+      case GET:
+        return;
+      case POST:
+        req.body.set(lastByteRead);
+        return;
+      case PUT:
+        return;
+      case DELETE:
+        return;
+      default:
+        return;
+    }
+  }
 }
+

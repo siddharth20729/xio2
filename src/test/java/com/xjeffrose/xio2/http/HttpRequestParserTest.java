@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class HttpParserTest {
+public class HttpRequestParserTest {
   public String payload1 = "GET / HTTP/1.1\r\n" +
       "User-Agent: curl/7.35.0\r\n" +
       "Host: localhost:8000\r\n" +
@@ -47,7 +47,7 @@ public class HttpParserTest {
 
   @Test
   public void testParseGET() throws Exception {
-    HttpParser parser = new HttpParser();
+    HttpRequestParser parser = new HttpRequestParser();
     HttpRequest request = new HttpRequest();
     request.inputBuffer.put(payload1.getBytes());
     Boolean parseOk = parser.parse(request);
@@ -64,7 +64,7 @@ public class HttpParserTest {
 
   @Test
   public void testParsePOST() throws Exception {
-    HttpParser parser = new HttpParser();
+    HttpRequestParser parser = new HttpRequestParser();
     HttpRequest request = new HttpRequest();
     request.inputBuffer.put(payload2.getBytes());
     Boolean parseOk = parser.parse(request);

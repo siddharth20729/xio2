@@ -56,19 +56,40 @@ public class HttpResponse extends HttpObject {
     final StringBuilder sb = new StringBuilder();
     sb.append(getHttpVersion() + " ");
     sb.append(getStatus() + "\r\n");
-    sb.append("Content-Type" + ": " + headers.get("Content-Type") + "\r\n");
-    sb.append("Date" + ": " + headers.get("Date") + "\r\n");
-    sb.append("Server" + ": " + headers.get("Server") + "\r\n");
-    if (headers.headerMap.containsKey("Content-Length")) {
-      sb.append("Content-Length" + ": " + headers.get("Content-Length") + "\r\n");
-      sb.append("\r\n");
-      sb.append(getBody());
-    } else {
-      sb.append("Content-Length: 0\r\n");
-      sb.append("\r\n");
+
+    headers.headerMap.keySet()
+        .stream()
+        .filter(h -> !headers.get(h).equals(""))
+        .forEach(h -> sb.append(h).append(": ").append(headers.get(h)).append("\r\n"));
+    sb.append("\r\n");
+
+    if (!headers.get("Content-Length").equals("")) {
+      if (Integer.parseInt(headers.get("Content-Length")) > 0) {
+        sb.append(getBody());
+      }
     }
+
     return sb.toString();
   }
+
+//  @Override
+//  public String toString() {
+//    final StringBuilder sb = new StringBuilder();
+//    sb.append(getHttpVersion() + " ");
+//    sb.append(getStatus() + "\r\n");
+//    sb.append("Content-Type" + ": " + headers.get("Content-Type") + "\r\n");
+//    sb.append("Date" + ": " + headers.get("Date") + "\r\n");
+//    sb.append("Server" + ": " + headers.get("Server") + "\r\n");
+//    if (headers.headerMap.containsKey("Content-Length")) {
+//      sb.append("Content-Length" + ": " + headers.get("Content-Length") + "\r\n");
+//      sb.append("\r\n");
+//      sb.append(getBody());
+//    } else {
+//      sb.append("Content-Length: 0\r\n");
+//      sb.append("\r\n");
+//    }
+//    return sb.toString();
+//  }
 
   public ByteBuffer toBB() {
     return BB.StringtoBB(toString());

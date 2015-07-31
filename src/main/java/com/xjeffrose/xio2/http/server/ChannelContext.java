@@ -17,7 +17,7 @@ package com.xjeffrose.xio2.http.server;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.http.HttpParser;
+import com.xjeffrose.xio2.http.HttpRequestParser;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpResponse;
 import java.nio.ByteBuffer;
@@ -37,7 +37,7 @@ public class ChannelContext {
   private SSLEngineResult sslEngineResult;
   private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
   private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<ByteBuffer>();
-  private final HttpParser parser = new HttpParser();
+  private final HttpRequestParser parser = new HttpRequestParser();
 
   protected State state = State.got_request;
 
