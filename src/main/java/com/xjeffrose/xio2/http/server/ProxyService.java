@@ -15,6 +15,7 @@
  */
 package com.xjeffrose.xio2.http.server;
 
+import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.client.Client;
 

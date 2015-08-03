@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xjeffrose.xio2.http.server;
+package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-class EventLoopPool {
+public class EventLoopPool {
   private static final Logger log = Log.getLogger(EventLoopPool.class.getName());
 
   private final ConcurrentLinkedDeque<EventLoop> pool =
       new ConcurrentLinkedDeque<EventLoop>();
   private EventLoop loop;
 
-  EventLoopPool(int poolSize, AtomicBoolean ssl) {
+  public EventLoopPool(int poolSize, AtomicBoolean ssl) {
     for (int i = 0; i < poolSize; i++) {
       EventLoop loop = new EventLoop(ssl);
       loop.setName("EventLoop " + i);

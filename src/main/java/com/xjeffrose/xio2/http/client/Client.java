@@ -24,7 +24,7 @@ import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.LoadBalancingStrate
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.NullLoadBalancer;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.RoundRobinLoadBalancer;
 import com.xjeffrose.xio2.http.client.TLS.TLS;
-import com.xjeffrose.xio2.http.server.ChannelContext;
+import com.xjeffrose.xio2.ChannelContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
@@ -253,8 +253,10 @@ public class Client {
             }
             parserOk = parser.parse(resp);
             if (parserOk) {
+              cleanup(channel);
               return resp;
             } else if (nread == -1) {
+              cleanup(channel);
               return HttpResponse
                   .DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR);
             } else {
@@ -272,6 +274,15 @@ public class Client {
         }
       }
     } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void cleanup(SocketChannel channel) {
+    try {
+      channel.close();
+      selector.close();
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

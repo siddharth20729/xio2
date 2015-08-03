@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xjeffrose.xio2.http.server;
+package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.http.server.TLS.TLS;
@@ -61,45 +61,38 @@ class EventLoop extends Thread {
     while (running()) {
       try {
         selector.select();
+
+        Set<SelectionKey> acceptKeys = selector.selectedKeys();
+        Iterator<SelectionKey> iterator = acceptKeys.iterator();
+
+        while (iterator.hasNext()) {
+          SelectionKey key = iterator.next();
+          iterator.remove();
+
+          try {
+            if (key.isValid() && key.isReadable()) {
+              ChannelContext ctx = (ChannelContext) key.attachment();
+              ctx.read();
+            }
+            if (key.isValid() && key.isWritable()) {
+              ChannelContext ctx = (ChannelContext) key.attachment();
+              ctx.flush();
+            }
+            if (!key.isValid()) {
+              key.channel().close();
+              key.cancel();
+            }
+          } catch (Exception e) {
+            key.channel().close();
+            key.cancel();
+          }
+          if (!running()) {
+            break;
+          }
+        }
+        configureChannel();
       } catch (IOException e) {
-        throw new RuntimeException(e);
       }
-
-      Set<SelectionKey> acceptKeys = selector.selectedKeys();
-      Iterator<SelectionKey> iterator = acceptKeys.iterator();
-
-      while (iterator.hasNext()) {
-        SelectionKey key = iterator.next();
-        iterator.remove();
-
-        try {
-          if (key.isValid() && key.isReadable()) {
-            ChannelContext ctx = (ChannelContext) key.attachment();
-            ctx.read();
-          }
-          if (key.isValid() && key.isWritable()) {
-            ChannelContext ctx = (ChannelContext) key.attachment();
-            ctx.flush();
-          }
-        } catch (Exception e) {
-          log.severe("Terminating connection to - " + key.channel() + " " + e.toString());
-        }
-//          e.printStackTrace();
-//          log.severe("Terminating connection to - " + key.channel());
-//          try {
-//            key.channel().close();
-//            key.cancel();
-//            throw new RuntimeException(e);
-//          } catch (Exception e1) {
-//            key.cancel();
-//            throw new RuntimeException(e1);
-//          }
-//        }
-        if (!running()) {
-          break;
-        }
-      }
-      configureChannel();
     }
   }
 

@@ -15,6 +15,7 @@
  */
 package com.xjeffrose.xio2.http.server;
 
+import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpResponse;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class HttpHandler {
       }
     }
     ctx.state = ChannelContext.State.start_response;
-    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
+    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND).toBB());
   }
 
   public void addRoute(String route, Service service) {

@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xjeffrose.xio2.http.server;
+package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequestParser;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpResponse;
+import com.xjeffrose.xio2.http.server.HttpHandler;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -39,19 +40,19 @@ public class ChannelContext {
   private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<ByteBuffer>();
   private final HttpRequestParser parser = new HttpRequestParser();
 
-  protected State state = State.got_request;
+  public State state = State.got_request;
 
   public final HttpRequest req = new HttpRequest();
   public SSLEngine engine;
   public boolean ssl = false;
   public SocketChannel channel;
 
-  ChannelContext(SocketChannel channel, HttpHandler handler) {
+  public ChannelContext(SocketChannel channel, HttpHandler handler) {
     this.channel = channel;
     this.handler = handler;
   }
 
-  protected enum State {
+  public enum State {
     got_request,
     start_parse,
     finished_parse,
@@ -70,7 +71,7 @@ public class ChannelContext {
         } else {
           nread = channel.read(req.inputBuffer);
         }
-        parserOk = parser.parse(req);
+
         state = State.start_parse;
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -83,13 +84,21 @@ public class ChannelContext {
         throw new RuntimeException(e);
       }
     }
+    parse();
     state = State.finished_parse;
     if (parserOk) {
       handle();
     } else {
       state = State.start_response;
-      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.BAD_REQUEST));
+      //TODO: Decouple HTTP
+      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.BAD_REQUEST).toBB());
     }
+  }
+
+  private boolean parse() {
+    parserOk = parser.parse(req);
+    return parserOk;
+
   }
 
   private void handle() {
@@ -104,18 +113,23 @@ public class ChannelContext {
         for (int i = 0; i < bbList.size(); i++) {
           channel.write(bbList.removeFirst());
         }
-        //TODO: Be smarter about when to close
         channel.close();
       }
     } catch (Exception e) {
-      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR));
+      //TODO: Decouple HTTP
+      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR).toBB());
       log.severe("This isn't correct - " + channel);
-      //channel.close();
+      try {
+        channel.close();
+      } catch (java.io.IOException e2) {
+        throw new RuntimeException(e2);
+      }
       throw new RuntimeException(e);
     }
   }
 
   public void write(HttpResponse resp) {
+    //TODO: Decouple HTTP
     write(resp.toBB());
   }
 

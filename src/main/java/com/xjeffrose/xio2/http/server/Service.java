@@ -15,6 +15,7 @@
  */
 package com.xjeffrose.xio2.http.server;
 
+import com.xjeffrose.xio2.ChannelContext;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public abstract class Service {

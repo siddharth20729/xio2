@@ -16,7 +16,7 @@
 package com.xjeffrose.xio2.http.server.TLS;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.server.ChannelContext;
+import com.xjeffrose.xio2.ChannelContext;
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;

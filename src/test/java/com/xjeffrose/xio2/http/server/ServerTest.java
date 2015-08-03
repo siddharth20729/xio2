@@ -19,6 +19,7 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.xjeffrose.xio2.http.Http;
+import com.xjeffrose.xio2.util.OS;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import javax.net.ssl.HostnameVerifier;
@@ -125,6 +126,25 @@ public class ServerTest {
       assertEquals(response.code(), 404);
     }
   }
+
+//  @Test
+//  public void testServeCloseFD () throws Exception {
+//    s.bind(9001);
+//    s.serve();
+//
+//    Request request = new Request.Builder()
+//        .url("http://localhost:9001/")
+//        .build();
+//
+//    int percent = 90;
+//    for (int i = 1; i <= 10000; i++) {
+//      Response response = client.newCall(request).execute();
+//      assertEquals(response.code(), 404);
+//      assertTrue("Iteration [" + i + "] Open file descriptors less than " + percent + "% of max: " + OS_TYPE.getOpenFileDescriptorCount() + "/" + OS_TYPE.getMaxFileDescriptorCount(),
+//          OS_TYPE.getOpenFileDescriptorCount() < OS_TYPE.getMaxFileDescriptorCount() * (percent/100.0));
+//
+//    }
+//  }
 
   @Test
   public void testAddRoute() throws Exception {

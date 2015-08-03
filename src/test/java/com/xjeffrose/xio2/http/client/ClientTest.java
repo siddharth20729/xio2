@@ -16,11 +16,12 @@
 package com.xjeffrose.xio2.http.client;
 
 import com.xjeffrose.xio2.http.*;
-import com.xjeffrose.xio2.http.server.ChannelContext;
+import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.http.server.HttpHandler;
 import com.xjeffrose.xio2.http.server.ProxyService;
 import com.xjeffrose.xio2.http.server.Server;
 import com.xjeffrose.xio2.http.server.Service;
+import com.xjeffrose.xio2.util.OS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +57,33 @@ public class ClientTest {
     assertEquals(resp.headers.size(), 3);
     assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
     assertEquals(resp.headers.get("Server"), "xio2");
+  }
+
+  @Test
+  public void testMultipleCalls() throws Exception {
+    new Thread(new SimpleTestServer(9039)).start();
+
+    //Give Jetty a Min to Wake up and run
+    Thread.sleep(500);
+
+    HttpRequest req = new HttpRequest.Builder()
+        .url("/")
+        .build();
+
+    for (int i = 1; i <= 10000; i++) {
+      Client c = Http.newClient("localhost:9039");
+
+      HttpResponse resp = c.call(req);
+      assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+      assertEquals(resp.getStatus(), "200 OK");
+      assertEquals(resp.headers.size(), 4);
+      assertEquals(resp.headers.get("Content-Type"), "text/html;charset=utf-8");
+      assertEquals(resp.headers.get("Server"), "Jetty(9.3.1.v20150714)");
+      assertEquals("CONGRATS!\n", resp.getBody());
+      assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
+      assertTrue("Iteration [" + i + "] Open file descriptors less than 10% of max: " + OS.getOpenFileDescriptorCount() + "/" + OS.getMaxFileDescriptorCount(),
+          OS.getOpenFileDescriptorCount() < OS.getMaxFileDescriptorCount() * 0.10);
+    }
   }
 
   @Test

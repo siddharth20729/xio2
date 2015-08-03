@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xjeffrose.xio2.http.server;
+package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
+import com.xjeffrose.xio2.http.server.HttpHandler;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -26,7 +27,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-class Acceptor extends Thread {
+public class Acceptor extends Thread {
   private static final Logger log = Log.getLogger(Acceptor.class.getName());
 
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
@@ -34,7 +35,7 @@ class Acceptor extends Thread {
   private final EventLoopPool eventLoopPool;
   private HttpHandler handler;
 
-  Acceptor(ServerSocketChannel serverChannel,
+  public Acceptor(ServerSocketChannel serverChannel,
            EventLoopPool eventLoopPool,
            HttpHandler handler) {
     this.eventLoopPool = eventLoopPool;
@@ -79,6 +80,7 @@ class Acceptor extends Thread {
             EventLoop next = eventLoopPool.next();
             next.addContext(new ChannelContext(channel, handler));
           } else if (!key.isValid()) {
+            log.info("Key " + key + " is no longer valid.");
             key.cancel();
           }
         } catch (IOException e) {
