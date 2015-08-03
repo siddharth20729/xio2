@@ -131,7 +131,7 @@ public class Client {
     HttpRequest req = HttpRequest.copy(serverCtx.req, serverCtx.ssl);
     HttpResponse response = call(req);
 
-      serverCtx.write(response.toBB());
+    serverCtx.write(response.toBB());
   }
 
   private HttpResponse execute(SocketChannel channel) {
@@ -251,6 +251,7 @@ public class Client {
                 nread = channel.read(resp.inputBuffer);
               }
             }
+            //TODO: Decouple HTTP
             parserOk = parser.parse(resp);
             if (parserOk) {
               cleanup(channel);
