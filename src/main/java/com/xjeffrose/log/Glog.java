@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 
 class Glog {
 
-  private Glog() { }
+  public Glog() { }
 
   public enum Level {
     UNKNOWN('U'),

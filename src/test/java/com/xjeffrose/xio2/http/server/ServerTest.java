@@ -19,7 +19,6 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.util.OS;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import javax.net.ssl.HostnameVerifier;
@@ -86,7 +85,7 @@ public class ServerTest {
   @Before
   public void setUp() throws Exception {
     s = Http.newServer();
-    testHandler.addRoute("/test", new TestService());
+    testHandler.addRoute("/test", new TestHttpService());
   }
 
   @After

@@ -42,7 +42,7 @@ public class ServiceTest {
 //
 //  @Test
 //  public void testHandleGet() throws Exception {
-//    s.addRoute("/service_test", new TestService());
+//    s.addRoute("/service_test", new TestHttpService());
 //    s.serve(9011);
 //
 //    Request request = new Request.Builder()

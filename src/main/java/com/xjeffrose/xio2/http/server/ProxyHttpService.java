@@ -15,21 +15,28 @@
  */
 package com.xjeffrose.xio2.http.server;
 
-import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.http.HttpResponse;
-import java.util.logging.Logger;
+import com.xjeffrose.xio2.http.client.Client;
 
-class TestService extends Service {
-  private static final Logger log = Log.getLogger(TestService.class.getName());
-
-//  public void handleNotFound() {
-//    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
-//  }
-
-  public void handleGet(ChannelContext ctx) {
-    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK));
+public class ProxyHttpService extends HttpService {
+  private final String proxiedService;
+  public ProxyHttpService(String proxiedService) {
+    this.proxiedService = proxiedService;
   }
 
+  @Override
+  public void handle(ChannelContext ctx) {
+
+    Client c = null;
+
+    if (ctx.ssl) {
+      c = Http.newSslClient(proxiedService);
+
+    } else {
+      c = Http.newClient(proxiedService);
+    }
+
+    c.proxy(ctx);
+  }
 }

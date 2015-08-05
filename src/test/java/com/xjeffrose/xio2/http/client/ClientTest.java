@@ -18,9 +18,9 @@ package com.xjeffrose.xio2.http.client;
 import com.xjeffrose.xio2.http.*;
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.http.server.HttpHandler;
-import com.xjeffrose.xio2.http.server.ProxyService;
+import com.xjeffrose.xio2.http.server.ProxyHttpService;
 import com.xjeffrose.xio2.http.server.Server;
-import com.xjeffrose.xio2.http.server.Service;
+import com.xjeffrose.xio2.http.server.HttpService;
 import com.xjeffrose.xio2.util.OS;
 import org.junit.After;
 import org.junit.Before;
@@ -168,7 +168,7 @@ public class ClientTest {
     Thread.sleep(500);
     Server client_int = Http.newServer();
     HttpHandler testHandler = new HttpHandler();
-    testHandler.addRoute("/", new ProxyService("localhost:9041"));
+    testHandler.addRoute("/", new ProxyHttpService("localhost:9041"));
     client_int.serve(9040, testHandler);
 
     HttpRequest req = new HttpRequest.Builder()
@@ -195,7 +195,7 @@ public class ClientTest {
     Thread.sleep(500);
     Server client_int = Http.newServer();
     HttpHandler testHandler = new HttpHandler();
-    testHandler.addRoute("/", new ProxyService("localhost:9049"));
+    testHandler.addRoute("/", new ProxyHttpService("localhost:9049"));
     client_int.serve(9045, testHandler);
 
     for (int i = 1; i < 11; i++) {
@@ -221,7 +221,7 @@ public class ClientTest {
   public void testProxySSL() throws Exception {
     Server service_int = Http.newSslServer();
     HttpHandler proxiedHandler = new HttpHandler();
-    proxiedHandler.addRoute("/", new Service() {
+    proxiedHandler.addRoute("/", new HttpService() {
       @Override
       public void handleGet(ChannelContext ctx) {
         ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "CONGRATS!\n"));
@@ -232,7 +232,7 @@ public class ClientTest {
 
     Server client_int = Http.newSslServer();
     HttpHandler testHandler = new HttpHandler();
-    testHandler.addRoute("/", new ProxyService("localhost:9043"));
+    testHandler.addRoute("/", new ProxyHttpService("localhost:9043"));
     client_int.serve(9042, testHandler);
 
     HttpRequest req = new HttpRequest.Builder()

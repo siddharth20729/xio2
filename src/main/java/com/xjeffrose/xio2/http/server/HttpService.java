@@ -18,10 +18,10 @@ package com.xjeffrose.xio2.http.server;
 import com.xjeffrose.xio2.ChannelContext;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public abstract class Service {
-  private final ConcurrentLinkedDeque<Service> serviceList = new ConcurrentLinkedDeque<Service>();
+public abstract class HttpService {
+  private final ConcurrentLinkedDeque<HttpService> httpServiceList = new ConcurrentLinkedDeque<HttpService>();
 
-  public Service() { }
+  public HttpService() { }
 
   public void handle(ChannelContext ctx) {
     switch (ctx.req.method_) {
@@ -80,13 +80,13 @@ public abstract class Service {
 
   private void handlePatch(ChannelContext ctx) { }
 
-  public void andThen(Service service) {
-    serviceList.addLast(service);
+  public void andThen(HttpService httpService) {
+    httpServiceList.addLast(httpService);
   }
 
   private void serviceStream(ChannelContext ctx) {
-    while (serviceList.size() > 0) {
-      serviceList.removeLast().handle(ctx);
+    while (httpServiceList.size() > 0) {
+      httpServiceList.removeLast().handle(ctx);
     }
   }
 }
