@@ -20,71 +20,74 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 public abstract class HttpService {
   private final ConcurrentLinkedDeque<HttpService> httpServiceList = new ConcurrentLinkedDeque<HttpService>();
+  public ChannelContext ctx;
 
   public HttpService() { }
 
   public void handle(ChannelContext ctx) {
+    this.ctx = ctx;
+
     switch (ctx.req.method_) {
       case GET:
-        handleGet(ctx);
-        serviceStream(ctx);
+        handleGet();
+        serviceStream();
         return;
       case POST:
-        handlePost(ctx);
-        serviceStream(ctx);
+        handlePost();
+        serviceStream();
         return;
       case PUT:
-        handlePut(ctx);
-        serviceStream(ctx);
+        handlePut();
+        serviceStream();
         return;
       case DELETE:
-        handleDelete(ctx);
-        serviceStream(ctx);
+        handleDelete();
+        serviceStream();
         return;
       case TRACE:
-        handleTrace(ctx);
-        serviceStream(ctx);
+        handleTrace();
+        serviceStream();
         return;
       case OPTION:
-        handleOption(ctx);
-        serviceStream(ctx);
+        handleOption();
+        serviceStream();
         return;
       case CONNECT:
-        handleConnect(ctx);
-        serviceStream(ctx);
+        handleConnect();
+        serviceStream();
         return;
       case PATCH:
-        handlePatch(ctx);
-        serviceStream(ctx);
+        handlePatch();
+        serviceStream();
         return;
       default:
-        handleGet(ctx);
-        serviceStream(ctx);
+        handleGet();
+        serviceStream();
         return;
     }
   }
 
-  public void handleGet(ChannelContext ctx) { }
+  public void handleGet() { }
 
-  public void handlePost(ChannelContext ctx) { }
+  public void handlePost() { }
 
-  public void handlePut(ChannelContext ctx) { }
+  public void handlePut() { }
 
-  public void handleDelete(ChannelContext ctx) { }
+  public void handleDelete() { }
 
-  private void handleTrace(ChannelContext ctx) { }
+  private void handleTrace() { }
 
-  private void handleOption(ChannelContext ctx) { }
+  private void handleOption() { }
 
-  private void handleConnect(ChannelContext ctx) { }
+  private void handleConnect() { }
 
-  private void handlePatch(ChannelContext ctx) { }
+  private void handlePatch() { }
 
   public void andThen(HttpService httpService) {
     httpServiceList.addLast(httpService);
   }
 
-  private void serviceStream(ChannelContext ctx) {
+  private void serviceStream() {
     while (httpServiceList.size() > 0) {
       httpServiceList.removeLast().handle(ctx);
     }

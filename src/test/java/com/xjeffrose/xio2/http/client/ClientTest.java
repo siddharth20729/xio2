@@ -223,7 +223,7 @@ public class ClientTest {
     HttpHandler proxiedHandler = new HttpHandler();
     proxiedHandler.addRoute("/", new HttpService() {
       @Override
-      public void handleGet(ChannelContext ctx) {
+      public void handleGet() {
         ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "CONGRATS!\n"));
       }
     });
