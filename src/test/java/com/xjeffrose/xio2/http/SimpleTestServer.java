@@ -24,6 +24,7 @@ public class SimpleTestServer extends AbstractHandler implements Runnable {
   {
     response.setContentType("text/html;charset=utf-8");
     response.setStatus(HttpServletResponse.SC_OK);
+    response.setHeader("X-TEST-HEADER", request.getHeader("X-TEST-HEADER"));
     baseRequest.setHandled(true);
     response.getWriter().println("CONGRATS!");
   }
@@ -35,7 +36,6 @@ public class SimpleTestServer extends AbstractHandler implements Runnable {
 
       try {
         server.start();
-        server.join();
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

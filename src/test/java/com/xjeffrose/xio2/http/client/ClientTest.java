@@ -175,14 +175,18 @@ public class ClientTest {
         .url("/")
         .build();
 
+    req.headers.set("X-TEST-HEADER", "Test/header/value");
+
     Client client = Http.newClient("localhost:9040");
     HttpObject resp = client.call(req);
 
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
     assertEquals(resp.getStatus(), "200 OK");
-    assertEquals(resp.headers.size(), 4);
+    assertEquals(resp.headers.size(), 5);
     assertEquals(resp.headers.get("Content-Type"), "text/html;charset=utf-8");
     assertEquals(resp.headers.get("Server"), "Jetty(9.3.1.v20150714)");
+    assertEquals(resp.headers.get("X-TEST-HEADER"), "Test/header/value");
+
     assertEquals("CONGRATS!\n", resp.getBody());
     assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
   }

@@ -15,8 +15,22 @@
  */
 package com.xjeffrose.xio2.http;
 
+import java.net.URI;
+import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class HttpRequestTest {
 
+  @Test
+  public void testAddHeader() throws Exception {
+
+    HttpRequest testReq = new HttpRequest.Builder()
+        .url("/")
+        .build();
+
+    testReq.headers.set("X-TEST-HEADER", "test header value");
+
+    assertEquals("test header value", testReq.headers.get("X-TEST-HEADER"));
+  }
 }

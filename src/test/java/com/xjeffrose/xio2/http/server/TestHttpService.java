@@ -28,7 +28,7 @@ class TestHttpService extends HttpService {
 //    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND));
 //  }
 
-  public void handleGet(ChannelContext ctx) {
+  public void handleGet() {
     ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK));
   }
 
