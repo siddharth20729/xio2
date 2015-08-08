@@ -29,7 +29,7 @@ class TestHttpService extends HttpService {
 //  }
 
   public void handleGet() {
-    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK).toBB());
+    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "THIS IS BODY").toBB());
   }
 
 }

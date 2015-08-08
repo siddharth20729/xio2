@@ -25,15 +25,15 @@ public class HttpRequest extends HttpObject implements Request {
 
   public HttpRequest() { }
 
-  public static HttpRequest copy(HttpRequest other, boolean tls) {
-    return HttpRequest.newBuilder()
-        .method(other.method_)
-        .url(other.getUri().toString())
-        .version(other.version)
-        .body(other.getBody())
-        .tls(tls)
-        .build();
-  }
+//  public static HttpRequest copy(HttpRequest other, boolean tls) {
+//    return HttpRequest.newBuilder()
+//        .method(other.method_)
+//        .url(other.getUri().toString())
+//        .version(other.version)
+//        .body(other.getBody())
+//        .tls(tls)
+//        .build();
+//  }
 
   public static Builder newBuilder() {
     return new Builder();

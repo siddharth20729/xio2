@@ -56,6 +56,13 @@ public class TLS {
     ctx.engine = engine;
   }
 
+  public TLS(ChannelContext ctx, TLSConfiguration config) {
+    this.channel = ctx.channel;
+
+    genEngine();
+    ctx.engine = engine;
+  }
+
   public TLS(ChannelContext ctx, String version, boolean selfSignedCert) {
     this.channel = ctx.channel;
     this.version = version;

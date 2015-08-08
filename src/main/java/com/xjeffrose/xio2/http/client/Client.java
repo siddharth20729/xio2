@@ -47,7 +47,7 @@ public class Client {
   private TLS tls = null;
   public LoadBalancer lb = LoadBalancer.NullLoadBalancer;
   private LoadBalancingStrategy lbs;
-  public boolean ssl = false;
+  public boolean _tls = false;
   private String serverString;
 
   public Client(String serverString) {
@@ -55,8 +55,8 @@ public class Client {
     connect();
   }
 
-  public void ssl(boolean b) {
-    this.ssl = b;
+  public void tls(boolean b) {
+    this._tls = b;
   }
 
   public enum LoadBalancer {
@@ -71,7 +71,7 @@ public class Client {
       SocketChannel channel = SocketChannel.open();
       channel.configureBlocking(false);
       channel.connect(addr);
-      if (ssl) {
+      if (_tls) {
         tls = new TLS(channel);
       }
       return channel;
@@ -135,7 +135,7 @@ public class Client {
   }
 
   private HttpResponse execute(SocketChannel channel) {
-    if (ssl) {
+    if (_tls) {
       if (checkConnect(channel)) {
         if (tls.execute()) {
           if (write(channel)) {
@@ -202,7 +202,7 @@ public class Client {
           iterator.remove();
 
           if (key.isValid() && key.isWritable()) {
-            if (ssl) {
+            if (_tls) {
               tls.engine.wrap(req.toBB(), tls.encryptedRequest);
               tls.encryptedRequest.flip();
               channel.write(tls.encryptedRequest);
@@ -237,7 +237,7 @@ public class Client {
           iterator.remove();
 
           if (key.isValid() && key.isReadable()) {
-            if (ssl) {
+            if (_tls) {
               tls.encryptedResponse.clear();
 
               while (nread > 0) {

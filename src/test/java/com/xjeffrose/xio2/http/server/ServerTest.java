@@ -158,12 +158,12 @@ public class ServerTest {
 
     assertTrue(response.isSuccessful());
     assertEquals(response.code(), 200);
+    assertEquals("THIS IS BODY", response.body().string());
   }
 
   @Test
   public void testAddRouteMany() throws Exception {
     s.serve(9004, testHandler);
-
 
     Request request = new Request.Builder()
         .url("http://localhost:9004/test")
@@ -178,6 +178,7 @@ public class ServerTest {
 
       assertTrue(response.isSuccessful());
       assertEquals(response.code(), 200);
+      assertEquals("THIS IS BODY", response.body().string());
     }
   }
 
@@ -185,7 +186,7 @@ public class ServerTest {
   public void testSsl() throws Exception {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
-    s.ssl(true);
+    s.tls(true);
     s.serve(9005, testHandler);
 
     Request request = new Request.Builder()
@@ -196,13 +197,14 @@ public class ServerTest {
     if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
     assertEquals(response.code(), 200);
+    assertEquals("THIS IS BODY", response.body().string());
   }
 
   @Test
   public void testSslMany() throws Exception {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
-    s.ssl(true);
+    s.tls(true);
     s.serve(9006, testHandler);
 
 
@@ -219,6 +221,7 @@ public class ServerTest {
 
       assertTrue(response.isSuccessful());
       assertEquals(response.code(), 200);
+      assertEquals("THIS IS BODY", response.body().string());
     }
   }
 
@@ -227,7 +230,7 @@ public class ServerTest {
   public void testSslFail() throws Exception {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
-    s.ssl(false);
+    s.tls(false);
     s.serve(9007, testHandler);
 
     Request request = new Request.Builder()

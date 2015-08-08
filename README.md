@@ -3,18 +3,16 @@ xio2
 
 High performance I/O for the JVM
 
-
 ###Usage
 
 Http Server
 
 ```java
-Server s = Http.newServer();
+Server s = Http.newTLSServer();
 
 HttpHandler awesomeHandler = new HttpHandler();
 Service awesomeServ = new RateLimitServ().andThen(new BusinessLogicServ());
 awesomeHandler.addRoute("/sweet", awesomeServ);
-s.ssl(true);
 
 s.serve(8443, awesomeHandler);
 
@@ -25,8 +23,7 @@ s.close();
 
 Http Client
 ```java
-XioClient c = Http.newClient();
-c.ssl(true);
+XioClient c = Http.newTLSClient();
 c.connect("localhost:8443");
 
 HttpRequest req = new HttpRequest.Builder()

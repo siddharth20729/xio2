@@ -89,8 +89,8 @@ public class ClientTest {
   public void testSSLCall() throws Exception {
     Client c = Http.newClient("localhost:9017");
 
-    s.ssl(true);
-    c.ssl(true);
+    s.tls(true);
+    c.tls(true);
 
     s.bind(9017);
     s.serve();
@@ -110,7 +110,7 @@ public class ClientTest {
   @Test
   public void testServerSet() throws Exception {
 
-    s.ssl(false);
+    s.tls(false);
     s.bind(9031);
     s.bind(9032);
     s.bind(9033);
@@ -135,7 +135,7 @@ public class ClientTest {
   @Test
   public void testServerSetSSL() throws Exception {
 
-    s.ssl(true);
+    s.tls(true);
     s.bind(9021);
     s.bind(9022);
     s.bind(9023);
@@ -143,7 +143,7 @@ public class ClientTest {
 
     Client c = new Client("localhost:9021, localhost:9022, localhost:9023");
 
-    c.ssl(true);
+    c.tls(true);
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
@@ -222,7 +222,7 @@ public class ClientTest {
 
   @Test
   public void testProxySSL() throws Exception {
-    Server service_int = Http.newSslServer();
+    Server service_int = Http.newTLSServer();
     HttpHandler proxiedHandler = new HttpHandler();
     proxiedHandler.addRoute("/", new HttpService() {
       @Override
@@ -233,7 +233,7 @@ public class ClientTest {
 
     service_int.serve(9043, proxiedHandler);
 
-    Server client_int = Http.newSslServer();
+    Server client_int = Http.newTLSServer();
     HttpHandler testHandler = new HttpHandler();
     testHandler.addRoute("/", new ProxyHttpService("localhost:9043"));
     client_int.serve(9042, testHandler);
@@ -242,7 +242,7 @@ public class ClientTest {
         .url("/")
         .build();
 
-    Client client = Http.newSslClient("localhost:9042");
+    Client client = Http.newTLSClient("localhost:9042");
     HttpObject resp = client.call(req);
 
     assertEquals(1, testHandler.requestsHandled());

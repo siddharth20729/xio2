@@ -27,12 +27,12 @@ public class EventLoopPool {
       new ConcurrentLinkedDeque<EventLoop>();
   private EventLoop loop;
 
-  public EventLoopPool(int poolSize, AtomicBoolean ssl) {
+  public EventLoopPool(int poolSize, AtomicBoolean tls) {
     for (int i = 0; i < poolSize; i++) {
-      EventLoop loop = new EventLoop(ssl);
+      EventLoop loop = new EventLoop(tls);
       loop.setName("EventLoop " + i);
       pool.addLast(loop);
-//      pool.addLast(new EventLoop(ssl));
+//      pool.addLast(new EventLoop(tls));
     }
   }
 

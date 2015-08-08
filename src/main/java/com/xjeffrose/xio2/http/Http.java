@@ -31,11 +31,11 @@ public class Http {
     return s;
   }
 
-  public static Server newSslServer() {
+  public static Server newTLSServer() {
     Server s = new Server();
-    String sslVersion = "tlsv1.2";
+    String tlsVersion = "tlsv1.2";
     boolean selfSignedCert = true;
-    s.ssl(true);
+    s.tls(true);
     return s;
   }
 
@@ -44,10 +44,10 @@ public class Http {
     return c;
   }
 
-  public static Client newSslClient(String hostString) {
+  public static Client newTLSClient(String hostString) {
     Client c = new Client(hostString);
-    String sslVersion = "tlsv1.2";
-    c.ssl(true);
+    String tlsVersion = "tlsv1.2";
+    c.tls(true);
     return c;
   }
 

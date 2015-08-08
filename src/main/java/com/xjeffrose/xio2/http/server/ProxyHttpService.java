@@ -30,8 +30,8 @@ public class ProxyHttpService extends HttpService {
 
     Client c = null;
 
-    if (ctx.ssl) {
-      c = Http.newSslClient(proxiedService);
+    if (ctx.tls) {
+      c = Http.newTLSClient(proxiedService);
 
     } else {
       c = Http.newClient(proxiedService);

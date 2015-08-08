@@ -40,7 +40,7 @@ public class ChannelContext {
   private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<ByteBuffer>();
   public State state = State.got_request;
   public SSLEngine engine;
-  public boolean ssl = false;
+  public boolean tls = false;
   public SocketChannel channel;
 
   public ChannelContext(SocketChannel channel, HttpHandler handler) {
@@ -63,7 +63,7 @@ public class ChannelContext {
   public void read() {
     while (nread > 0 && state == State.got_request) {
       try {
-        if (ssl && engine != null) {
+        if (tls && engine != null) {
           nread = channel.read(encryptedRequest);
           encryptedRequest.flip();
           sslEngineResult = engine.unwrap(encryptedRequest, handler.getInputBuffer());
@@ -127,11 +127,11 @@ public class ChannelContext {
 
   public void write(ByteBuffer bb) {
     ByteBuffer encryptedResponse = null;
-    if (ssl) {
+    if (tls) {
       encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
     }
     if (state == State.start_response) {
-      if (ssl && engine != null) {
+      if (tls && engine != null) {
         try {
           sslEngineResult = engine.wrap(bb, encryptedResponse);
           sslEngineResult.getStatus();

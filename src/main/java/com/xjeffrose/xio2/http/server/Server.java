@@ -35,14 +35,14 @@ public class Server {
   private Acceptor acceptor;
   private EventLoopPool pool;
 
-  private AtomicBoolean ssl = new AtomicBoolean(false);
+  private AtomicBoolean tls = new AtomicBoolean(false);
 
   public Server() {
-    pool = new EventLoopPool(cores, ssl);
+    pool = new EventLoopPool(cores, tls);
   }
 
-  public void ssl(boolean b) {
-    ssl.set(b);
+  public void tls(boolean b) {
+    tls.set(b);
   }
 
   public void bind(int port) throws IOException {
