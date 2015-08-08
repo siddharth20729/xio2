@@ -1,6 +1,6 @@
 package com.xjeffrose.xio2;
 
-import com.xjeffrose.xio2.http.HttpRequest;
+import com.xjeffrose.xio2.http.Http;
 import java.nio.ByteBuffer;
 
 public interface Handler {
@@ -13,8 +13,9 @@ public interface Handler {
 
   void handleFatalError(ChannelContext ctx);
 
-  //TODO: Need to make this a generic request
-  HttpRequest getReq();
+  Request getReq();
+
+  Http.Method getMethod();
 
   ByteBuffer getInputBuffer();
 }

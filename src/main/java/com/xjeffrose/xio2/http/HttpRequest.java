@@ -15,12 +15,13 @@
  */
 package com.xjeffrose.xio2.http;
 
+import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.util.BB;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
-public class HttpRequest extends HttpObject {
+public class HttpRequest extends HttpObject implements Request {
 
   public HttpRequest() { }
 

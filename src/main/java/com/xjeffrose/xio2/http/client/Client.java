@@ -128,8 +128,8 @@ public class Client {
 
   public void proxy(ChannelContext serverCtx) {
 
-    //HttpRequest req = HttpRequest.copy(serverCtx.req, serverCtx.ssl);
-    HttpResponse response = call(serverCtx.handler.getReq());
+    HttpRequest req = (HttpRequest) serverCtx.handler.getReq();
+    HttpResponse response = call(req);
 
     serverCtx.write(response.toBB());
   }

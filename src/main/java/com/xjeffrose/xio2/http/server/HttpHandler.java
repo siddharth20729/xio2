@@ -37,6 +37,10 @@ public class HttpHandler implements Handler {
     return req;
   }
 
+  public Http.Method getMethod() {
+    return req.method_;
+  }
+
   public ByteBuffer getInputBuffer() {
     return req.inputBuffer;
   }
