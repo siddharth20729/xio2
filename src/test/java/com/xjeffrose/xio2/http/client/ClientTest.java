@@ -16,7 +16,6 @@
 package com.xjeffrose.xio2.http.client;
 
 import com.xjeffrose.xio2.http.*;
-import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.http.server.HttpHandler;
 import com.xjeffrose.xio2.http.server.ProxyHttpService;
 import com.xjeffrose.xio2.http.server.Server;
@@ -228,7 +227,7 @@ public class ClientTest {
     proxiedHandler.addRoute("/", new HttpService() {
       @Override
       public void handleGet() {
-        ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "CONGRATS!\n"));
+        ctx.write(com.xjeffrose.xio2.http.HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK, "CONGRATS!\n").toBB());
       }
     });
 

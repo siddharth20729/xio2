@@ -83,7 +83,8 @@ class EventLoop extends Thread {
               key.cancel();
             }
           } catch (Exception e) {
-            key.channel().close();
+            ChannelContext ctx = (ChannelContext) key.attachment();
+            ctx.handleFatalError();
             key.cancel();
           }
           if (!running()) {

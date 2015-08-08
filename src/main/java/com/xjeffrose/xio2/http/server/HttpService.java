@@ -27,7 +27,7 @@ public abstract class HttpService {
   public void handle(ChannelContext ctx) {
     this.ctx = ctx;
 
-    switch (ctx.req.method_) {
+    switch (ctx.handler.getReq().method_) {
       case GET:
         handleGet();
         serviceStream();

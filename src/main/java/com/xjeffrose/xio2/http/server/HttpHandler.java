@@ -18,22 +18,36 @@ package com.xjeffrose.xio2.http.server;
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Handler;
 import com.xjeffrose.xio2.http.Http;
+import com.xjeffrose.xio2.http.HttpRequest;
+import com.xjeffrose.xio2.http.HttpRequestParser;
 import com.xjeffrose.xio2.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class HttpHandler extends Handler {
+public class HttpHandler implements Handler {
+  private final HttpRequest req = new HttpRequest();
   private final AtomicInteger _requestsHandled = new AtomicInteger(0);
   private final Map<Route, HttpService> routes = new ConcurrentHashMap<Route, HttpService>();
 
   public HttpHandler() { }
 
+  public HttpRequest getReq() {
+    return req;
+  }
+
+  public ByteBuffer getInputBuffer() {
+    return req.inputBuffer;
+  }
+
+  public boolean parse(ChannelContext ctx) {
+    final HttpRequestParser parser = new HttpRequestParser();
+    return parser.parse(req);
+  }
+
   public void handle(ChannelContext ctx) {
-
-    //TODO: Do Http Parsing in here and make ChannelContext Protocol independent
-
-    final String uri = ctx.req.getUri().toString();
+    final String uri = req.getUri().toString();
     for (Map.Entry<Route, HttpService> entry : routes.entrySet()) {
       if (entry.getKey().matches(uri)) {
         ctx.state = ChannelContext.State.start_response;
@@ -44,6 +58,17 @@ public class HttpHandler extends Handler {
     }
     ctx.state = ChannelContext.State.start_response;
     ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND).toBB());
+  }
+
+  @Override
+  public void handleError(ChannelContext ctx) {
+    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.BAD_REQUEST).toBB());
+  }
+
+  @Override
+  public void handleFatalError(ChannelContext ctx) {
+    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR).toBB());
+    ctx.flush();
   }
 
   public void addRoute(String route, HttpService httpService) {

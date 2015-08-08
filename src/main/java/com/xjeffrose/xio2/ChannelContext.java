@@ -32,17 +32,13 @@ import javax.net.ssl.SSLException;
 public class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
-  private HttpHandler handler;
   private int nread = 1;
   public boolean parserOk;
+  public Handler handler;
   private SSLEngineResult sslEngineResult;
   private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
   private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<ByteBuffer>();
-  private final HttpRequestParser parser = new HttpRequestParser();
-
   public State state = State.got_request;
-
-  public final HttpRequest req = new HttpRequest();
   public SSLEngine engine;
   public boolean ssl = false;
   public SocketChannel channel;
@@ -50,6 +46,10 @@ public class ChannelContext {
   public ChannelContext(SocketChannel channel, HttpHandler handler) {
     this.channel = channel;
     this.handler = handler;
+  }
+
+  public void handleFatalError() {
+    handler.handleFatalError(this);
   }
 
   public enum State {
@@ -66,10 +66,10 @@ public class ChannelContext {
         if (ssl && engine != null) {
           nread = channel.read(encryptedRequest);
           encryptedRequest.flip();
-          sslEngineResult = engine.unwrap(encryptedRequest, req.inputBuffer);
+          sslEngineResult = engine.unwrap(encryptedRequest, handler.getInputBuffer());
           sslEngineResult.getStatus();
         } else {
-          nread = channel.read(req.inputBuffer);
+          nread = channel.read(handler.getInputBuffer());
         }
 
         state = State.start_parse;
@@ -90,15 +90,13 @@ public class ChannelContext {
       handle();
     } else {
       state = State.start_response;
-      //TODO: Decouple HTTP
-      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.BAD_REQUEST).toBB());
+      handler.handleError(this);
     }
   }
 
   private boolean parse() {
-    parserOk = parser.parse(req);
+    parserOk = handler.parse(this);
     return parserOk;
-
   }
 
   private void handle() {
@@ -116,8 +114,7 @@ public class ChannelContext {
         channel.close();
       }
     } catch (Exception e) {
-      //TODO: Decouple HTTP
-      write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR).toBB());
+      handleFatalError();
       log.severe("This isn't correct - " + channel);
       try {
         channel.close();
@@ -126,11 +123,6 @@ public class ChannelContext {
       }
       throw new RuntimeException(e);
     }
-  }
-
-  public void write(HttpResponse resp) {
-    //TODO: Decouple HTTP
-    write(resp.toBB());
   }
 
   public void write(ByteBuffer bb) {
