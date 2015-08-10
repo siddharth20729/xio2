@@ -34,14 +34,12 @@ import javax.net.ssl.SSLParameters;
 public class TLS {
   private static final Logger log = Log.getLogger(TLS.class.getName());
 
-  private SSLContext sslCtx;
   private SSLEngineResult sslResult;
   private ByteBuffer encryptedRequest;
   private ByteBuffer decryptedRequest;
   private ByteBuffer rawResponse;
   private ByteBuffer encryptedResponse;
   private char[] passphrase = "changeit".toCharArray();
-  private SSLEngineResult.HandshakeStatus handshakeStatus;
   private SocketChannel channel;
   private String path;
   private String version = "TLSv1.2";
@@ -109,7 +107,7 @@ public class TLS {
 //      TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
 //      tmf.init(ts);
 
-      sslCtx = SSLContext.getInstance(version);
+      SSLContext sslCtx = SSLContext.getInstance(version);
       sslCtx.init(kmf.getKeyManagers(), null, new SecureRandom());
 //      sslCtx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 
@@ -130,7 +128,6 @@ public class TLS {
 
     switch (sslResult.getStatus()) {
       case OK:
-//        System.out.println("OKKKKKK");
         break;
       case BUFFER_UNDERFLOW:
         read();
@@ -146,7 +143,6 @@ public class TLS {
         }
         break;
       case CLOSED:
-        System.out.print("Closed");
         break;
     }
   }
@@ -162,7 +158,7 @@ public class TLS {
       if (nread == -1) {
         try {
           log.severe("Fool tried to close the channel, yo");
-          //ctx.channel.close();
+          channel.close();
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -179,22 +175,21 @@ public class TLS {
     }
   }
 
-  public void doHandshake() {
-//    ctx.engine = engine;
+  public boolean doHandshake() {
     encryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
     decryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
     rawResponse = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
     encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
 
+    SSLEngineResult.HandshakeStatus handshakeStatus;
+
     try {
       engine.beginHandshake();
-      handshakeStatus = engine.getHandshakeStatus();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
 
-    while (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED
-        && handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
+    while (true) {
       handshakeStatus = engine.getHandshakeStatus();
       switch (handshakeStatus) {
 
@@ -203,7 +198,6 @@ public class TLS {
           while ((task = engine.getDelegatedTask()) != null) {
             new Thread(task).start();
           }
-          handshakeStatus = engine.getHandshakeStatus();
           break;
 
         case NEED_UNWRAP:
@@ -211,7 +205,6 @@ public class TLS {
           encryptedRequest.flip();
           unwrap();
           encryptedRequest.compact();
-          handshakeStatus = engine.getHandshakeStatus();
           break;
 
         case NEED_WRAP:
@@ -219,12 +212,16 @@ public class TLS {
           encryptedResponse.flip();
           write();
           encryptedResponse.compact();
-          handshakeStatus = engine.getHandshakeStatus();
           break;
 
         case FINISHED:
-          log.info("Successful TLS Handshake");
-//          ctx.handshakeOK = true;
+          return true;
+
+        case NOT_HANDSHAKING:
+          return true;
+
+        default:
+          log.info("got rando status " + handshakeStatus);
           break;
       }
     }
