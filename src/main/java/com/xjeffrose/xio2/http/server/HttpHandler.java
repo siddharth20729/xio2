@@ -24,11 +24,9 @@ import com.xjeffrose.xio2.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class HttpHandler implements Handler {
   private final HttpRequest req = new HttpRequest();
-  private final AtomicInteger _requestsHandled = new AtomicInteger(0);
   private final Map<Route, HttpService> routes = new ConcurrentHashMap<>();
 
   public HttpHandler() { }
@@ -56,7 +54,6 @@ public class HttpHandler implements Handler {
       if (entry.getKey().matches(uri)) {
         ctx.state = ChannelContext.State.start_response;
         entry.getValue().handle(ctx, req);
-        _requestsHandled.incrementAndGet();
         return;
       }
     }
@@ -75,9 +72,5 @@ public class HttpHandler implements Handler {
 
   public void addRoute(String route, HttpService httpService) {
     routes.putIfAbsent(Route.build(route), httpService);
-  }
-
-  public int requestsHandled() {
-    return _requestsHandled.get();
   }
 }

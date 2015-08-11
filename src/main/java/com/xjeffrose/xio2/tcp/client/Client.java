@@ -236,8 +236,8 @@ public class Client {
             Thread.sleep(1);
             cleanup(channel);
             if (nread == -1) {
-              cleanup(channel);
-              return null; //Need to return some error of some sort, I guess?
+//              cleanup(channel);
+//              return null; //Need to return some error of some sort, I guess?
             }
             return resp;
           }

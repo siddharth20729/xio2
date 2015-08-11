@@ -27,6 +27,7 @@ public class TcpTest {
     Client c = Tcp.newClient("localhost:10001");
     TcpResponse resp = c.call(new TcpRequest("Testing"));
     assertEquals(BB.BBtoString(resp.inputBuffer), "This is a tcp test");
+
   }
 
   @Test
@@ -36,10 +37,10 @@ public class TcpTest {
     tcpHandler.addService(tcpService);
 
     Server s = Tcp.newTLSServer();
-    s.bind(10001, tcpHandler);
+    s.bind(10002, tcpHandler);
     s.serve();
 
-    Client c = Tcp.newTLSClient("localhost:10001");
+    Client c = Tcp.newTLSClient("localhost:10002");
     TcpResponse resp = c.call(new TcpRequest("Testing"));
     assertEquals(BB.BBtoString(resp.inputBuffer), "This is a tcp test");
 

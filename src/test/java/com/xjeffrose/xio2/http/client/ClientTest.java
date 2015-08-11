@@ -245,8 +245,6 @@ public class ClientTest {
     Client client = Http.newTLSClient("localhost:9042");
     HttpObject resp = client.call(req);
 
-    assertEquals(1, testHandler.requestsHandled());
-    assertEquals(1, proxiedHandler.requestsHandled());
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
     assertEquals(resp.getStatus(), "200 OK");
     assertEquals(resp.headers.size(), 4);

@@ -23,11 +23,20 @@ public class BB {
   private BB() { }
 
   public static String BBtoString(ByteBuffer bb) {
-    final byte[] value = new byte[bb.position()];
     final ByteBuffer bbTemp = bb.duplicate();
-    bbTemp.limit(bbTemp.position());
-    bbTemp.position(0);
-//    bbTemp.limit(bbTemp.capacity());
+    if (bb.position() != 0 ) {
+      bbTemp.flip();
+    }
+    final byte[] value = new byte[bbTemp.limit()];
+    bbTemp.get(value);
+    return new String(value, Charset.forName("UTF-8"));
+  }
+
+  public static String BBtoString(ByteBuffer bb, int position, int limit) {
+    final ByteBuffer bbTemp = bb.duplicate();
+    final byte[] value = new byte[limit];
+    bbTemp.position(position);
+    bbTemp.limit(limit);
     bbTemp.get(value);
     return new String(value, Charset.forName("UTF-8"));
   }
