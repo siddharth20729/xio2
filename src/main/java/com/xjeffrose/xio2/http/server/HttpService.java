@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public abstract class HttpService implements Service {
   private final ConcurrentLinkedDeque<HttpService> httpServiceList = new ConcurrentLinkedDeque<HttpService>();
   public ChannelContext ctx;
-  private HttpRequest req;
+  public HttpRequest req;
 
   public HttpService() { }
 
