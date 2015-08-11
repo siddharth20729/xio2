@@ -16,11 +16,6 @@
 package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.http.HttpRequestParser;
-import com.xjeffrose.xio2.http.HttpRequest;
-import com.xjeffrose.xio2.http.HttpResponse;
-import com.xjeffrose.xio2.http.server.HttpHandler;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -37,13 +32,13 @@ public class ChannelContext {
   public Handler handler;
   private SSLEngineResult sslEngineResult;
   private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
-  private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<ByteBuffer>();
+  private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<>();
   public State state = State.got_request;
   public SSLEngine engine;
   public boolean tls = false;
   public SocketChannel channel;
 
-  public ChannelContext(SocketChannel channel, HttpHandler handler) {
+  public ChannelContext(SocketChannel channel, Handler handler) {
     this.channel = channel;
     this.handler = handler;
   }
@@ -63,13 +58,18 @@ public class ChannelContext {
   public void read() {
     while (nread > 0 && state == State.got_request) {
       try {
+        // Turns out we are only ever allocating 1 input bytebuffer per event loop.
+        // It is super efficient but it requires you to sanitize your ByteBuffers
+        // before you read each time. There you have it.
+        final ByteBuffer inputBuffer = handler.getInputBuffer();
+        inputBuffer.clear();
         if (tls && engine != null) {
           nread = channel.read(encryptedRequest);
           encryptedRequest.flip();
-          sslEngineResult = engine.unwrap(encryptedRequest, handler.getInputBuffer());
+          sslEngineResult = engine.unwrap(encryptedRequest, inputBuffer);
           sslEngineResult.getStatus();
         } else {
-          nread = channel.read(handler.getInputBuffer());
+          nread = channel.read(inputBuffer);
         }
 
         state = State.start_parse;

@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HttpHandler implements Handler {
   private final HttpRequest req = new HttpRequest();
   private final AtomicInteger _requestsHandled = new AtomicInteger(0);
-  private final Map<Route, HttpService> routes = new ConcurrentHashMap<Route, HttpService>();
+  private final Map<Route, HttpService> routes = new ConcurrentHashMap<>();
 
   public HttpHandler() { }
 
@@ -55,7 +55,7 @@ public class HttpHandler implements Handler {
     for (Map.Entry<Route, HttpService> entry : routes.entrySet()) {
       if (entry.getKey().matches(uri)) {
         ctx.state = ChannelContext.State.start_response;
-        entry.getValue().handle(ctx);
+        entry.getValue().handle(ctx, req);
         _requestsHandled.incrementAndGet();
         return;
       }
@@ -64,12 +64,10 @@ public class HttpHandler implements Handler {
     ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND).toBB());
   }
 
-  @Override
   public void handleError(ChannelContext ctx) {
     ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.BAD_REQUEST).toBB());
   }
 
-  @Override
   public void handleFatalError(ChannelContext ctx) {
     ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR).toBB());
     ctx.flush();

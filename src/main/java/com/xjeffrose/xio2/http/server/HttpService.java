@@ -15,17 +15,22 @@
  */
 package com.xjeffrose.xio2.http.server;
 
+import com.xjeffrose.xio2.Request;
+import com.xjeffrose.xio2.Service;
 import com.xjeffrose.xio2.ChannelContext;
+import com.xjeffrose.xio2.http.HttpRequest;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-public abstract class HttpService {
+public abstract class HttpService implements Service {
   private final ConcurrentLinkedDeque<HttpService> httpServiceList = new ConcurrentLinkedDeque<HttpService>();
   public ChannelContext ctx;
+  private HttpRequest req;
 
   public HttpService() { }
 
-  public void handle(ChannelContext ctx) {
+  public void handle(ChannelContext ctx, Request req) {
     this.ctx = ctx;
+    this.req = (HttpRequest) req;
 
     switch (ctx.handler.getMethod()) {
       case GET:
@@ -89,7 +94,7 @@ public abstract class HttpService {
 
   private void serviceStream() {
     while (httpServiceList.size() > 0) {
-      httpServiceList.removeLast().handle(ctx);
+      httpServiceList.removeLast().handle(ctx, req);
     }
   }
 }

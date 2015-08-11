@@ -33,11 +33,11 @@ public class Acceptor extends Thread {
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
-  private HttpHandler handler;
+  private Handler handler;
 
   public Acceptor(ServerSocketChannel serverChannel,
            EventLoopPool eventLoopPool,
-           HttpHandler handler) {
+           Handler handler) {
     this.eventLoopPool = eventLoopPool;
     this.handler = handler;
 

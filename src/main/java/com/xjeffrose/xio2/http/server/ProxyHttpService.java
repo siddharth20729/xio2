@@ -16,6 +16,7 @@
 package com.xjeffrose.xio2.http.server;
 
 import com.xjeffrose.xio2.ChannelContext;
+import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.client.Client;
 
@@ -26,7 +27,7 @@ public class ProxyHttpService extends HttpService {
   }
 
   @Override
-  public void handle(ChannelContext ctx) {
+  public void handle(ChannelContext ctx, Request req) {
 
     Client c = null;
 

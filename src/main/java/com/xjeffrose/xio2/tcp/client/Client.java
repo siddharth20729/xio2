@@ -1,30 +1,13 @@
-/*
- * Copyright (C) 2015 Jeff Rose
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package com.xjeffrose.xio2.http.client;
+package com.xjeffrose.xio2.tcp.client;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.http.HttpRequest;
-import com.xjeffrose.xio2.http.HttpResponse;
-import com.xjeffrose.xio2.http.HttpResponseParser;
+import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.LoadBalancingStrategy;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.NullLoadBalancer;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.RoundRobinLoadBalancer;
 import com.xjeffrose.xio2.http.client.TLS.TLS;
-import com.xjeffrose.xio2.ChannelContext;
+import com.xjeffrose.xio2.tcp.server.TcpRequest;
+import com.xjeffrose.xio2.tcp.server.TcpResponse;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
@@ -43,8 +26,7 @@ public class Client {
   private static final Logger log = Log.getLogger(Client.class.getName());
 
   private Selector selector;
-  private HttpRequest req;
-  private boolean parserOk;
+  private TcpRequest req;
   private TLS tls = null;
   public LoadBalancer lb = LoadBalancer.NullLoadBalancer;
   private LoadBalancingStrategy lbs;
@@ -121,7 +103,7 @@ public class Client {
     }
   }
 
-  public HttpResponse call(HttpRequest req) {
+  public TcpResponse call(TcpRequest req) {
     this.req = req;
 
     return execute(getChannel(lbs.nextAddress()));
@@ -129,13 +111,13 @@ public class Client {
 
   public void proxy(ChannelContext serverCtx) {
 
-    HttpRequest req = (HttpRequest) serverCtx.handler.getReq();
-    HttpResponse response = call(req);
+    TcpRequest req = (TcpRequest) serverCtx.handler.getReq();
+    TcpResponse response = call(req);
 
     serverCtx.write(response.toBB());
   }
 
-  private HttpResponse execute(SocketChannel channel) {
+  private TcpResponse execute(SocketChannel channel) {
     if (_tls) {
       if (checkConnect(channel)) {
         if (tls.execute()) {
@@ -221,10 +203,9 @@ public class Client {
     }
   }
 
-  private HttpResponse read(SocketChannel channel) {
+  private TcpResponse read(SocketChannel channel) {
     int nread = 1;
-    final HttpResponse resp = new HttpResponse();
-    final HttpResponseParser parser = new HttpResponseParser();
+    final TcpResponse resp = new TcpResponse();
     try {
       while (true) {
 
@@ -252,26 +233,13 @@ public class Client {
                 nread = channel.read(resp.inputBuffer);
               }
             }
-            //TODO: Decouple HTTP
-            parserOk = parser.parse(resp);
-            if (parserOk) {
+            Thread.sleep(1);
+            cleanup(channel);
+            if (nread == -1) {
               cleanup(channel);
-              return resp;
-            } else if (nread == -1) {
-              cleanup(channel);
-              return HttpResponse
-                  .DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR);
-            } else {
-              switch (parser.status) {
-                case BUFFER_UNDERFLOW:
-                  //PUMP THE BRAKES SPEED RACER
-                  nread = channel.read(resp.inputBuffer);
-                  Thread.sleep(1);
-                  break;
-                case FINISHED:
-                  break;
-              }
+              return null; //Need to return some error of some sort, I guess?
             }
+            return resp;
           }
         }
       }
@@ -289,4 +257,3 @@ public class Client {
     }
   }
 }
-

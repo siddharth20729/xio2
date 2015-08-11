@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xjeffrose.xio2.http.server;
+package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.Acceptor;
-import com.xjeffrose.xio2.EventLoopPool;
+import com.xjeffrose.xio2.http.server.HttpHandler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
@@ -49,16 +48,16 @@ public class Server {
     bind("0.0.0.0", port, new HttpHandler());
   }
 
-  public void bind(int port, HttpHandler handler) {
+  public void bind(int port, Handler handler) {
     bind("0.0.0.0", port, handler);
   }
 
-  public void bind(String ipAddr, int port, HttpHandler handler) {
+  public void bind(String ipAddr, int port, Handler handler) {
     final InetSocketAddress addr = new InetSocketAddress(ipAddr, port);
     bind(addr, handler);
   }
 
-  public void bind(InetSocketAddress addr, HttpHandler handler) {
+  public void bind(InetSocketAddress addr, Handler handler) {
     try {
       channel = ServerSocketChannel.open();
       channel.configureBlocking(false);
@@ -71,7 +70,7 @@ public class Server {
     }
   }
 
-  public void serve(int port, HttpHandler handler) {
+  public void serve(int port, Handler handler) {
     bind(port, handler);
     serve();
   }

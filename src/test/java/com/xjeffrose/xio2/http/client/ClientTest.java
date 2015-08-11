@@ -18,7 +18,7 @@ package com.xjeffrose.xio2.http.client;
 import com.xjeffrose.xio2.http.*;
 import com.xjeffrose.xio2.http.server.HttpHandler;
 import com.xjeffrose.xio2.http.server.ProxyHttpService;
-import com.xjeffrose.xio2.http.server.Server;
+import com.xjeffrose.xio2.Server;
 import com.xjeffrose.xio2.http.server.HttpService;
 import com.xjeffrose.xio2.util.OS;
 import org.junit.After;
