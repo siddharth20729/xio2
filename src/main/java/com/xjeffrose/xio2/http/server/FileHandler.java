@@ -63,9 +63,13 @@ public class FileHandler implements Handler {
 
   public void handle(ChannelContext ctx) {
     try {
-      final FileChannel fileChannel = FileChannel.open(Paths.get(wwwDir + req.getUri().getPath()), StandardOpenOption.READ);
+      final String path = req.getUri().getPath().equals("/") ? "index.html" : req.getUri().getPath();
+      final FileChannel fileChannel = FileChannel.open(Paths.get(wwwDir + path), StandardOpenOption.READ);
       final HttpResponse resp = HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK);
       resp.headers.set("Content-Length", String.valueOf(fileChannel.size()));
+
+      System.out.println(req.toString());
+      System.out.println(path);
 
       ctx.channel.write(resp.toBB());
       fileChannel.transferTo(0, fileChannel.size(), ctx.channel);

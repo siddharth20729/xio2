@@ -1,4 +1,5 @@
 settings.xml
+dependency-reduced-pom.xml
 *.gpg
 
 # Compiled source #
