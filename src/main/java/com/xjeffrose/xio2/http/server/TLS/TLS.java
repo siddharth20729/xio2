@@ -78,7 +78,7 @@ public class TLS {
       if (selfSignedCert) {
         ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), "selfsignedcert");
       } else {
-        ks = KeyStoreFactory.Generate(xioCertGenerator.generate(config), new String (config.keystorePassphrase));
+        ks = KeyStoreFactory.Generate(xioCertGenerator.generate("",""), new String (config.keystorePassphrase));
       }
 
       KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
