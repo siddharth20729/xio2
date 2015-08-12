@@ -30,8 +30,6 @@ public class Server {
 
   private List<Acceptor> acceptorList = new ArrayList<>();
   private final int cores = Runtime.getRuntime().availableProcessors();
-  private ServerSocketChannel channel;
-  private Acceptor acceptor;
   private EventLoopPool pool;
 
   private AtomicBoolean tls = new AtomicBoolean(false);
@@ -59,12 +57,11 @@ public class Server {
 
   public void bind(InetSocketAddress addr, Handler handler) {
     try {
-      channel = ServerSocketChannel.open();
+      ServerSocketChannel channel = ServerSocketChannel.open();
       channel.configureBlocking(false);
       channel.bind(addr);
 
-      acceptor = new Acceptor(channel, pool, handler);
-      acceptor.start();
+      acceptorList.add(new Acceptor(channel, pool, handler));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
