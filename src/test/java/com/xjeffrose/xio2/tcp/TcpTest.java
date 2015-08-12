@@ -16,7 +16,7 @@ public class TcpTest {
   @Test
   public void testNewServer() throws Exception {
 
-    TcpHandler tcpHandler = new TcpHandler();
+    TcpHandler tcpHandler = new TcpHandler(false);
     TcpService tcpService = new TestTcpService();
     tcpHandler.addService(tcpService);
 
@@ -32,7 +32,7 @@ public class TcpTest {
 
   @Test
   public void testNewTLSServer() throws Exception {
-    TcpHandler tcpHandler = new TcpHandler();
+    TcpHandler tcpHandler = new TcpHandler(true);
     TcpService tcpService = new TestTcpService();
     tcpHandler.addService(tcpService);
 

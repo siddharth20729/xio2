@@ -16,28 +16,12 @@
 package com.xjeffrose.xio2.http.server;
 
 import com.xjeffrose.xio2.ChannelContext;
-import com.xjeffrose.xio2.Request;
-import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.http.client.Client;
+import com.xjeffrose.xio2.SecureChannelContext;
 
-public class ProxyHttpService extends HttpService {
-  private final String proxiedService;
-  public ProxyHttpService(String proxiedService) {
-    this.proxiedService = proxiedService;
-  }
+import java.nio.channels.SocketChannel;
 
-  @Override
-  public void handle(ChannelContext ctx, Request req) {
-
-    Client c = null;
-
-    if (ctx.isSecure()) {
-      c = Http.newTLSClient(proxiedService);
-
-    } else {
-      c = Http.newClient(proxiedService);
+public class HttpsHandler extends HttpHandler {
+    public ChannelContext buildChannelContext(SocketChannel channel) {
+        return new SecureChannelContext(channel, this);
     }
-
-    c.proxy(ctx);
-  }
 }

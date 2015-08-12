@@ -16,6 +16,8 @@
 package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
+
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -30,12 +32,8 @@ public class ChannelContext {
   private int nread = 1;
   public boolean parserOk;
   public Handler handler;
-  private SSLEngineResult sslEngineResult;
-  private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
-  private final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<>();
+  protected final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<>();
   public State state = State.got_request;
-  public SSLEngine engine;
-  public boolean tls = false;
   public SocketChannel channel;
 
   public ChannelContext(SocketChannel channel, Handler handler) {
@@ -43,8 +41,15 @@ public class ChannelContext {
     this.handler = handler;
   }
 
+  public boolean isSecure() {
+    return false;
+  }
+
   public void handleFatalError() {
     handler.handleFatalError(this);
+  }
+
+  public void onConnect() {
   }
 
   public enum State {
@@ -55,27 +60,24 @@ public class ChannelContext {
     finished_response,
   }
 
+  public int readIntoBuffer(ByteBuffer inputBuffer) {
+    try {
+      return channel.read(inputBuffer);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public void read() {
     while (nread > 0 && state == State.got_request) {
-      try {
-        // Turns out we are only ever allocating 1 input bytebuffer per event loop.
-        // It is super efficient but it requires you to sanitize your ByteBuffers
-        // before you read each time. There you have it.
-        final ByteBuffer inputBuffer = handler.getInputBuffer();
-        inputBuffer.clear();
-        if (tls && engine != null) {
-          nread = channel.read(encryptedRequest);
-          encryptedRequest.flip();
-          sslEngineResult = engine.unwrap(encryptedRequest, inputBuffer);
-          sslEngineResult.getStatus();
-        } else {
-          nread = channel.read(inputBuffer);
-        }
+      // Turns out we are only ever allocating 1 input bytebuffer per event loop.
+      // It is super efficient but it requires you to sanitize your ByteBuffers
+      // before you read each time. There you have it.
+      final ByteBuffer inputBuffer = handler.getInputBuffer();
+      inputBuffer.clear();
+      nread = readIntoBuffer(inputBuffer);
 
-        state = State.start_parse;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+      state = State.start_parse;
     }
     if (nread == -1) {
       try {
@@ -126,25 +128,10 @@ public class ChannelContext {
   }
 
   public void write(ByteBuffer bb) {
-    ByteBuffer encryptedResponse = null;
-    if (tls) {
-      encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
-    }
     if (state == State.start_response) {
-      if (tls && engine != null) {
-        try {
-          sslEngineResult = engine.wrap(bb, encryptedResponse);
-          sslEngineResult.getStatus();
-        } catch (SSLException e) {
-          e.printStackTrace();
-        }
-        encryptedResponse.flip();
-        bbList.addLast(encryptedResponse);
-      } else {
-        bbList.addLast(bb);
-      }
+      bbList.add(bb);
+      state = State.finished_response;
     }
-    state = State.finished_response;
   }
 }
 

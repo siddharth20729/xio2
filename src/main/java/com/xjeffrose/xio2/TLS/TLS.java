@@ -17,6 +17,8 @@ package com.xjeffrose.xio2.TLS;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.ChannelContext;
+import com.xjeffrose.xio2.SecureChannelContext;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
@@ -47,7 +49,7 @@ public class TLS {
   public ByteBuffer encryptedRequest;
   public ByteBuffer encryptedResponse;
 
-  public TLS(ChannelContext ctx) {
+  public TLS(SecureChannelContext ctx) {
     this.channel = ctx.channel;
     this.selfSignedCert = true;
 
@@ -55,7 +57,7 @@ public class TLS {
     ctx.engine = engine;
   }
 
-  public TLS(ChannelContext ctx, String version) {
+  public TLS(SecureChannelContext ctx, String version) {
     this.channel = ctx.channel;
     this.version = version;
     this.selfSignedCert = true;
@@ -68,10 +70,9 @@ public class TLS {
     this.privateKeyPath = privateKeyPath;
     this.x509CrtPath = x509CrtPath;
     this.password = "";
-
     this.channel = ctx.channel;
     genEngine();
-    ctx.engine = engine;
+  //  ctx.engine = engine;
   }
 
   public TLS(ChannelContext ctx, String privateKeyPath, String x509CrtPath, String password) {
@@ -81,7 +82,7 @@ public class TLS {
 
     this.channel = ctx.channel;
     genEngine();
-    ctx.engine = engine;
+    //ctx.engine = engine;
   }
 
 

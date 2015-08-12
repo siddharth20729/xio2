@@ -17,6 +17,7 @@ package com.xjeffrose.xio2.http.client;
 
 import com.xjeffrose.xio2.http.*;
 import com.xjeffrose.xio2.http.server.HttpHandler;
+import com.xjeffrose.xio2.http.server.HttpsHandler;
 import com.xjeffrose.xio2.http.server.ProxyHttpService;
 import com.xjeffrose.xio2.Server;
 import com.xjeffrose.xio2.http.server.HttpService;
@@ -89,10 +90,9 @@ public class ClientTest {
   public void testSSLCall() throws Exception {
     Client c = Http.newClient("localhost:9017");
 
-    s.tls(true);
     c.tls(true);
 
-    s.bind(9017);
+    s.bind(9017, true);
     s.serve();
 
     HttpRequest req = new HttpRequest.Builder()
@@ -110,7 +110,6 @@ public class ClientTest {
   @Test
   public void testServerSet() throws Exception {
 
-    s.tls(false);
     s.bind(9031);
     s.bind(9032);
     s.bind(9033);
@@ -135,10 +134,9 @@ public class ClientTest {
   @Test
   public void testServerSetSSL() throws Exception {
 
-    s.tls(true);
-    s.bind(9021);
-    s.bind(9022);
-    s.bind(9023);
+    s.bind(9021, true);
+    s.bind(9022, true);
+    s.bind(9023, true);
     s.serve();
 
     Client c = new Client("localhost:9021, localhost:9022, localhost:9023");
@@ -234,7 +232,7 @@ public class ClientTest {
     service_int.serve(9043, proxiedHandler);
 
     Server client_int = Http.newTLSServer();
-    HttpHandler testHandler = new HttpHandler();
+    HttpHandler testHandler = new HttpsHandler();
     testHandler.addRoute("/", new ProxyHttpService("localhost:9043"));
     client_int.serve(9042, testHandler);
 

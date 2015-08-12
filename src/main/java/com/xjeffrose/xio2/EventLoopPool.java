@@ -27,9 +27,9 @@ public class EventLoopPool {
       new ConcurrentLinkedDeque<EventLoop>();
   private EventLoop loop;
 
-  public EventLoopPool(int poolSize, AtomicBoolean tls) {
+  public EventLoopPool(int poolSize) {
     for (int i = 0; i < poolSize; i++) {
-      EventLoop loop = new EventLoop(tls);
+      EventLoop loop = new EventLoop();
       loop.setName("EventLoop " + i);
       pool.addLast(loop);
 //      pool.addLast(new EventLoop(tls));

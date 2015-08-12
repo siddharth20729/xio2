@@ -95,3 +95,9 @@ $ ulimit -a
 ```
 
 to verify that the limits have been changed
+
+## TODO
+
+* refactor tls/ssl into HTTPSRequest which wraps HTTPRequest
+* FileChannel for serving static content
+* StatsHandler for serving up stats
