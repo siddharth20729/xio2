@@ -1,7 +1,6 @@
 package com.xjeffrose.xio2;
 
-import com.xjeffrose.xio2.http.server.TLS.TLS;
-
+import com.xjeffrose.xio2.TLS.TLS;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;

@@ -27,6 +27,7 @@ import com.xjeffrose.xio2.http.HttpResponse;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
@@ -53,6 +54,11 @@ public class FileHandler implements Handler {
   @Override
   public ByteBuffer getInputBuffer() {
     return req.inputBuffer;
+  }
+
+  @Override
+  public ChannelContext buildChannelContext(SocketChannel channel) {
+    return new ChannelContext(channel, this);
   }
 
   @Override
