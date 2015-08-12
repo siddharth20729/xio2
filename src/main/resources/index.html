@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Aurora Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/xio2.css">
+  </head>
+
+ <body>
+
+   <!-- Header -->
+   <div class="container">
+     <div class="row">
+       <div class="col-xs-12">
+         <h1>
+         <span class="system-folder">Aurora Client</span>
+         </h1>
+       </div>
+     </div>
+   </div>
+
+<!-- New Job Modal -->
+<div class="container">
+
+          <div id="Login" class="modal fade" style="display: none;" ref="modal"
+              role="dialog" aria-hidden="true" tabIndex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+
+          <form method="post" class="form-horizontal" role="form" onSubmit={this.onSubmit}>
+            <div class="modal-header">
+              <a class="close" data-dismiss="modal">×</a>
+              <h3 class="modal-title">+ Login</h3>
+            </div>
+
+            <div class="modal-body">
+              <form class="form-horizontal">
+
+               <div class="form-group">
+                  <label class="col-md-3 control-label">
+                    User Name
+                  </label>
+                <div class="col-md-9">
+                  <input type="text" id="inputSuccess" class="form-control">
+                  <span class="help-block">Enter User Name</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                 <label class="col-md-3 control-label">
+                   Password
+                 </label>
+               <div class="col-md-9">
+                 <input type="text" id="inputSuccess" class="form-control">
+                 <span class="help-block">Enter Passwd</span>
+               </div>
+             </div>
+
+              </form>
+            </div>
+            </div>
+
+
+          <div class="modal-footer">
+            <button class="btn btn-danger" data-dismiss="modal">
+              Cancel
+            </button>
+            <a data-toggle="modal" href="pages/home.html" class="btn btn-default btn-primary">+ Login</a>
+          </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+<div class="container text-center">
+   <div id="loginButton">
+        <button type="button" class="btn btn-primary header-btn" data-toggle="modal" href="#Login">
+          <h1>+ Login</h1>
+        </button>
+  </div>
+</div>
+
+
+<script src="js/jquery.js"></script>
+<script src="js/handlebars-v1.3.0.js"></script>
+<script src="js/bootstrap.js"></script>
+<script src="js/xio2.js"></script>
+
+</body>
+</html>

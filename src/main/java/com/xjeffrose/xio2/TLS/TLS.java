@@ -20,7 +20,6 @@ import com.xjeffrose.xio2.ChannelContext;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
-import java.security.SecureRandom;
 import java.util.logging.Logger;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -33,18 +32,20 @@ public class TLS {
   private static final Logger log = Log.getLogger(TLS.class.getName());
 
   private SSLEngineResult sslResult;
-  public ByteBuffer encryptedRequest;
   private ByteBuffer decryptedRequest;
   private ByteBuffer rawResponse;
-  public ByteBuffer encryptedResponse;
   private SocketChannel channel;
   private String version = "TLSv1.2";
-  private char[] passwd = "selfsignedcert".toCharArray();
   private boolean selfSignedCert = false;
   private boolean client = false;
+  private String privateKeyPath;
+  private String x509CrtPath;
+  private String password = "selfsignedcert";
+  private char[] passwd = password.toCharArray();
 
   public SSLEngine engine;
-  private TLSConfiguration config;
+  public ByteBuffer encryptedRequest;
+  public ByteBuffer encryptedResponse;
 
   public TLS(ChannelContext ctx) {
     this.channel = ctx.channel;
@@ -63,12 +64,22 @@ public class TLS {
     ctx.engine = engine;
   }
 
-  public TLS(ChannelContext ctx, TLSConfiguration config) {
-    this.config = config;
-    this.channel = ctx.channel;
-    this.version = config.version;
-    this.passwd = config.keystorePassphrase;
+  public TLS(ChannelContext ctx, String privateKeyPath, String x509CrtPath) {
+    this.privateKeyPath = privateKeyPath;
+    this.x509CrtPath = x509CrtPath;
+    this.password = "";
 
+    this.channel = ctx.channel;
+    genEngine();
+    ctx.engine = engine;
+  }
+
+  public TLS(ChannelContext ctx, String privateKeyPath, String x509CrtPath, String password) {
+    this.privateKeyPath = privateKeyPath;
+    this.x509CrtPath = x509CrtPath;
+    this.password = password;
+
+    this.channel = ctx.channel;
     genEngine();
     ctx.engine = engine;
   }
@@ -76,10 +87,6 @@ public class TLS {
 
   public TLS(SocketChannel channel) {
     this.channel = channel;
-    //this.rawRequest = ByteBuffer.allocateDirect(12);
-//    this.encryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
-//    this.encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
-//    this.rawResponse = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
     this.client = true;
 
     genEngine();
@@ -91,21 +98,15 @@ public class TLS {
       KeyManagerFactory kmf = null;
       if (!client) {
         if (selfSignedCert) {
-          ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), "selfsignedcert");
+          ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), password);
         } else {
-          ks = KeyStoreFactory.Generate(xioCertGenerator.generate("", ""), new String(config.keystorePassphrase));
+          ks = KeyStoreFactory.Generate(xioCertGenerator.generate(privateKeyPath, x509CrtPath), password);
         }
         kmf = KeyManagerFactory.getInstance("SunX509");
         kmf.init(ks, passwd);
       }
-      // TODO: Allow for truststore and call truststore path
-//      CertificateFactory cf = CertificateFactory.getInstance("X.509");
-//      xioCertificate x509Certificate =
-//        (xioCertificate) cf.generateCertificate(new FileInputStream("/path/to/ca"));
-//      KeyStore ts = KeyStore.getInstance("PKCS12");
-//      ts.load(null);
-//      ts.setCertificateEntry("alias", x509Certificate);
 
+      // TODO: Allow for truststore and call truststore path
       // TrustManagers decide whether to allow connections
 //      TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
 //      tmf.init(ts);
@@ -113,9 +114,9 @@ public class TLS {
       SSLContext sslCtx = SSLContext.getInstance(version);
 
       if (client) {
-        sslCtx.init(null, TrustStoreFactory.Generate(), new SecureRandom());
+        sslCtx.init(null, TrustStoreFactory.Generate(), null);
       } else {
-        sslCtx.init(kmf.getKeyManagers(), null, new SecureRandom());
+        sslCtx.init(kmf.getKeyManagers(), null, null);
 //      sslCtx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
       }
 
