@@ -3,13 +3,20 @@ package com.xjeffrose.xio2.tcp.server;
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Handler;
 import com.xjeffrose.xio2.Request;
+import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.http.Http;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 public class TcpHandler implements Handler {
 
+  private final boolean tls;
   private TcpRequest req = new TcpRequest();
   private TcpService service = null;
+
+  public TcpHandler(boolean tls) {
+    this.tls = tls;
+  }
 
   @Override
   public boolean parse(ChannelContext ctx) {
@@ -49,5 +56,14 @@ public class TcpHandler implements Handler {
   @Override
   public ByteBuffer getInputBuffer() {
     return req.inputBuffer;
+  }
+
+  @Override
+  public ChannelContext buildChannelContext(SocketChannel channel) {
+    if (tls) {
+      return new SecureChannelContext(channel, this);
+    } else {
+      return new ChannelContext(channel, this);
+    }
   }
 }

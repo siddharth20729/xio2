@@ -22,6 +22,7 @@ import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpRequestParser;
 import com.xjeffrose.xio2.http.HttpResponse;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,6 +42,10 @@ public class HttpHandler implements Handler {
 
   public ByteBuffer getInputBuffer() {
     return req.inputBuffer;
+  }
+
+  public ChannelContext buildChannelContext(SocketChannel channel) {
+    return new ChannelContext(channel, this);
   }
 
   public boolean parse(ChannelContext ctx) {

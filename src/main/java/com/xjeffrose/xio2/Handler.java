@@ -2,6 +2,7 @@ package com.xjeffrose.xio2;
 
 import com.xjeffrose.xio2.http.Http;
 import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 public interface Handler {
 
@@ -18,4 +19,6 @@ public interface Handler {
   Http.Method getMethod();
 
   ByteBuffer getInputBuffer();
+
+  ChannelContext buildChannelContext(SocketChannel channel);
 }

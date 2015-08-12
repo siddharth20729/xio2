@@ -14,7 +14,6 @@ public class Tcp {
     Server s = new Server();
     String tlsVersion = "tlsv1.2";
     boolean selfSignedCert = true;
-    s.tls(true);
     return s;
   }
 

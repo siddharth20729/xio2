@@ -78,7 +78,7 @@ public class Acceptor extends Thread {
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
             EventLoop next = eventLoopPool.next();
-            next.addContext(new ChannelContext(channel, handler));
+            next.addContext(handler.buildChannelContext(channel));
           } else if (!key.isValid()) {
             log.info("Key " + key + " is no longer valid.");
             key.cancel();

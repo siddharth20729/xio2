@@ -40,6 +40,7 @@ public class ServerTest {
   OkHttpClient client = new OkHttpClient();
 
   HttpHandler testHandler = new HttpHandler();
+  HttpsHandler testHttpsHandler = new HttpsHandler();
 
   private OkHttpClient getUnsafeOkHttpClient() {
     try {
@@ -87,6 +88,7 @@ public class ServerTest {
   public void setUp() throws Exception {
     s = Http.newServer();
     testHandler.addRoute("/test", new TestHttpService());
+    testHttpsHandler.addRoute("/test", new TestHttpService());
   }
 
   @After
@@ -168,8 +170,7 @@ public class ServerTest {
   public void testSsl() throws Exception {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
-    s.tls(true);
-    s.serve(9005, testHandler);
+    s.serve(9005, testHttpsHandler);
 
     Request request = new Request.Builder()
         .url("https://localhost:9005/test")
@@ -186,8 +187,7 @@ public class ServerTest {
   public void testSslMany() throws Exception {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
-    s.tls(true);
-    s.serve(9006, testHandler);
+    s.serve(9006, testHttpsHandler);
 
 
     Request request = new Request.Builder()
@@ -212,7 +212,6 @@ public class ServerTest {
   public void testSslFail() throws Exception {
     OkHttpClient unsafeClient = getUnsafeOkHttpClient();
 
-    s.tls(false);
     s.serve(9007, testHandler);
 
     Request request = new Request.Builder()

@@ -17,6 +17,8 @@ package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.http.server.HttpHandler;
+import com.xjeffrose.xio2.http.server.HttpsHandler;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
@@ -32,18 +34,20 @@ public class Server {
   private final int cores = Runtime.getRuntime().availableProcessors();
   private EventLoopPool pool;
 
-  private AtomicBoolean tls = new AtomicBoolean(false);
-
   public Server() {
-    pool = new EventLoopPool(cores, tls);
+    pool = new EventLoopPool(cores);
   }
 
-  public void tls(boolean b) {
-    tls.set(b);
+  public void bind(int port, boolean tls) {
+    if (tls) {
+      bind("0.0.0.0", port, new HttpsHandler());
+    } else {
+      bind("0.0.0.0", port, new HttpHandler());
+    }
   }
 
   public void bind(int port) throws IOException {
-    bind("0.0.0.0", port, new HttpHandler());
+    bind(port, false);
   }
 
   public void bind(int port, Handler handler) {
