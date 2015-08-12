@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Jeff Rose
+ *  Copyright (C) 2015 Jeff Rose
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 package com.xjeffrose.xio2.http.server.TLS;
 
@@ -36,15 +37,15 @@ import sun.security.x509.X500Name;
 import sun.security.x509.X509CertImpl;
 import sun.security.x509.X509CertInfo;
 
-public final class SelfSignedCertGenerator {
-  private static final Logger log = Log.getLogger(SelfSignedCertGenerator.class.getName());
+public final class X509CertGenerator {
+  private static final Logger log = Log.getLogger(X509CertGenerator.class.getName());
 
   static final Date NOT_BEFORE = new Date(System.currentTimeMillis() - 86400000L * 365);
   static final Date NOT_AFTER = new Date(253402300799000L);
 
-  private SelfSignedCertGenerator() { }
+  private X509CertGenerator() { }
 
-  public static xioCertificate generate(String fqdn) throws Exception {
+  public static xioCertificate generate(TLSConfiguration config) throws Exception {
 
     //Generate an RSA key pair.
     final KeyPair keypair;
@@ -58,7 +59,7 @@ public final class SelfSignedCertGenerator {
     X509CertInfo info = new X509CertInfo();
     X500Name owner = null;
 
-    owner = new X500Name("CN=" + fqdn);
+    owner = new X500Name("CN=" + config.fqdn);
 
     info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
     info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(new BigInteger(64, new SecureRandom())));
@@ -87,6 +88,6 @@ public final class SelfSignedCertGenerator {
     cert.verify(keypair.getPublic());
 
 //    return cert;
-    return new xioCertificate(fqdn, key, cert);
+    return new xioCertificate(config.fqdn, key, cert);
   }
 }

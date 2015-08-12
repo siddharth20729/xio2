@@ -30,7 +30,6 @@ import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLParameters;
 
-
 public class TLS {
   private static final Logger log = Log.getLogger(TLS.class.getName());
 
@@ -39,43 +38,36 @@ public class TLS {
   private ByteBuffer decryptedRequest;
   private ByteBuffer rawResponse;
   private ByteBuffer encryptedResponse;
-  private char[] passphrase = "changeit".toCharArray();
   private SocketChannel channel;
-  private String path;
   private String version = "TLSv1.2";
-  private boolean selfSignedCert = true;
+  private char[] passwd = "selfsignedcert".toCharArray();
+  private boolean selfSignedCert = false;
 
   public SSLEngine engine;
+  private TLSConfiguration config;
 
   public TLS(ChannelContext ctx) {
     this.channel = ctx.channel;
+    this.selfSignedCert = true;
+
+    genEngine();
+    ctx.engine = engine;
+  }
+
+  public TLS(ChannelContext ctx, String version) {
+    this.channel = ctx.channel;
+    this.version = version;
+    this.selfSignedCert = true;
 
     genEngine();
     ctx.engine = engine;
   }
 
   public TLS(ChannelContext ctx, TLSConfiguration config) {
+    this.config = config;
     this.channel = ctx.channel;
-
-    genEngine();
-    ctx.engine = engine;
-  }
-
-  public TLS(ChannelContext ctx, String version, boolean selfSignedCert) {
-    this.channel = ctx.channel;
-    this.version = version;
-    this.selfSignedCert = selfSignedCert;
-
-    genEngine();
-    ctx.engine = engine;
-  }
-
-  public TLS(ChannelContext ctx, String version, String path, String passphrase) {
-    this.channel = ctx.channel;
-    this.version = version;
-    this.path = path;
-    this.passphrase = passphrase.toCharArray();
-    this.selfSignedCert = false;
+    this.version = config.version;
+    this.passwd = config.keystorePassphrase;
 
     genEngine();
     ctx.engine = engine;
@@ -83,22 +75,20 @@ public class TLS {
 
   private void genEngine() {
     try {
-      // TODO: Get keystore path
       KeyStore ks;
       if (selfSignedCert) {
-        ks = KeyStoreGenerator.Build();
+        ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), "selfsignedcert");
       } else {
-        ks =  KeyStore.getInstance("PKCS12");
-        ks.load(new FileInputStream(path), passphrase);
+        ks = KeyStoreFactory.Generate(X509CertGenerator.generate(config), new String (config.keystorePassphrase));
       }
 
       KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-      kmf.init(ks, passphrase);
+      kmf.init(ks, passwd);
 
       // TODO: Allow for truststore and call truststore path
 //      CertificateFactory cf = CertificateFactory.getInstance("X.509");
-//      X509Certificate x509Certificate =
-//        (X509Certificate) cf.generateCertificate(new FileInputStream("/path/to/ca"));
+//      xioCertificate x509Certificate =
+//        (xioCertificate) cf.generateCertificate(new FileInputStream("/path/to/ca"));
 //      KeyStore ts = KeyStore.getInstance("PKCS12");
 //      ts.load(null);
 //      ts.setCertificateEntry("alias", x509Certificate);

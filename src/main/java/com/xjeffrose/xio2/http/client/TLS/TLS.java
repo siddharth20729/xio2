@@ -16,7 +16,9 @@
 package com.xjeffrose.xio2.http.client.TLS;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.server.TLS.KeyStoreGenerator;
+import com.xjeffrose.xio2.http.server.TLS.KeyStoreFactory;
+import com.xjeffrose.xio2.http.server.TLS.SelfSignedCertGenerator;
+import com.xjeffrose.xio2.http.server.TLS.TrustStoreFactory;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
@@ -28,8 +30,6 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLParameters;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 public class TLS {
   private static final Logger log = Log.getLogger(TLS.class.getName());
@@ -63,33 +63,15 @@ public class TLS {
     }
   }
 
-  private TrustManager[] getTrustAllCerts() {
-    TrustManager[] trustAllCerts = new TrustManager[]{
-        new X509TrustManager() {
-          public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-            return null;
-          }
-
-          public void checkClientTrusted(
-              java.security.cert.X509Certificate[] certs, String authType) {
-          }
-
-          public void checkServerTrusted(
-              java.security.cert.X509Certificate[] certs, String authType) {
-          }
-        }
-    };
-    return trustAllCerts;
-  }
-
   private void genEngine() {
     try {
-      KeyStore ks = KeyStoreGenerator.Build();
+      // TODO: Fix, client never needs a self signed cert
+      KeyStore ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), "selfsignedcert");
       KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-      kmf.init(ks, passphrase);
+//      kmf.init(ks, passphrase);
 
       sslCtx = SSLContext.getInstance("TLSv1.2");
-      sslCtx.init(kmf.getKeyManagers(), getTrustAllCerts(), new SecureRandom());
+      sslCtx.init(null, TrustStoreFactory.Generate(), new SecureRandom());
 
       SSLParameters params = new SSLParameters();
       params.setProtocols(new String[]{"TLSv1.2"});
