@@ -86,7 +86,6 @@ public final class SelfSignedCertGenerator {
     cert.sign(key, "SHA1withRSA");
     cert.verify(keypair.getPublic());
 
-//    return cert;
     return new xioCertificate(fqdn, key, cert);
   }
 }

@@ -17,7 +17,6 @@ package com.xjeffrose.xio2.http.server.TLS;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.ChannelContext;
-import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
@@ -79,7 +78,7 @@ public class TLS {
       if (selfSignedCert) {
         ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), "selfsignedcert");
       } else {
-        ks = KeyStoreFactory.Generate(X509CertGenerator.generate(config), new String (config.keystorePassphrase));
+        ks = KeyStoreFactory.Generate(xioCertGenerator.generate(config), new String (config.keystorePassphrase));
       }
 
       KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
