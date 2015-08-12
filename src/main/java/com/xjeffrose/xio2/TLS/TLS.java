@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xjeffrose.xio2.http.server.TLS;
+package com.xjeffrose.xio2.TLS;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.ChannelContext;
@@ -33,14 +33,15 @@ public class TLS {
   private static final Logger log = Log.getLogger(TLS.class.getName());
 
   private SSLEngineResult sslResult;
-  private ByteBuffer encryptedRequest;
+  public ByteBuffer encryptedRequest;
   private ByteBuffer decryptedRequest;
   private ByteBuffer rawResponse;
-  private ByteBuffer encryptedResponse;
+  public ByteBuffer encryptedResponse;
   private SocketChannel channel;
   private String version = "TLSv1.2";
   private char[] passwd = "selfsignedcert".toCharArray();
   private boolean selfSignedCert = false;
+  private boolean client = false;
 
   public SSLEngine engine;
   private TLSConfiguration config;
@@ -72,18 +73,31 @@ public class TLS {
     ctx.engine = engine;
   }
 
+
+  public TLS(SocketChannel channel) {
+    this.channel = channel;
+    //this.rawRequest = ByteBuffer.allocateDirect(12);
+//    this.encryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+//    this.encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+//    this.rawResponse = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
+    this.client = true;
+
+    genEngine();
+  }
+
   private void genEngine() {
     try {
       KeyStore ks;
-      if (selfSignedCert) {
-        ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), "selfsignedcert");
-      } else {
-        ks = KeyStoreFactory.Generate(xioCertGenerator.generate("",""), new String (config.keystorePassphrase));
+      KeyManagerFactory kmf = null;
+      if (!client) {
+        if (selfSignedCert) {
+          ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), "selfsignedcert");
+        } else {
+          ks = KeyStoreFactory.Generate(xioCertGenerator.generate("", ""), new String(config.keystorePassphrase));
+        }
+        kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, passwd);
       }
-
-      KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-      kmf.init(ks, passwd);
-
       // TODO: Allow for truststore and call truststore path
 //      CertificateFactory cf = CertificateFactory.getInstance("X.509");
 //      xioCertificate x509Certificate =
@@ -97,8 +111,13 @@ public class TLS {
 //      tmf.init(ts);
 
       SSLContext sslCtx = SSLContext.getInstance(version);
-      sslCtx.init(kmf.getKeyManagers(), null, new SecureRandom());
+
+      if (client) {
+        sslCtx.init(null, TrustStoreFactory.Generate(), new SecureRandom());
+      } else {
+        sslCtx.init(kmf.getKeyManagers(), null, new SecureRandom());
 //      sslCtx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+      }
 
       SSLParameters params = new SSLParameters();
       params.setProtocols(new String[]{version});
@@ -106,7 +125,7 @@ public class TLS {
       engine = sslCtx.createSSLEngine();
       engine.setSSLParameters(params);
       engine.setNeedClientAuth(false);
-      engine.setUseClientMode(false);
+      engine.setUseClientMode(client);
 
     } catch (Exception e) {
       throw new RuntimeException(e);

@@ -15,7 +15,7 @@
  *
  */
 
-package com.xjeffrose.xio2.http.server.TLS;
+package com.xjeffrose.xio2.TLS;
 
 import java.security.KeyStore;
 import java.security.cert.Certificate;

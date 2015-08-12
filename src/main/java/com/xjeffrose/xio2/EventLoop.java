@@ -16,7 +16,7 @@
 package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.server.TLS.TLS;
+import com.xjeffrose.xio2.TLS.TLS;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package com.xjeffrose.xio2.http.server.TLS;
+package com.xjeffrose.xio2.TLS;
 
 import com.xjeffrose.log.Log;
 import java.io.FileInputStream;
@@ -24,8 +24,6 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Base64;
 import java.security.PrivateKey;
@@ -61,10 +59,7 @@ public final class xioCertGenerator {
       Base64.Decoder b64decoder = Base64.getDecoder();
       byte[] encoded = b64decoder.decode(___rawKeyString);
 
-      // PKCS8 decode the encoded RSA private key
-//      PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
       DerInputStream derReader = new DerInputStream(encoded);
-
       DerValue[] seq = derReader.getSequence(0);
 
       if (seq.length < 9) {
@@ -85,12 +80,12 @@ public final class xioCertGenerator {
 
       KeyFactory kf = KeyFactory.getInstance("RSA");
       PrivateKey privateKey = kf.generatePrivate(keySpec);
-      //PublicKey publicKey = kf.generatePublic(keySpec);
+//      PublicKey publicKey = kf.generatePublic(keySpec);
 
       Map<String, Key> keyPair = new HashMap<>();
 
       keyPair.put("privateKey", privateKey);
-      //keyPair.put("publicKey", publicKey);
+//      keyPair.put("publicKey", publicKey);
 
       return keyPair;
     } catch (Exception e) {
@@ -102,7 +97,7 @@ public final class xioCertGenerator {
 
     Map<String, Key> keyPair = GenerateKeyFromFile(keyPath);;
     PrivateKey privateKey =(PrivateKey) keyPair.get("privateKey");
-    //PublicKey publicKey = (PublicKey) keyPair.get("publicKey");
+//    PublicKey publicKey = (PublicKey) keyPair.get("publicKey");
 
     // Sign the cert to identify the algorithm that's used.
     CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -110,7 +105,7 @@ public final class xioCertGenerator {
     X509CertImpl cert = (X509CertImpl) x509Certificate;
 
 //    cert.sign(privateKey, "SHA1withRSA");
-    //cert.verify(publicKey);
+//    cert.verify(publicKey);
 
     return new xioCertificate(cert.getIssuerX500Principal().getName(), privateKey, cert);
   }

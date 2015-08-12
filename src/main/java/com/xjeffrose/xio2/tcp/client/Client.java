@@ -5,7 +5,7 @@ import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.LoadBalancingStrategy;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.NullLoadBalancer;
 import com.xjeffrose.xio2.http.client.LoadBalancerStrategies.RoundRobinLoadBalancer;
-import com.xjeffrose.xio2.http.client.TLS.TLS;
+import com.xjeffrose.xio2.TLS.TLS;
 import com.xjeffrose.xio2.tcp.server.TcpRequest;
 import com.xjeffrose.xio2.tcp.server.TcpResponse;
 import java.io.IOException;
@@ -120,7 +120,7 @@ public class Client {
   private TcpResponse execute(SocketChannel channel) {
     if (_tls) {
       if (checkConnect(channel)) {
-        if (tls.execute()) {
+        if (tls.doHandshake()) {
           if (write(channel)) {
             return read(channel);
           }
