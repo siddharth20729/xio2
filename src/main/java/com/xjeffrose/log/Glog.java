@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-class Glog {
+public class Glog {
 
   public Glog() { }
 
@@ -32,7 +32,8 @@ class Glog {
     ERROR('E'),
     FATAL('F');
     char label;
-    private Level(char label) {
+
+    Level(char label) {
       this.label = label;
     }
   }

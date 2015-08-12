@@ -154,7 +154,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version></version>
+                    <version>2.11</version>
                     <configuration>
                         <properties>
                             <inceptionYear>${project.inceptionYear}</inceptionYear>

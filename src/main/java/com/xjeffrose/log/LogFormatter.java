@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 class LogFormatter extends Formatter implements Glog.Formatter<LogRecord> {
-  private Map<Level, Glog.Level> levelLabel = new HashMap<Level, Glog.Level>();
+  public Map<Level, Glog.Level> levelLabel = new HashMap<Level, Glog.Level>();
 
   LogFormatter() {
     levelLabel.put(Level.FINEST, Glog.Level.DEBUG);
