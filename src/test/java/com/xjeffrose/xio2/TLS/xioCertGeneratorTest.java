@@ -25,7 +25,7 @@ public class xioCertGeneratorTest {
 
   @Test
   public void testGenerate() throws Exception {
-    xioCertificate cert = xioCertGenerator.generate("src/test/resources/privateKey.pem", "src/test/resources/test.crt");
+    XioCertificate cert = XioCertGenerator.generate("src/test/resources/privateKey.pem", "src/test/resources/test.crt");
     assertEquals("CN=xio2.example.com,OU=dev,O=xio2,L=Chicago,ST=IL,C=US", cert.getCert().getIssuerX500Principal().getName());
   }
 }

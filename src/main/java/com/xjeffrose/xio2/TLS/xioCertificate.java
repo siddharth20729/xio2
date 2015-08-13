@@ -23,8 +23,8 @@ import java.util.Date;
 import java.util.logging.Logger;
 import sun.security.x509.X509CertImpl;
 
-public final class xioCertificate {
-  private static final Logger log = Log.getLogger(xioCertificate.class.getName());
+public final class XioCertificate {
+  private static final Logger log = Log.getLogger(XioCertificate.class.getName());
   private final String fqdn;
   private final PrivateKey key;
   private final X509CertImpl cert;
@@ -32,7 +32,7 @@ public final class xioCertificate {
 //  private final File certificate;
 //  private final File privateKey;
 
-  public xioCertificate(String fqdn, PrivateKey key, X509CertImpl cert) {
+  public XioCertificate(String fqdn, PrivateKey key, X509CertImpl cert) {
 
     this.fqdn = fqdn;
     this.key = key;

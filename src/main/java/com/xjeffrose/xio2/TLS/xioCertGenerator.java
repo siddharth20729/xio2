@@ -31,15 +31,16 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import sun.security.util.DerInputStream;
 import sun.security.util.DerValue;
 import sun.security.x509.X509CertImpl;
 
-public final class xioCertGenerator {
-  private static final Logger log = Log.getLogger(xioCertGenerator.class.getName());
+public final class XioCertGenerator {
+  private static final Logger log = Log.getLogger(XioCertGenerator.class.getName());
 
-  private xioCertGenerator() { }
+  private XioCertGenerator() { }
 
   public static Map<String, Key> GenerateKeyFromFile(String path) {
     try {
@@ -89,24 +90,30 @@ public final class xioCertGenerator {
 
       return keyPair;
     } catch (Exception e) {
-      return null;
+      log.log(Level.SEVERE, "Failed to parse private key", e);
+      throw new RuntimeException(e);
     }
  }
 
-  public static xioCertificate generate(String keyPath, String certPath) throws Exception {
+  public static XioCertificate generate(String keyPath, String certPath) throws Exception {
 
     Map<String, Key> keyPair = GenerateKeyFromFile(keyPath);;
     PrivateKey privateKey =(PrivateKey) keyPair.get("privateKey");
 //    PublicKey publicKey = (PublicKey) keyPair.get("publicKey");
 
-    // Sign the cert to identify the algorithm that's used.
-    CertificateFactory cf = CertificateFactory.getInstance("X.509");
-    X509Certificate x509Certificate = (X509Certificate) cf.generateCertificate(new FileInputStream(certPath));
-    X509CertImpl cert = (X509CertImpl) x509Certificate;
+    try {
+      // Sign the cert to identify the algorithm that's used.
+      CertificateFactory cf = CertificateFactory.getInstance("X.509");
+      X509Certificate x509Certificate = (X509Certificate) cf.generateCertificate(new FileInputStream(certPath));
+      X509CertImpl cert = (X509CertImpl) x509Certificate;
 
 //    cert.sign(privateKey, "SHA1withRSA");
 //    cert.verify(publicKey);
 
-    return new xioCertificate(cert.getIssuerX500Principal().getName(), privateKey, cert);
+      return new XioCertificate(cert.getIssuerX500Principal().getName(), privateKey, cert);
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Failed to import x509 cert", e);
+      throw new RuntimeException(e);
+    }
   }
 }

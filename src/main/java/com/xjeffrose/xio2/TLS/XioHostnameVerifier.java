@@ -29,7 +29,7 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import javax.security.auth.x500.X500Principal;
 
-class xioHostnameVerifier implements HostnameVerifier {
+class XioHostnameVerifier implements HostnameVerifier {
 
   private static final Pattern VERIFY_AS_IP_ADDRESS = Pattern.compile(
       "([0-9a-fA-F]*:[0-9a-fA-F:.]*)|([\\d.]+)");
@@ -37,7 +37,7 @@ class xioHostnameVerifier implements HostnameVerifier {
   private static final int ALT_DNS_NAME = 2;
   private static final int ALT_IPA_NAME = 7;
 
-  private xioHostnameVerifier() { }
+  private XioHostnameVerifier() { }
 
   @Override
   public boolean verify(String host, SSLSession sslSession) {

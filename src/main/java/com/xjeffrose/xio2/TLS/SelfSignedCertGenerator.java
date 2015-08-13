@@ -44,7 +44,7 @@ public final class SelfSignedCertGenerator {
 
   private SelfSignedCertGenerator() { }
 
-  public static xioCertificate generate(String fqdn) throws Exception {
+  public static XioCertificate generate(String fqdn) throws Exception {
 
     //Generate an RSA key pair.
     final KeyPair keypair;
@@ -86,6 +86,6 @@ public final class SelfSignedCertGenerator {
     cert.sign(key, "SHA1withRSA");
     cert.verify(keypair.getPublic());
 
-    return new xioCertificate(fqdn, key, cert);
+    return new XioCertificate(fqdn, key, cert);
   }
 }

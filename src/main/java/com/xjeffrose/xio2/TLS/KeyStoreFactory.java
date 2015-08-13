@@ -24,7 +24,7 @@ public class KeyStoreFactory {
 
   private KeyStoreFactory() {}
 
-  public static KeyStore Generate(xioCertificate cert, String password) {
+  public static KeyStore Generate(XioCertificate cert, String password) {
 
     final char[] passwd = password.toCharArray();
 

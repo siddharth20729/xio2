@@ -16,12 +16,12 @@
 package com.xjeffrose.xio2.TLS;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.SecureChannelContext;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -42,16 +42,21 @@ public class TLS {
   private boolean client = false;
   private String privateKeyPath;
   private String x509CrtPath;
-  private String password = "selfsignedcert";
-  private char[] passwd = password.toCharArray();
+  private String password;
+  private char[] passwordCharArray;
 
   public SSLEngine engine;
   public ByteBuffer encryptedRequest;
   public ByteBuffer encryptedResponse;
 
+  private void setPassword(String password) {
+    this.password = password;
+    passwordCharArray = this.password.toCharArray();
+  }
   public TLS(SecureChannelContext ctx) {
     this.channel = ctx.channel;
     this.selfSignedCert = true;
+    setPassword("selfsignedcert");
 
     genEngine();
     ctx.engine = engine;
@@ -61,6 +66,7 @@ public class TLS {
     this.channel = ctx.channel;
     this.version = version;
     this.selfSignedCert = true;
+    setPassword("selfsignedcert");
 
     genEngine();
     ctx.engine = engine;
@@ -69,7 +75,7 @@ public class TLS {
   public TLS(SecureChannelContext ctx, String privateKeyPath, String x509CrtPath) {
     this.privateKeyPath = privateKeyPath;
     this.x509CrtPath = x509CrtPath;
-    this.password = "";
+    setPassword("");
     this.channel = ctx.channel;
 
     genEngine();
@@ -79,8 +85,8 @@ public class TLS {
   public TLS(SecureChannelContext ctx, String privateKeyPath, String x509CrtPath, String password) {
     this.privateKeyPath = privateKeyPath;
     this.x509CrtPath = x509CrtPath;
-    this.password = password;
     this.channel = ctx.channel;
+    setPassword(password);
 
     genEngine();
     ctx.engine = engine;
@@ -101,10 +107,10 @@ public class TLS {
         if (selfSignedCert) {
           ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), password);
         } else {
-          ks = KeyStoreFactory.Generate(xioCertGenerator.generate(privateKeyPath, x509CrtPath), password);
+          ks = KeyStoreFactory.Generate(XioCertGenerator.generate(privateKeyPath, x509CrtPath), password);
         }
         kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, passwd);
+        kmf.init(ks, passwordCharArray);
       }
 
       // TODO: Allow for truststore and call truststore path
@@ -130,6 +136,7 @@ public class TLS {
       engine.setUseClientMode(client);
 
     } catch (Exception e) {
+      log.log(Level.SEVERE, "Cannot create the engine", e);
       throw new RuntimeException(e);
     }
   }
@@ -186,55 +193,60 @@ public class TLS {
   }
 
   public boolean doHandshake() {
-    encryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
-    decryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
-    rawResponse = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
-    encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
-
-    SSLEngineResult.HandshakeStatus handshakeStatus;
-
     try {
-      engine.beginHandshake();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+      encryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+      decryptedRequest = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
+      rawResponse = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
+      encryptedResponse = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
 
-    while (true) {
-      handshakeStatus = engine.getHandshakeStatus();
-      switch (handshakeStatus) {
+      SSLEngineResult.HandshakeStatus handshakeStatus;
 
-        case NEED_TASK:
-          Runnable task;
-          while ((task = engine.getDelegatedTask()) != null) {
-            new Thread(task).start();
-          }
-          break;
-
-        case NEED_UNWRAP:
-          read();
-          encryptedRequest.flip();
-          unwrap();
-          encryptedRequest.compact();
-          break;
-
-        case NEED_WRAP:
-          wrap();
-          encryptedResponse.flip();
-          write();
-          encryptedResponse.compact();
-          break;
-
-        case FINISHED:
-          return true;
-
-        case NOT_HANDSHAKING:
-          return true;
-
-        default:
-          log.info("got rando status " + handshakeStatus);
-          break;
+      try {
+        engine.beginHandshake();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
       }
+
+      while (true) {
+        handshakeStatus = engine.getHandshakeStatus();
+        switch (handshakeStatus) {
+
+          case NEED_TASK:
+            Runnable task;
+            while ((task = engine.getDelegatedTask()) != null) {
+              new Thread(task).start();
+            }
+            break;
+
+          case NEED_UNWRAP:
+            read();
+            encryptedRequest.flip();
+            unwrap();
+            encryptedRequest.compact();
+            break;
+
+          case NEED_WRAP:
+            wrap();
+            encryptedResponse.flip();
+            write();
+            encryptedResponse.compact();
+            break;
+
+          case FINISHED:
+            return true;
+
+          case NOT_HANDSHAKING:
+            return true;
+
+          default:
+            log.info("got rando status " + handshakeStatus);
+            break;
+        }
+      }
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Failed to complete TLS Handshake", e);
     }
+    return false;
   }
 
   private void unwrap() {

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 class EventLoop extends Thread {
@@ -82,7 +83,7 @@ class EventLoop extends Thread {
             }
             //This is a catch all for any error in this thread.
           } catch (Exception e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "poop in context", e);
             ChannelContext ctx = (ChannelContext) key.attachment();
             ctx.handleFatalError();
             key.cancel();
@@ -92,7 +93,8 @@ class EventLoop extends Thread {
           }
         }
         configureChannel();
-      } catch (IOException e) {
+      } catch (Exception e) {
+        log.log(Level.SEVERE, "poop right outside of loop", e);
       }
     }
   }
