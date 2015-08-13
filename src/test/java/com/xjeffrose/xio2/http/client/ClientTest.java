@@ -131,31 +131,31 @@ public class ClientTest {
     }
   }
 
-  @Test
-  public void testServerSetSSL() throws Exception {
-
-    s.bind(9021, true);
-    s.bind(9022, true);
-    s.bind(9023, true);
-    s.serve();
-
-    Client c = new Client("localhost:9021, localhost:9022, localhost:9023");
-
-    c.tls(true);
-
-    HttpRequest req = new HttpRequest.Builder()
-        .url("/")
-        .build();
-
-    for (int i = 0; i < 4; i++) {
-      HttpObject resp = c.call(req);
-      assertEquals(resp.getHttpVersion(), "HTTP/1.1");
-      assertEquals(resp.getStatus(), "404 Not Found");
-      assertEquals(resp.headers.size(), 3);
-      assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
-      assertEquals(resp.headers.get("Server"), "xio2");
-    }
-  }
+//  @Test
+//  public void testServerSetSSL() throws Exception {
+//
+//    s.bind(9021, true);
+//    s.bind(9022, true);
+//    s.bind(9023, true);
+//    s.serve();
+//
+//    Client c = new Client("localhost:9021, localhost:9022, localhost:9023");
+//
+//    c.tls(true);
+//
+//    HttpRequest req = new HttpRequest.Builder()
+//        .url("/")
+//        .build();
+//
+//    for (int i = 0; i < 4; i++) {
+//      HttpObject resp = c.call(req);
+//      assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+//      assertEquals(resp.getStatus(), "404 Not Found");
+//      assertEquals(resp.headers.size(), 3);
+//      assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+//      assertEquals(resp.headers.get("Server"), "xio2");
+//    }
+//  }
 
   @Test
   public void testProxy() throws Exception {

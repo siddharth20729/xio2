@@ -32,7 +32,6 @@ public class EventLoopPool {
       EventLoop loop = new EventLoop();
       loop.setName("EventLoop " + i);
       pool.addLast(loop);
-//      pool.addLast(new EventLoop(tls));
     }
   }
 

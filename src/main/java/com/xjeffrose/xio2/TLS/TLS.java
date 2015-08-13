@@ -53,12 +53,19 @@ public class TLS {
     this.password = password;
     passwordCharArray = this.password.toCharArray();
   }
+
   public TLS(SecureChannelContext ctx) {
     this.channel = ctx.channel;
     this.selfSignedCert = true;
     setPassword("selfsignedcert");
 
-    genEngine();
+    try {
+      genEngine();
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Failed to create the engine", e);
+      throw new RuntimeException(e);
+    }
+
     ctx.engine = engine;
   }
 
@@ -68,7 +75,13 @@ public class TLS {
     this.selfSignedCert = true;
     setPassword("selfsignedcert");
 
-    genEngine();
+    try {
+      genEngine();
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Failed to generate the TLS engine", e);
+      throw new RuntimeException(e);
+    }
+
     ctx.engine = engine;
   }
 
@@ -78,7 +91,13 @@ public class TLS {
     setPassword("");
     this.channel = ctx.channel;
 
-    genEngine();
+    try {
+      genEngine();
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Failed to generate the TLS engine", e);
+      throw new RuntimeException(e);
+    }
+
     ctx.engine = engine;
   }
 
@@ -88,7 +107,13 @@ public class TLS {
     this.channel = ctx.channel;
     setPassword(password);
 
-    genEngine();
+    try {
+      genEngine();
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Failed to create the engine", e);
+      throw new RuntimeException(e);
+    }
+
     ctx.engine = engine;
   }
 
@@ -96,7 +121,13 @@ public class TLS {
     this.channel = channel;
     this.client = true;
 
-    genEngine();
+    try {
+      genEngine();
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Failed to create the engine", e);
+      throw new RuntimeException(e);
+    }
+
   }
 
   private void genEngine() {
@@ -134,11 +165,11 @@ public class TLS {
       engine.setSSLParameters(params);
       engine.setNeedClientAuth(false);
       engine.setUseClientMode(client);
-
     } catch (Exception e) {
       log.log(Level.SEVERE, "Cannot create the engine", e);
       throw new RuntimeException(e);
     }
+
   }
 
   public void handleSSLResult(boolean network) {

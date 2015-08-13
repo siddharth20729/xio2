@@ -10,7 +10,7 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio2</artifactId>
-    <version>0.8.3-SNAPSHOT</version>
+    <version>0.8.4-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio2</name>
     <description>A modern I/O API for Java</description>
@@ -82,7 +82,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!--Only used for the Glog Formatter, not a dependency for xio2-->
+        <!--Only used to compile the Glog Formatter, not a dependency for xio2-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
