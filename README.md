@@ -8,9 +8,9 @@ High performance I/O for the JVM
 Http Server
 
 ```java
-Server s = Http.newTLSServer();
+Server s = Http.newServer();
 
-HttpHandler awesomeHandler = new HttpHandler();
+HttpsHandler awesomeHandler = new HttpsHandler(pathToPrivateKey, pathToX509Cert);
 Service awesomeServ = new RateLimitServ().andThen(new BusinessLogicServ());
 awesomeHandler.addRoute("/sweet", awesomeServ);
 

@@ -23,11 +23,6 @@ public class TcpHandler implements Handler {
     this.selfSignedCert = tls;
   }
 
-  public TcpHandler(boolean tls, boolean selfSignedCert) {
-    this.tls = tls;
-    this.selfSignedCert = selfSignedCert;
-  }
-
   public TcpHandler(String keyPath, String x509CertPath) {
     this.tls = true;
     this.keyPath = keyPath;

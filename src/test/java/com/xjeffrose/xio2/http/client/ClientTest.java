@@ -220,7 +220,7 @@ public class ClientTest {
 
   @Test
   public void testProxySSL() throws Exception {
-    Server service_int = Http.newTLSServer();
+    Server service_int = Http.newServer();
     HttpsHandler proxiedHandler = new HttpsHandler();
     proxiedHandler.addRoute("/", new HttpService() {
       @Override
@@ -231,7 +231,7 @@ public class ClientTest {
 
     service_int.serve(9043, proxiedHandler);
 
-    Server client_int = Http.newTLSServer();
+    Server client_int = Http.newServer();
     HttpsHandler testHandler = new HttpsHandler();
     testHandler.addRoute("/", new ProxyHttpService("localhost:9043"));
     client_int.serve(9042, testHandler);

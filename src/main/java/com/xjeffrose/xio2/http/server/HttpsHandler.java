@@ -32,11 +32,6 @@ public class HttpsHandler extends HttpHandler {
     this.selfSignedCert = true;
   }
 
-  public HttpsHandler(boolean selfSignedCert) {
-
-    this.selfSignedCert = selfSignedCert;
-  }
-
   public HttpsHandler(String keyPath, String x509CertPath) {
     this.keyPath = keyPath;
     this.x509CertPath = x509CertPath;

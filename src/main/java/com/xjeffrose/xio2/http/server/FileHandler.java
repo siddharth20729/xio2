@@ -72,6 +72,9 @@ public class FileHandler implements Handler {
   }
 
   public void handle(ChannelContext ctx) {
+    // Currently the browser's favicon petulance is causing this to break.
+    // No means no, Chrome...
+    
     try {
       final String path = req.getUri().getPath().equals("/") ? "index.html" : req.getUri().getPath();
       final FileChannel fileChannel = FileChannel.open(Paths.get(wwwDir + path), StandardOpenOption.READ);

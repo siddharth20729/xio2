@@ -28,9 +28,9 @@ public class SecureFileHandler extends FileHandler {
   private String x509CertPath = null;
   private boolean selfSignedCert = false;
 
-  public SecureFileHandler(boolean selfSignedCert) {
+  public SecureFileHandler() {
 
-    this.selfSignedCert = selfSignedCert;
+    this.selfSignedCert = true;
   }
 
   public SecureFileHandler(String keyPath, String x509CertPath) {

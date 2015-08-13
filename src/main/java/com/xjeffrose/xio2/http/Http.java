@@ -30,10 +30,6 @@ public class Http {
     return new Server();
   }
 
-  public static Server newTLSServer() {
-    return new Server();
-  }
-
   public static Client newClient(String hostString) {
     return new Client(hostString);
   }
