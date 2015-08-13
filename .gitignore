@@ -1,4 +1,5 @@
 settings.xml
+release.properties
 dependency-reduced-pom.xml
 *.gpg
 
