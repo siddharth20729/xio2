@@ -16,21 +16,16 @@
 package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Logger;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLEngineResult;
-import javax.net.ssl.SSLException;
 
 public class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
 
   private int nread = 1;
-  public boolean parserOk;
   public Handler handler;
   protected final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<>();
   public State state = State.got_request;
@@ -70,13 +65,9 @@ public class ChannelContext {
 
   public void read() {
     while (nread > 0 && state == State.got_request) {
-      // Turns out we are only ever allocating 1 input bytebuffer per event loop.
-      // It is super efficient but it requires you to sanitize your ByteBuffers
-      // before you read each time. There you have it.
       final ByteBuffer inputBuffer = handler.getInputBuffer();
       inputBuffer.clear();
       nread = readIntoBuffer(inputBuffer);
-
       state = State.start_parse;
     }
     if (nread == -1) {
@@ -86,24 +77,12 @@ public class ChannelContext {
         throw new RuntimeException(e);
       }
     }
-    parse();
-    state = State.finished_parse;
-    if (parserOk) {
-      handle();
+    if (handler.parse()) {
+      state = State.finished_parse;
+      handler.handle(this);
     } else {
       state = State.start_response;
       handler.handleError(this);
-    }
-  }
-
-  private boolean parse() {
-    parserOk = handler.parse(this);
-    return parserOk;
-  }
-
-  private void handle() {
-    if (state == State.finished_parse) {
-      handler.handle(this);
     }
   }
 

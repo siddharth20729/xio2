@@ -61,7 +61,8 @@ public class HttpResponseParser {
     space_before_header_value,
     header_value,
     expecting_newline_2,
-    expecting_body, expecting_newline_3
+    expecting_newline_3,
+    expecting_body
   };
 
   private state state_ = state.http_version_h;

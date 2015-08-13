@@ -47,7 +47,7 @@ class Route {
   public Map<String, String> groups(String path) {
     Matcher matcher = pathPattern.matcher(path);
     if (matcher.matches()) {
-      Map<String, String> groups = new HashMap<String, String>();
+      Map<String, String> groups = new HashMap<>();
       for (String keyword : keywords) {
         groups.put(keyword, matcher.group(keyword));
       }

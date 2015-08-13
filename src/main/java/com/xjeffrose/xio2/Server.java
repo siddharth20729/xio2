@@ -40,7 +40,7 @@ public class Server {
 
   public void bind(int port, boolean tls) {
     if (tls) {
-      bind("0.0.0.0", port, new HttpsHandler());
+      bind("0.0.0.0", port, new HttpsHandler(true));
     } else {
       bind("0.0.0.0", port, new HttpHandler());
     }

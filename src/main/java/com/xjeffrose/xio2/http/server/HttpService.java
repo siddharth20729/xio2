@@ -22,7 +22,7 @@ import com.xjeffrose.xio2.http.HttpRequest;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public abstract class HttpService implements Service {
-  public final ConcurrentLinkedDeque<HttpService> httpServiceList = new ConcurrentLinkedDeque<HttpService>();
+  public final ConcurrentLinkedDeque<HttpService> httpServiceList = new ConcurrentLinkedDeque<>();
   public ChannelContext ctx;
   public HttpRequest req;
 

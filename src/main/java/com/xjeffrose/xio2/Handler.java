@@ -6,7 +6,7 @@ import java.nio.channels.SocketChannel;
 
 public interface Handler {
 
-  boolean parse(ChannelContext ctx);
+  boolean parse();
 
   void handle(ChannelContext ctx);
 
@@ -21,4 +21,6 @@ public interface Handler {
   ByteBuffer getInputBuffer();
 
   ChannelContext buildChannelContext(SocketChannel channel);
+
+  void secureContext(SecureChannelContext secureChannelContext);
 }

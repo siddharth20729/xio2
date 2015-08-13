@@ -27,25 +27,19 @@ public class Http {
   private Http() { }
 
   public static Server newServer() {
-    Server s = new Server();
-    return s;
+    return new Server();
   }
 
   public static Server newTLSServer() {
-    Server s = new Server();
-    String tlsVersion = "tlsv1.2";
-    boolean selfSignedCert = true;
-    return s;
+    return new Server();
   }
 
   public static Client newClient(String hostString) {
-    Client c = new Client(hostString);
-    return c;
+    return new Client(hostString);
   }
 
   public static Client newTLSClient(String hostString) {
     Client c = new Client(hostString);
-    String tlsVersion = "tlsv1.2";
     c.tls(true);
     return c;
   }

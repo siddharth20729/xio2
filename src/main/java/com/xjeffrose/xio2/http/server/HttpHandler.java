@@ -17,6 +17,7 @@ package com.xjeffrose.xio2.http.server;
 
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Handler;
+import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpRequestParser;
@@ -48,7 +49,10 @@ public class HttpHandler implements Handler {
     return new ChannelContext(channel, this);
   }
 
-  public boolean parse(ChannelContext ctx) {
+  @Override
+  public void secureContext(SecureChannelContext secureChannelContext) { }
+
+  public boolean parse() {
     final HttpRequestParser parser = new HttpRequestParser();
     return parser.parse(req);
   }

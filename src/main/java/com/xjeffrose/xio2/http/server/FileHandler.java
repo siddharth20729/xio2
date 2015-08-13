@@ -20,6 +20,7 @@ package com.xjeffrose.xio2.http.server;
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Handler;
 import com.xjeffrose.xio2.Request;
+import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpRequestParser;
@@ -33,7 +34,7 @@ import java.nio.file.StandardOpenOption;
 
 public class FileHandler implements Handler {
   private final HttpRequest req = new HttpRequest();
-  private String wwwDir = "public";
+  private String wwwDir = "public/";
 
   public FileHandler() { }
 
@@ -62,7 +63,10 @@ public class FileHandler implements Handler {
   }
 
   @Override
-  public boolean parse(ChannelContext ctx) {
+  public void secureContext(SecureChannelContext secureChannelContext) {}
+
+  @Override
+  public boolean parse() {
     final HttpRequestParser parser = new HttpRequestParser();
     return parser.parse(req);
   }
@@ -74,8 +78,8 @@ public class FileHandler implements Handler {
       final HttpResponse resp = HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK);
       resp.headers.set("Content-Length", String.valueOf(fileChannel.size()));
 
-      System.out.println(req.toString());
-      System.out.println(path);
+//      System.out.println(req.toString());
+//      System.out.println(path);
 
       ctx.channel.write(resp.toBB());
       fileChannel.transferTo(0, fileChannel.size(), ctx.channel);

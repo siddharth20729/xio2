@@ -45,7 +45,7 @@ public class HttpObject {
 
   public String getHttpVersion() {
 
-    if (http_version_major == 1) {
+    if (http_version_major > 0) {
       return "HTTP"
           +
           "/"
@@ -99,7 +99,7 @@ public class HttpObject {
 
   public void setMethod() {
     String meth = method.getMethod();
-    if (meth.equalsIgnoreCase("call")) {
+    if (meth.equalsIgnoreCase("get")) {
       method_ = Http.Method.GET;
     } else if (meth.equalsIgnoreCase("post")) {
       method_ = Http.Method.POST;

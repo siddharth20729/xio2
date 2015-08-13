@@ -31,5 +31,7 @@ public class StatsTest {
     Server s = Http.newServer();
     s.bind(8081, new FileHandler("src/main/resources/"));
     s.serve();
+
+//    Thread.sleep(10000000);
   }
 }

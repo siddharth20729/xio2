@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Jeff Rose
+ *  Copyright (C) 2015 Jeff Rose
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,32 +12,28 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
+
 package com.xjeffrose.xio2.http.server;
 
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.SecureChannelContext;
-
 import com.xjeffrose.xio2.TLS.TLS;
 import java.nio.channels.SocketChannel;
 
-public class HttpsHandler extends HttpHandler {
+public class SecureFileHandler extends FileHandler {
 
   private String keyPath = null;
   private String x509CertPath = null;
   private boolean selfSignedCert = false;
 
-  public HttpsHandler() {
-
-    this.selfSignedCert = true;
-  }
-
-  public HttpsHandler(boolean selfSignedCert) {
+  public SecureFileHandler(boolean selfSignedCert) {
 
     this.selfSignedCert = selfSignedCert;
   }
 
-  public HttpsHandler(String keyPath, String x509CertPath) {
+  public SecureFileHandler(String keyPath, String x509CertPath) {
     this.keyPath = keyPath;
     this.x509CertPath = x509CertPath;
   }

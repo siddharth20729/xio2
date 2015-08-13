@@ -40,7 +40,7 @@ public class ServerTest {
   OkHttpClient client = new OkHttpClient();
 
   HttpHandler testHandler = new HttpHandler();
-  HttpsHandler testHttpsHandler = new HttpsHandler();
+  HttpsHandler testHttpsHandler = new HttpsHandler(true);
 
   private OkHttpClient getUnsafeOkHttpClient() {
     try {

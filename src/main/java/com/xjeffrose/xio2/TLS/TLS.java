@@ -66,25 +66,25 @@ public class TLS {
     ctx.engine = engine;
   }
 
-  public TLS(ChannelContext ctx, String privateKeyPath, String x509CrtPath) {
+  public TLS(SecureChannelContext ctx, String privateKeyPath, String x509CrtPath) {
     this.privateKeyPath = privateKeyPath;
     this.x509CrtPath = x509CrtPath;
     this.password = "";
     this.channel = ctx.channel;
+
     genEngine();
-  //  ctx.engine = engine;
+    ctx.engine = engine;
   }
 
-  public TLS(ChannelContext ctx, String privateKeyPath, String x509CrtPath, String password) {
+  public TLS(SecureChannelContext ctx, String privateKeyPath, String x509CrtPath, String password) {
     this.privateKeyPath = privateKeyPath;
     this.x509CrtPath = x509CrtPath;
     this.password = password;
-
     this.channel = ctx.channel;
-    genEngine();
-    //ctx.engine = engine;
-  }
 
+    genEngine();
+    ctx.engine = engine;
+  }
 
   public TLS(SocketChannel channel) {
     this.channel = channel;
