@@ -84,7 +84,25 @@ public class Glog {
     sb.append(": ").append(message);
     Throwable throwable = formatter.getThrowable(record);
     if (throwable != null) {
-      sb.append('\n').append(throwable.getStackTrace());
+      sb.append("\n  ").append(throwable.getClass().getCanonicalName());
+      String throwableMessage = throwable.getMessage();
+      if (throwableMessage != null && throwableMessage.length() > 0) {
+        sb.append(": ")
+          .append(throwableMessage)
+        ;
+      }
+      for (StackTraceElement element : throwable.getStackTrace()) {
+        sb.append("\n    at ")
+          .append(element.getClassName())
+          .append(".")
+          .append(element.getMethodName())
+          .append("(")
+          .append(element.getFileName())
+          .append(":")
+          .append(element.getLineNumber())
+          .append(")")
+        ;
+      }
     }
 
     return sb.append('\n').toString();
