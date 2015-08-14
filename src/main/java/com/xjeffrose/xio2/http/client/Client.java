@@ -129,7 +129,7 @@ public class Client {
 
   public void proxy(ChannelContext serverCtx) {
 
-    HttpRequest req = (HttpRequest) serverCtx.handler.getReq();
+    HttpRequest req = (HttpRequest) serverCtx.req;
     HttpResponse response = call(req);
 
     serverCtx.write(response.toBB());

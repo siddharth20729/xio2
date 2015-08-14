@@ -30,6 +30,8 @@ public class ChannelContext {
   protected final ConcurrentLinkedDeque<ByteBuffer> bbList = new ConcurrentLinkedDeque<>();
   public State state = State.got_request;
   public SocketChannel channel;
+  public Request req;
+  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
 
   public ChannelContext(SocketChannel channel, Handler handler) {
     this.channel = channel;
@@ -65,7 +67,6 @@ public class ChannelContext {
 
   public void read() {
     while (nread > 0 && state == State.got_request) {
-      final ByteBuffer inputBuffer = handler.getInputBuffer();
       inputBuffer.clear();
       nread = readIntoBuffer(inputBuffer);
       state = State.start_parse;
@@ -77,7 +78,7 @@ public class ChannelContext {
         throw new RuntimeException(e);
       }
     }
-    if (handler.parse()) {
+    if (handler.parse(this)) {
       state = State.finished_parse;
       handler.handle(this);
     } else {

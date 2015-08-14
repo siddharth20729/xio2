@@ -36,7 +36,7 @@ public class HttpResponseTest {
     assertEquals(testDefaultResponse.getHttpVersion(), "HTTP/1.1");
     assertEquals(testDefaultResponse.getStatus(), "404 Not Found");
     assertEquals(testDefaultResponse.headers.size(), 3);
-    assertEquals(testDefaultResponse.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(testDefaultResponse.headers.get("Content-Type"), "application/text;charset=UTF-8");
     assertEquals(testDefaultResponse.headers.get("Server"), "xio2");
 
   }
@@ -50,7 +50,7 @@ public class HttpResponseTest {
     assertEquals(testDefaultResponse.getHttpVersion(), "HTTP/1.1");
     assertEquals(testDefaultResponse.getStatus(), "200 OK");
     assertEquals(testDefaultResponse.headers.size(), 4);
-    assertEquals(testDefaultResponse.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(testDefaultResponse.headers.get("Content-Type"), "application/text;charset=UTF-8");
     assertEquals(testDefaultResponse.headers.get("Server"), "xio2");
     assertEquals(testDefaultResponse.headers.get("Content-Length"), "16");
     assertEquals(testDefaultResponse.getBody(), "This is the body");

@@ -30,7 +30,7 @@ public class TcpHandler implements Handler {
   }
 
   @Override
-  public boolean parse() {
+  public boolean parse(ChannelContext ctx) {
     return true;
   }
 
@@ -52,21 +52,6 @@ public class TcpHandler implements Handler {
 
   public void addService(TcpService service) {
     this.service = service;
-  }
-
-  @Override
-  public Request getReq() {
-    return null;
-  }
-
-  @Override
-  public Http.Method getMethod() {
-    return null;
-  }
-
-  @Override
-  public ByteBuffer getInputBuffer() {
-    return req.inputBuffer;
   }
 
   @Override

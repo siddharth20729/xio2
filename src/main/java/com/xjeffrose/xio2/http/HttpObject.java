@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 public class HttpObject {
   private static final Logger log = Log.getLogger(HttpObject.class.getName());
 
-  public final ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
+  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
   public int http_version_major = 0;
   public int http_version_minor = 0;
   public Method method = new Method();

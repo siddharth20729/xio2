@@ -27,7 +27,7 @@ public class HttpResponse extends HttpObject {
 
     resp.setVersion(version);
     resp.setStatus(status);
-    resp.headers.set("Content-Type", "text/html; charset=UTF-8");
+    resp.headers.set("Content-Type", "application/text;charset=UTF-8");
     resp.headers.set("Date", Http.date());
     resp.headers.set("Server", "xio2");
 
@@ -42,7 +42,7 @@ public class HttpResponse extends HttpObject {
 
     resp.setVersion(version);
     resp.setStatus(status);
-    resp.headers.set("Content-Type", "text/html; charset=UTF-8");
+    resp.headers.set("Content-Type", "application/text;charset=UTF-8");
     resp.headers.set("Date", Http.date());
     resp.headers.set("Server", "xio2");
     resp.headers.set("Content-Length", Integer.toString(body.length()));

@@ -6,7 +6,7 @@ import java.nio.channels.SocketChannel;
 
 public interface Handler {
 
-  boolean parse();
+  boolean parse(ChannelContext ctx);
 
   void handle(ChannelContext ctx);
 
@@ -14,11 +14,11 @@ public interface Handler {
 
   void handleFatalError(ChannelContext ctx);
 
-  Request getReq();
+//  Request getReq();
 
-  Http.Method getMethod();
+//  Http.Method getMethod();
 
-  ByteBuffer getInputBuffer();
+  //ByteBuffer getInputBuffer(ChannelContext ctx);
 
   ChannelContext buildChannelContext(SocketChannel channel);
 

@@ -32,7 +32,7 @@ public abstract class HttpService implements Service {
     this.ctx = ctx;
     this.req = (HttpRequest) req;
 
-    switch (ctx.handler.getMethod()) {
+    switch (((HttpRequest) ctx.req).method_) {
       case GET:
         handleGet();
         serviceStream();

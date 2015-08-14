@@ -17,6 +17,7 @@
 
 package com.xjeffrose.xio2.http.server;
 
+import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Handler;
 import com.xjeffrose.xio2.Request;
@@ -25,36 +26,22 @@ import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpRequestParser;
 import com.xjeffrose.xio2.http.HttpResponse;
+import com.xjeffrose.xio2.util.BB;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.logging.Logger;
 
 public class FileHandler implements Handler {
-  private final HttpRequest req = new HttpRequest();
+  private static final Logger log = Log.getLogger(FileHandler.class.getName());
+
   private String wwwDir = "public/";
-
   public FileHandler() { }
-
   public FileHandler(String wwwDir) {
     this.wwwDir = wwwDir;
-  }
-
-  @Override
-  public Request getReq() {
-    return req;
-  }
-
-  @Override
-  public Http.Method getMethod() {
-    return req.method_;
-  }
-
-  @Override
-  public ByteBuffer getInputBuffer() {
-    return req.inputBuffer;
   }
 
   @Override
@@ -66,24 +53,25 @@ public class FileHandler implements Handler {
   public void secureContext(SecureChannelContext secureChannelContext) {}
 
   @Override
-  public boolean parse() {
-    final HttpRequestParser parser = new HttpRequestParser();
-    return parser.parse(req);
+  public boolean parse(ChannelContext ctx) {
+    ctx.req = new HttpRequest(ctx.inputBuffer);
+    return new HttpRequestParser().parse((HttpRequest)ctx.req);
   }
 
   public void handle(ChannelContext ctx) {
-    // Currently the browser's favicon petulance is causing this to break.
-    // No means no, Chrome...
-
     try {
+      HttpRequest req = (HttpRequest)ctx.req;
       final String path = req.getUri().getPath().equals("/") ? "index.html" : req.getUri().getPath();
       final FileChannel fileChannel = FileChannel.open(Paths.get(wwwDir + path), StandardOpenOption.READ);
       final HttpResponse resp = HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.OK);
       resp.headers.set("Content-Length", String.valueOf(fileChannel.size()));
-
-//      System.out.println(req.toString());
-//      System.out.println(path);
-
+      if (req.getUri().getPath().endsWith("html")) {
+        resp.headers.set("Content-Type", "text/html;charset=UTF-8");
+      } else if (req.getUri().getPath().endsWith("css")) {
+        resp.headers.set("Content-Type", "text/css;charset=UTF-8");
+      } else if (req.getUri().getPath().endsWith("js")) {
+        resp.headers.set("Content-Type", "text/javascript;charset=UTF-8");
+      }
       ctx.channel.write(resp.toBB());
       fileChannel.transferTo(0, fileChannel.size(), ctx.channel);
       ctx.channel.close();

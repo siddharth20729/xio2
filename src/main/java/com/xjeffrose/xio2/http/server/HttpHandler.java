@@ -28,22 +28,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HttpHandler implements Handler {
-  private final HttpRequest req = new HttpRequest();
   private final Map<Route, HttpService> routes = new ConcurrentHashMap<>();
 
   public HttpHandler() { }
-
-  public HttpRequest getReq() {
-    return req;
-  }
-
-  public Http.Method getMethod() {
-    return req.method_;
-  }
-
-  public ByteBuffer getInputBuffer() {
-    return req.inputBuffer;
-  }
 
   public ChannelContext buildChannelContext(SocketChannel channel) {
     return new ChannelContext(channel, this);
@@ -52,12 +39,13 @@ public class HttpHandler implements Handler {
   @Override
   public void secureContext(SecureChannelContext secureChannelContext) { }
 
-  public boolean parse() {
-    final HttpRequestParser parser = new HttpRequestParser();
-    return parser.parse(req);
+  public boolean parse(ChannelContext ctx) {
+    ctx.req = new HttpRequest(ctx.inputBuffer);
+    return new HttpRequestParser().parse((HttpRequest)ctx.req);
   }
 
   public void handle(ChannelContext ctx) {
+    HttpRequest req = (HttpRequest)ctx.req;
     final String uri = req.getUri().toString();
     for (Map.Entry<Route, HttpService> entry : routes.entrySet()) {
       if (entry.getKey().matches(uri)) {

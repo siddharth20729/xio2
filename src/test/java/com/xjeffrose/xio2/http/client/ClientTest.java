@@ -55,7 +55,7 @@ public class ClientTest {
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
     assertEquals(resp.getStatus(), "404 Not Found");
     assertEquals(resp.headers.size(), 3);
-    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(resp.headers.get("Content-Type"), "application/text;charset=UTF-8");
     assertEquals(resp.headers.get("Server"), "xio2");
   }
 
@@ -103,7 +103,7 @@ public class ClientTest {
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
     assertEquals(resp.getStatus(), "404 Not Found");
     assertEquals(resp.headers.size(), 3);
-    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(resp.headers.get("Content-Type"), "application/text;charset=UTF-8");
     assertEquals(resp.headers.get("Server"), "xio2");
   }
 
@@ -126,7 +126,7 @@ public class ClientTest {
       assertEquals(resp.getHttpVersion(), "HTTP/1.1");
       assertEquals(resp.getStatus(), "404 Not Found");
       assertEquals(resp.headers.size(), 3);
-      assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+      assertEquals(resp.headers.get("Content-Type"), "application/text;charset=UTF-8");
       assertEquals(resp.headers.get("Server"), "xio2");
     }
   }
@@ -248,7 +248,7 @@ public class ClientTest {
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
     assertEquals(resp.getStatus(), "200 OK");
     assertEquals(resp.headers.size(), 4);
-    assertEquals(resp.headers.get("Content-Type"), "text/html; charset=UTF-8");
+    assertEquals(resp.headers.get("Content-Type"), "application/text;charset=UTF-8");
     assertEquals(resp.headers.get("Server"), "xio2");
     assertEquals("CONGRATS!\n", resp.getBody());
     assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));

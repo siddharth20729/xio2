@@ -40,7 +40,7 @@ public class ServerTest {
   OkHttpClient client = new OkHttpClient();
 
   HttpHandler testHandler = new HttpHandler();
-  HttpsHandler testHttpsHandler = new HttpsHandler();
+  HttpsHandler testHttpsHandler = new HttpsHandler("src/test/resources/privateKey.pem", "src/test/resources/cert.pem");
 
   private OkHttpClient getUnsafeOkHttpClient() {
     try {
