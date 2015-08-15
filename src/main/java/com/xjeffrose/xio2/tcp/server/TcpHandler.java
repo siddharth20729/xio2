@@ -1,7 +1,9 @@
 package com.xjeffrose.xio2.tcp.server;
 
 import com.xjeffrose.xio2.ChannelContext;
+import com.xjeffrose.xio2.Firewall;
 import com.xjeffrose.xio2.Handler;
+import com.xjeffrose.xio2.RateLimiter;
 import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.TLS.TLS;
@@ -17,6 +19,8 @@ public class TcpHandler implements Handler {
   private boolean selfSignedCert;
   private String keyPath;
   private String x509CertPath;
+  public Firewall firewall = new Firewall();
+  public RateLimiter rateLimiter = new RateLimiter();
 
   public TcpHandler(boolean tls) {
     this.tls = tls;
@@ -72,5 +76,10 @@ public class TcpHandler implements Handler {
       tls = new TLS(secureChannelContext, keyPath, x509CertPath);
     }
     tls.doHandshake();
+  }
+
+  @Override
+  public Firewall firewall() {
+    return firewall;
   }
 }

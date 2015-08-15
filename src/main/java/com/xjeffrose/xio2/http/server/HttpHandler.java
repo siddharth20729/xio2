@@ -16,7 +16,9 @@
 package com.xjeffrose.xio2.http.server;
 
 import com.xjeffrose.xio2.ChannelContext;
+import com.xjeffrose.xio2.Firewall;
 import com.xjeffrose.xio2.Handler;
+import com.xjeffrose.xio2.RateLimiter;
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
@@ -30,6 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class HttpHandler implements Handler {
   private final Map<Route, HttpService> routes = new ConcurrentHashMap<>();
 
+  public Firewall firewall = new Firewall();
+  public RateLimiter rateLimiter = new RateLimiter();
+
   public HttpHandler() { }
 
   public ChannelContext buildChannelContext(SocketChannel channel) {
@@ -38,6 +43,11 @@ public class HttpHandler implements Handler {
 
   @Override
   public void secureContext(SecureChannelContext secureChannelContext) { }
+
+  @Override
+  public Firewall firewall() {
+    return firewall;
+  }
 
   public boolean parse(ChannelContext ctx) {
     ctx.req = new HttpRequest(ctx.inputBuffer);

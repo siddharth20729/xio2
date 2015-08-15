@@ -16,7 +16,6 @@
 package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
-import com.xjeffrose.xio2.http.server.HttpHandler;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -36,8 +35,8 @@ public class Acceptor extends Thread {
   private Handler handler;
 
   public Acceptor(ServerSocketChannel serverChannel,
-           EventLoopPool eventLoopPool,
-           Handler handler) {
+                  EventLoopPool eventLoopPool,
+                  Handler handler) {
     this.eventLoopPool = eventLoopPool;
     this.handler = handler;
 
@@ -77,6 +76,11 @@ public class Acceptor extends Thread {
           if (key.isValid() && key.isAcceptable()) {
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
+            if (handler.firewall().isAddrBlackListed(channel.getRemoteAddress())) {
+              channel.close();
+              log.info("Dropped connection from " + channel.getRemoteAddress().toString() + "because it was blacklisted");
+              break;
+            }
             EventLoop next = eventLoopPool.next();
             next.addContext(handler.buildChannelContext(channel));
           } else if (!key.isValid()) {

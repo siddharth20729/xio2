@@ -15,23 +15,7 @@
  *
  */
 
-package com.xjeffrose.xio2.admin;
+package com.xjeffrose.xio2;
 
-import com.xjeffrose.xio2.ChannelContext;
-import com.xjeffrose.xio2.http.server.HttpsHandler;
-
-public class AdminHandler extends HttpsHandler {
-
-  public AdminHandler() {
-    addRoute("/", new AdminService());
-    addRoute("metrics", new MetricsService());
-    addRoute("/health", new HealthCheckService());
-    addRoute("/lifecycle", new LifecycleService());
-  }
-
-  @Override
-  public void handle(ChannelContext ctx) {
-
-  }
-
+public class RateLimiter {
 }

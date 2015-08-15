@@ -16,6 +16,7 @@
 package com.xjeffrose.xio2;
 
 import com.xjeffrose.log.Log;
+import com.xjeffrose.xio2.admin.AdminHandler;
 import com.xjeffrose.xio2.http.server.HttpHandler;
 import com.xjeffrose.xio2.http.server.HttpsHandler;
 
@@ -24,7 +25,6 @@ import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public class Server {
@@ -33,6 +33,9 @@ public class Server {
   private List<Acceptor> acceptorList = new ArrayList<>();
   private final int cores = Runtime.getRuntime().availableProcessors();
   private EventLoopPool pool;
+
+  public AdminHandler adminHandler = new AdminHandler();
+  public int adminHandlerPort = 8081;
 
   public Server() {
     pool = new EventLoopPool(cores);
@@ -76,7 +79,12 @@ public class Server {
     serve();
   }
 
+  private void registerAdminServer() {
+    bind(adminHandlerPort, adminHandler);
+  }
+
   public void serve() {
+//    registerAdminServer();
     pool.start();
     acceptorList.forEach(a -> a.start());
   }

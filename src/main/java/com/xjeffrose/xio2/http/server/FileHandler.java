@@ -19,7 +19,9 @@ package com.xjeffrose.xio2.http.server;
 
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.ChannelContext;
+import com.xjeffrose.xio2.Firewall;
 import com.xjeffrose.xio2.Handler;
+import com.xjeffrose.xio2.RateLimiter;
 import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.http.Http;
@@ -39,6 +41,8 @@ public class FileHandler implements Handler {
   private static final Logger log = Log.getLogger(FileHandler.class.getName());
 
   private String wwwDir = "public/";
+  public Firewall firewall = new Firewall();
+  public RateLimiter rateLimiter = new RateLimiter();
   public FileHandler() { }
   public FileHandler(String wwwDir) {
     this.wwwDir = wwwDir;
@@ -51,6 +55,11 @@ public class FileHandler implements Handler {
 
   @Override
   public void secureContext(SecureChannelContext secureChannelContext) {}
+
+  @Override
+  public Firewall firewall() {
+    return firewall;
+  }
 
   @Override
   public boolean parse(ChannelContext ctx) {

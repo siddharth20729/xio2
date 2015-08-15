@@ -1,7 +1,5 @@
 package com.xjeffrose.xio2;
 
-import com.xjeffrose.xio2.http.Http;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public interface Handler {
@@ -17,4 +15,6 @@ public interface Handler {
   ChannelContext buildChannelContext(SocketChannel channel);
 
   void secureContext(SecureChannelContext secureChannelContext);
+
+  Firewall firewall();
 }
