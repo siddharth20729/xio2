@@ -15,10 +15,11 @@
  *
  */
 
-package com.xjeffrose.xio2.stats;
+package com.xjeffrose.xio2.admin.metrics;
 
-import com.xjeffrose.xio2.http.server.HttpHandler;
+// TODO: ## Response Time in percentiles
+// 0.25, 0.5, 0.75, 0.9, 0.95, 0.99, 0.999, 0.9999
 
-public class StatsHandler extends HttpHandler {
-
+// TODO: Requests / second
+public class Histogram {
 }

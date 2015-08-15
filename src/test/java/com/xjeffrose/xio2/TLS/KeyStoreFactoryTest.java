@@ -10,7 +10,7 @@ public class KeyStoreFactoryTest {
   @Test
   public void testGenerate() throws Exception {
 
-    KeyStore ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), "selfsignedcert");
+    KeyStore ks = KeyStoreFactory.Generate(SelfSignedX509CertGenerator.generate("example.com"), "selfsignedcert");
 
     assertTrue(ks.containsAlias("example.com"));
   }

@@ -15,7 +15,25 @@
  *
  */
 
-package com.xjeffrose.xio2.stats;
+package com.xjeffrose.xio2.admin.metrics;
 
-public class Counter {
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.util.Map;
+
+public class JVM {
+
+  public JVM() { }
+
+  public Map<Thread, StackTraceElement[]> getAllStackTraces() {
+
+    return Thread.getAllStackTraces();
+  }
+
+  public ThreadInfo[] getThreadInfo() {
+    ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+
+    return threadBean.getThreadInfo(threadBean.getAllThreadIds());
+  }
 }

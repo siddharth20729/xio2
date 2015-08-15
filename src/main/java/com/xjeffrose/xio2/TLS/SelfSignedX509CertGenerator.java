@@ -36,15 +36,15 @@ import sun.security.x509.X500Name;
 import sun.security.x509.X509CertImpl;
 import sun.security.x509.X509CertInfo;
 
-public final class SelfSignedCertGenerator {
-  private static final Logger log = Log.getLogger(SelfSignedCertGenerator.class.getName());
+public final class SelfSignedX509CertGenerator {
+  private static final Logger log = Log.getLogger(SelfSignedX509CertGenerator.class.getName());
 
   static final Date NOT_BEFORE = new Date(System.currentTimeMillis() - 86400000L * 365);
   static final Date NOT_AFTER = new Date(253402300799000L);
 
-  private SelfSignedCertGenerator() { }
+  private SelfSignedX509CertGenerator() { }
 
-  public static XioCertificate generate(String fqdn) throws Exception {
+  public static X509Certificate generate(String fqdn) throws Exception {
 
     //Generate an RSA key pair.
     final KeyPair keypair;
@@ -86,6 +86,6 @@ public final class SelfSignedCertGenerator {
     cert.sign(key, "SHA1withRSA");
     cert.verify(keypair.getPublic());
 
-    return new XioCertificate(fqdn, key, cert);
+    return new X509Certificate(fqdn, key, cert);
   }
 }

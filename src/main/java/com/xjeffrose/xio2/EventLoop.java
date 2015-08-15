@@ -83,7 +83,7 @@ class EventLoop extends Thread {
             }
             //This is a catch all for any error in this thread.
           } catch (Exception e) {
-            log.log(Level.SEVERE, "poop in context", e);
+            log.log(Level.SEVERE, "Error inside Read | Write loop", e);
             ChannelContext ctx = (ChannelContext) key.attachment();
             ctx.handleFatalError();
             key.cancel();
@@ -94,7 +94,7 @@ class EventLoop extends Thread {
         }
         configureChannel();
       } catch (Exception e) {
-        log.log(Level.SEVERE, "poop right outside of loop", e);
+        log.log(Level.SEVERE, "Error in EventLoop during Channel Configuration", e);
       }
     }
   }

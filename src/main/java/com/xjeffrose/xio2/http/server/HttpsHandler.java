@@ -43,12 +43,15 @@ public class HttpsHandler extends HttpHandler {
 
   @Override
   public void secureContext(SecureChannelContext secureChannelContext) {
-    final TLS tls;
-    if (selfSignedCert) {
-      tls = new TLS(secureChannelContext);
-    } else {
-      tls = new TLS(secureChannelContext, keyPath, x509CertPath);
-    }
+    final TLS tls = buildTLS(secureChannelContext);
     tls.doHandshake();
+  }
+
+  public TLS buildTLS(SecureChannelContext secureChannelContext) {
+    if (selfSignedCert) {
+      return new TLS(secureChannelContext);
+    } else {
+      return new TLS(secureChannelContext, keyPath, x509CertPath);
+    }
   }
 }

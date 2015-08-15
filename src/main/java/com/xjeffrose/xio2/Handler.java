@@ -14,12 +14,6 @@ public interface Handler {
 
   void handleFatalError(ChannelContext ctx);
 
-//  Request getReq();
-
-//  Http.Method getMethod();
-
-  //ByteBuffer getInputBuffer(ChannelContext ctx);
-
   ChannelContext buildChannelContext(SocketChannel channel);
 
   void secureContext(SecureChannelContext secureChannelContext);

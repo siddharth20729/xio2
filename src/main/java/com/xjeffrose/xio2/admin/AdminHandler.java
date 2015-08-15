@@ -15,23 +15,13 @@
  *
  */
 
-package com.xjeffrose.xio2.stats;
+package com.xjeffrose.xio2.admin;
 
-import com.xjeffrose.xio2.Server;
-import com.xjeffrose.xio2.http.Http;
-import com.xjeffrose.xio2.http.server.FileHandler;
-import org.junit.Test;
+import com.xjeffrose.xio2.ChannelContext;
+import com.xjeffrose.xio2.http.server.HttpsHandler;
 
-import static org.junit.Assert.*;
-
-public class StatsTest {
-
-  @Test
-  public void testHandleGet() throws Exception {
-    Server s = Http.newServer();
-    s.bind(8081, new FileHandler("src/main/resources/"));
-    s.serve();
-
-//    Thread.sleep(10000000);
+public class AdminHandler extends HttpsHandler{
+  @Override
+  public void handle(ChannelContext ctx) {
   }
 }

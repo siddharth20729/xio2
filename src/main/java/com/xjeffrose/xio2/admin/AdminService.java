@@ -15,24 +15,12 @@
  *
  */
 
-package com.xjeffrose.xio2.stats;
+package com.xjeffrose.xio2.admin;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.Map;
+import com.xjeffrose.xio2.http.server.HttpService;
 
-public class JVM {
-  public JVM() {}
-
-  public static Map<Thread, StackTraceElement[]> getAllStackTraces() {
-
-    return Thread.getAllStackTraces();
-  }
-
-  public static ThreadInfo[] getThreadInfo() {
-    ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-
-    return threadBean.getThreadInfo(threadBean.getAllThreadIds());
+public class AdminService extends HttpService {
+  @Override
+  public void handleGet() {
   }
 }

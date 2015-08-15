@@ -15,7 +15,25 @@
  *
  */
 
-package com.xjeffrose.xio2.stats;
+package com.xjeffrose.xio2.admin.metrics;
 
-public class OS {
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class Counter {
+  private final AtomicInteger counter = new AtomicInteger();
+  private int currentValue = 0;
+
+  public Counter() { }
+
+  public void inc() {
+    currentValue = counter.incrementAndGet();
+  }
+
+  public void dec() {
+    currentValue = counter.decrementAndGet();
+  }
+
+  public int getCurrentValue() {
+    return currentValue;
+  }
 }

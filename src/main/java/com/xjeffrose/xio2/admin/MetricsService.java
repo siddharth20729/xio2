@@ -15,17 +15,12 @@
  *
  */
 
-package com.xjeffrose.xio2.TLS;
+package com.xjeffrose.xio2.admin;
 
-import org.junit.Test;
+import com.xjeffrose.xio2.http.server.HttpService;
 
-import static org.junit.Assert.*;
-
-public class xioCertGeneratorTest {
-
-  @Test
-  public void testGenerate() throws Exception {
-    X509Certificate cert = X509CertificateGenerator.generate("src/test/resources/privateKey.pem", "src/test/resources/test.crt");
-    assertEquals("CN=xio2.example.com,OU=dev,O=xio2,L=Chicago,ST=IL,C=US", cert.getCert().getIssuerX500Principal().getName());
+public class MetricsService extends HttpService{
+  @Override
+  public void handleGet() {
   }
 }

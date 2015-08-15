@@ -15,7 +15,12 @@
  *
  */
 
-package com.xjeffrose.xio2.stats;
+package com.xjeffrose.xio2.admin;
 
-public class Timer {
+import com.xjeffrose.xio2.http.server.HttpService;
+
+public class LifecycleService extends HttpService {
+  @Override
+  public void handleGet() {
+  }
 }

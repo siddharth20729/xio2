@@ -136,9 +136,9 @@ public class TLS {
       KeyManagerFactory kmf = null;
       if (!client) {
         if (selfSignedCert) {
-          ks = KeyStoreFactory.Generate(SelfSignedCertGenerator.generate("example.com"), password);
+          ks = KeyStoreFactory.Generate(SelfSignedX509CertGenerator.generate("example.com"), password);
         } else {
-          ks = KeyStoreFactory.Generate(XioCertGenerator.generate(privateKeyPath, x509CrtPath), password);
+          ks = KeyStoreFactory.Generate(X509CertificateGenerator.generate(privateKeyPath, x509CrtPath), password);
         }
         kmf = KeyManagerFactory.getInstance("SunX509");
         kmf.init(ks, passwordCharArray);
