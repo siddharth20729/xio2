@@ -49,6 +49,11 @@ public class HttpHandler implements Handler {
     return firewall;
   }
 
+  @Override
+  public void logRequest(ChannelContext ctx) {
+
+  }
+
   public boolean parse(ChannelContext ctx) {
     ctx.req = new HttpRequest(ctx.inputBuffer);
     return new HttpRequestParser().parse((HttpRequest)ctx.req);

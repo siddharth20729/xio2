@@ -82,4 +82,8 @@ public class TcpHandler implements Handler {
   public Firewall firewall() {
     return firewall;
   }
+
+  @Override
+  public void logRequest(ChannelContext ctx) {
+  }
 }

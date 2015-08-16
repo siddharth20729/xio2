@@ -64,7 +64,7 @@ public class FileHandler implements Handler {
   @Override
   public void logRequest(ChannelContext ctx) {
     HttpRequest req = (HttpRequest) ctx.req;
-    
+
   }
 
   @Override
