@@ -23,6 +23,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class X509CertificateGeneratorTest {
 
   @Before
@@ -55,6 +57,7 @@ public class X509CertificateGeneratorTest {
   @Test
   public void testGenerate() throws Exception {
     X509Certificate certificate = X509CertificateGenerator.generate("src/test/resources/privateKey.pem", "src/test/resources/cert.pem");
+    assertEquals("CN=xio2.example.com,OU=dev,O=xio2,L=Chicago,ST=IL,C=US", certificate.getCert().getIssuerX500Principal().getName());
 
   }
 }

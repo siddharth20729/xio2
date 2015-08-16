@@ -81,8 +81,8 @@ public class ClientTest {
       assertEquals(resp.headers.get("Server"), "Jetty(9.3.1.v20150714)");
       assertEquals("CONGRATS!\n", resp.getBody());
       assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
-      assertTrue("Iteration [" + i + "] Open file descriptors less than 10% of max: " + OS.getOpenFileDescriptorCount() + "/" + OS.getMaxFileDescriptorCount(),
-          OS.getOpenFileDescriptorCount() < OS.getMaxFileDescriptorCount() * 0.10);
+//      assertTrue("Iteration [" + i + "] Open file descriptors less than 10% of max: " + OS.getOpenFileDescriptorCount() + "/" + OS.getMaxFileDescriptorCount(),
+//          OS.getOpenFileDescriptorCount() < OS.getMaxFileDescriptorCount() * 0.10);
     }
   }
 
