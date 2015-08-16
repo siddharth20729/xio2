@@ -1,5 +1,5 @@
 ### Status
-[![Build Status](https://travis-ci.org/xjdr/xio2.png)](https://travis-ci.org/xjdr/xio2)
+[![Build Status](https://travis-ci.org/xjdr/xio2.png)](https://travis-ci.org/xjdr/xio2)  [![Coverage Status](https://coveralls.io/repos/xjdr/xio2/badge.svg?branch=master&service=github)](https://coveralls.io/github/xjdr/xio2?branch=master)
 
 xio2
 ====
