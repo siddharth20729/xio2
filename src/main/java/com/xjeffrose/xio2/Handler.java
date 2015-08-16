@@ -17,4 +17,7 @@ public interface Handler {
   void secureContext(SecureChannelContext secureChannelContext);
 
   Firewall firewall();
+
+  void logRequest(ChannelContext ctx);
+
 }
