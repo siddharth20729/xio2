@@ -1,3 +1,6 @@
+### Status
+[![Build Status](https://travis-ci.org/xjdr/xio2.png)](https://travis-ci.org/xjdr/xio2)
+
 xio2
 ====
 
