@@ -4,25 +4,11 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio2</artifactId>
-    <version>0.9.4-SNAPSHOT</version>
+    <version>0.9.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio2</name>
     <description>A modern I/O API for Java</description>
     <url>https://github.com/xjdr/xio.git</url>
-
-    <developers>
-        <developer>
-            <id>xjdr</id>
-            <name>Jeff Rose</name>
-            <email>jeff.rose12@gmail.com</email>
-            <organization>xjeffrose</organization>
-            <organizationUrl>http://www.xjeffrose.com</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>-6</timezone>
-        </developer>
-    </developers>
 
     <properties>
         <!-- Constants -->
@@ -60,10 +46,6 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
     </distributionManagement>
 
     <dependencies>
