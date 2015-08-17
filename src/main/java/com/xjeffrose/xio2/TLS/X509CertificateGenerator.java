@@ -203,10 +203,10 @@ public final class X509CertificateGenerator {
       X509CertImpl cert = (X509CertImpl) x509Certificate;
 
       //cert.sign(privateKey, "SHA1withRSA");
-      cert.verify(publicKey);
+      //cert.verify(publicKey);
 
       return new X509Certificate(cert.getIssuerX500Principal().getName(), privateKey, cert);
-    } catch (FileNotFoundException | NoSuchProviderException | CertificateException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+    } catch (FileNotFoundException | CertificateException e) {
       log.log(Level.SEVERE, "Failed to import x509 cert", e);
       throw new RuntimeException(e);
     }

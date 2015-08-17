@@ -19,6 +19,7 @@ package com.xjeffrose.xio2.TLS;
 
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import javax.crypto.KeyGenerator;
 
 public class KeyStoreFactory {
 
