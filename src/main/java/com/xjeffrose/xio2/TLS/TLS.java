@@ -37,7 +37,7 @@ public class TLS {
   private ByteBuffer decryptedRequest;
   private ByteBuffer rawResponse;
   private SocketChannel channel;
-  private String version = "TLSv1.2";
+  private String version = "TLSv1";
   private boolean selfSignedCert = false;
   private boolean client = false;
   private String privateKeyPath;
