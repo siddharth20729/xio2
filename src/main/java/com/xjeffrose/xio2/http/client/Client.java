@@ -258,6 +258,7 @@ public class Client {
               cleanup(channel);
               return resp;
             } else if (nread == -1) {
+              log.severe("Server disconnected with data remaining");
               cleanup(channel);
               return HttpResponse
                   .DefaultResponse(Http.Version.HTTP1_1, Http.Status.INTERNAL_SERVER_ERROR);

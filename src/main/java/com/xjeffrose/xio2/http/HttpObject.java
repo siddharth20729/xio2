@@ -31,8 +31,8 @@ public class HttpObject {
   private static final Logger log = Log.getLogger(HttpObject.class.getName());
 
 //  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
-//  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(20 * 1024);
-  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(1024 * 1024);
+  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(20 * 1024);
+//  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(1024 * 1024);
   public int http_version_major = 0;
   public int http_version_minor = 0;
   public Method method = new Method();
@@ -172,7 +172,7 @@ public class HttpObject {
     }
 
     public Map<String, String> splitQuery(URI uri) throws UnsupportedEncodingException {
-      Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+      Map<String, String> query_pairs = new LinkedHashMap<>();
       String query = uri.getQuery();
       String[] pairs = query.split("&");
       for (String pair : pairs) {
