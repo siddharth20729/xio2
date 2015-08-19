@@ -41,7 +41,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testCall() throws Exception {
+     public void testCall() throws Exception {
     s.bind(9018);
     s.serve();
 
@@ -172,6 +172,68 @@ public class ClientTest {
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
+        .build();
+
+    req.headers.set("X-TEST-HEADER", "Test/header/value");
+
+    Client client = Http.newClient("localhost:9040");
+    HttpObject resp = client.call(req);
+
+    assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+    assertEquals(resp.getStatus(), "200 OK");
+    assertEquals(resp.headers.size(), 5);
+    assertEquals(resp.headers.get("Content-Type"), "text/html;charset=utf-8");
+    assertEquals(resp.headers.get("Server"), "Jetty(9.3.1.v20150714)");
+    assertEquals(resp.headers.get("X-TEST-HEADER"), "Test/header/value");
+
+    assertEquals("CONGRATS!\n", resp.getBody());
+    assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
+  }
+
+  @Test
+  public void testProxyByPath() throws Exception {
+    new Thread(new SimpleTestServer(9041)).start();
+
+    //Give Jetty a Min to Wake up and run
+    Thread.sleep(500);
+    Server client_int = Http.newServer();
+    HttpHandler testHandler = new HttpHandler();
+    testHandler.addRoute("/test/path", new ProxyHttpService("localhost:9041"));
+    client_int.serve(9040, testHandler);
+
+    HttpRequest req = new HttpRequest.Builder()
+        .url("/test/path")
+        .build();
+
+    req.headers.set("X-TEST-HEADER", "Test/header/value");
+
+    Client client = Http.newClient("localhost:9040");
+    HttpObject resp = client.call(req);
+
+    assertEquals(resp.getHttpVersion(), "HTTP/1.1");
+    assertEquals(resp.getStatus(), "200 OK");
+    assertEquals(resp.headers.size(), 5);
+    assertEquals(resp.headers.get("Content-Type"), "text/html;charset=utf-8");
+    assertEquals(resp.headers.get("Server"), "Jetty(9.3.1.v20150714)");
+    assertEquals(resp.headers.get("X-TEST-HEADER"), "Test/header/value");
+
+    assertEquals("CONGRATS!\n", resp.getBody());
+    assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
+  }
+
+  @Test
+  public void testProxyByPathWithWildCard() throws Exception {
+    new Thread(new SimpleTestServer(9041)).start();
+
+    //Give Jetty a Min to Wake up and run
+    Thread.sleep(500);
+    Server client_int = Http.newServer();
+    HttpHandler testHandler = new HttpHandler();
+    testHandler.addRoute("*", new ProxyHttpService("localhost:9041"));
+    client_int.serve(9040, testHandler);
+
+    HttpRequest req = new HttpRequest.Builder()
+        .url("/test/path/wildcard")
         .build();
 
     req.headers.set("X-TEST-HEADER", "Test/header/value");

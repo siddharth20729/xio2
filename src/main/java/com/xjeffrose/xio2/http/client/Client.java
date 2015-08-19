@@ -44,7 +44,6 @@ public class Client {
 
   private Selector selector;
   private HttpRequest req;
-  private boolean parserOk;
   private TLS tls = null;
   public LoadBalancer lb = LoadBalancer.NullLoadBalancer;
   private LoadBalancingStrategy lbs;
@@ -64,7 +63,7 @@ public class Client {
     NullLoadBalancer,
     RoundRobin,
     FailFast,
-    PullBased;
+    PullBased
   }
 
   private SocketChannel getChannel(InetSocketAddress addr) {
@@ -127,6 +126,7 @@ public class Client {
     return execute(getChannel(lbs.nextAddress()));
   }
 
+  //PROXY!!!!!!
   public void proxy(ChannelContext serverCtx) {
 
     HttpRequest req = (HttpRequest) serverCtx.req;
@@ -253,7 +253,7 @@ public class Client {
               }
             }
             //TODO: Decouple HTTP
-            parserOk = parser.parse(resp);
+            boolean parserOk = parser.parse(resp);
             if (parserOk) {
               cleanup(channel);
               return resp;

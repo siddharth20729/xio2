@@ -46,6 +46,13 @@ public class RouteTest {
   }
 
   @Test
+  public void testMatchesAny() throws Exception {
+    Route matches1 = Route.build(".*");
+
+    assertTrue(matches1.matches("/api/people/jeff"));
+  }
+
+  @Test
   public void testGroups() throws Exception {
 
     Map<String, String> group1 = Route

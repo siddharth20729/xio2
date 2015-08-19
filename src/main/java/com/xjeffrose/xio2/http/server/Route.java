@@ -84,7 +84,7 @@ class Route {
   }
 
   public static Route build(String pattern) {
-    List<String> keywords = new ArrayList<String>();
+    List<String> keywords = new ArrayList<>();
     return new Route(compile(pattern, keywords), keywords);
   }
 }
