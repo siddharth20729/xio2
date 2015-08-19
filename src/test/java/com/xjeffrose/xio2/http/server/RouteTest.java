@@ -21,6 +21,12 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class RouteTest {
+  @Test
+  public void testWildcard() throws Exception {
+    Route matches1 = Route.build(".*");
+
+    assertTrue(matches1.matches("/api/people/jeff"));
+  }
 
   @Test
   public void testPathPattern() throws Exception {

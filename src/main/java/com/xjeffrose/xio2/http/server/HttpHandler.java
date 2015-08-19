@@ -19,6 +19,7 @@ import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Firewall;
 import com.xjeffrose.xio2.Handler;
 import com.xjeffrose.xio2.RateLimiter;
+import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
@@ -31,11 +32,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HttpHandler implements Handler {
   private final Map<Route, HttpService> routes = new ConcurrentHashMap<>();
+  private final HttpService defaultService;
 
   public Firewall firewall = new Firewall();
   public RateLimiter rateLimiter = new RateLimiter();
 
-  public HttpHandler() { }
+  public HttpHandler(HttpService defaultService) {
+    this.defaultService = defaultService;
+  }
+
+  public class NotFound extends HttpService {
+    public void handle(ChannelContext ctx, Request req) {
+      HttpHandler.this.logRequest(ctx);
+      ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND).toBB());
+    }
+  }
+
+  public HttpHandler() {
+    this.defaultService = new NotFound();
+  }
 
   public ChannelContext buildChannelContext(SocketChannel channel) {
     return new ChannelContext(channel, this);
@@ -62,15 +77,15 @@ public class HttpHandler implements Handler {
   public void handle(ChannelContext ctx) {
     HttpRequest req = (HttpRequest)ctx.req;
     final String uri = req.getUri().toString();
+    HttpService service = defaultService;
     for (Map.Entry<Route, HttpService> entry : routes.entrySet()) {
       if (entry.getKey().matches(uri)) {
-        ctx.state = ChannelContext.State.start_response;
-        entry.getValue().handle(ctx, req);
-        return;
+        service = entry.getValue();
+        break;
       }
     }
     ctx.state = ChannelContext.State.start_response;
-    ctx.write(HttpResponse.DefaultResponse(Http.Version.HTTP1_1, Http.Status.NOT_FOUND).toBB());
+    service.handle(ctx, req);
   }
 
   public void handleError(ChannelContext ctx) {

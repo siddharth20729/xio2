@@ -80,13 +80,13 @@ public abstract class HttpService implements Service {
 
   public void handleDelete() { }
 
-  private void handleTrace() { }
+  public void handleTrace() { }
 
-  private void handleOption() { }
+  public void handleOption() { }
 
-  private void handleConnect() { }
+  public void handleConnect() { }
 
-  private void handlePatch() { }
+  public void handlePatch() { }
 
   public void andThen(HttpService httpService) {
     httpServiceList.addLast(httpService);
