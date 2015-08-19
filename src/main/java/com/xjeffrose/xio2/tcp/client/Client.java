@@ -111,8 +111,8 @@ public class Client {
 
   public void proxy(ChannelContext serverCtx) {
 
-//    TcpRequest req = (TcpRequest) serverCtx.handler.getReq();
-    TcpResponse response = call(null);
+    TcpRequest req = (TcpRequest) serverCtx.req;
+    TcpResponse response = call(req);
 
     serverCtx.write(response.toBB());
   }
