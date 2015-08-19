@@ -7,6 +7,7 @@ import com.xjeffrose.xio2.RateLimiter;
 import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.TLS.TLS;
+import com.xjeffrose.xio2.TLS.TLSConfiguration;
 import com.xjeffrose.xio2.http.Http;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -14,6 +15,7 @@ import java.nio.channels.SocketChannel;
 public class TcpHandler implements Handler {
 
   private final boolean tls;
+  private TLSConfiguration config;
   private TcpRequest req = new TcpRequest();
   private TcpService service = null;
   private boolean selfSignedCert;
@@ -31,6 +33,11 @@ public class TcpHandler implements Handler {
     this.tls = true;
     this.keyPath = keyPath;
     this.x509CertPath = x509CertPath;
+  }
+
+  public TcpHandler(TLSConfiguration config) {
+    this.tls = true;
+    this.config = config;
   }
 
   @Override
@@ -73,7 +80,11 @@ public class TcpHandler implements Handler {
     if (selfSignedCert) {
       tls = new TLS(secureChannelContext);
     } else {
-      tls = new TLS(secureChannelContext, keyPath, x509CertPath);
+      if (this.config != null) {
+        tls =  new TLS(secureChannelContext, config);
+      } else {
+        tls =  new TLS(secureChannelContext, keyPath, x509CertPath);
+      }
     }
     tls.doHandshake();
   }

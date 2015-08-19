@@ -20,10 +20,12 @@ package com.xjeffrose.xio2.http.server;
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.TLS.TLS;
+import com.xjeffrose.xio2.TLS.TLSConfiguration;
 import java.nio.channels.SocketChannel;
 
 public class SecureFileHandler extends FileHandler {
 
+  private TLSConfiguration config;
   private String keyPath = null;
   private String x509CertPath = null;
   private boolean selfSignedCert = false;
@@ -38,6 +40,10 @@ public class SecureFileHandler extends FileHandler {
     this.x509CertPath = x509CertPath;
   }
 
+  public SecureFileHandler(TLSConfiguration config) {
+    this.config = config;
+  }
+
   public ChannelContext buildChannelContext(SocketChannel channel) {
     return new SecureChannelContext(channel, this);
   }
@@ -48,7 +54,11 @@ public class SecureFileHandler extends FileHandler {
     if (selfSignedCert) {
       tls = new TLS(secureChannelContext);
     } else {
-      tls = new TLS(secureChannelContext, keyPath, x509CertPath);
+      if (this.config != null) {
+        tls =  new TLS(secureChannelContext, config);
+      } else {
+        tls =  new TLS(secureChannelContext, keyPath, x509CertPath);
+      }
     }
     tls.doHandshake();
   }

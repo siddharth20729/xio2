@@ -19,22 +19,28 @@ import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.SecureChannelContext;
 
 import com.xjeffrose.xio2.TLS.TLS;
+import com.xjeffrose.xio2.TLS.TLSConfiguration;
 import java.nio.channels.SocketChannel;
 
 public class HttpsHandler extends HttpHandler {
 
+  private TLSConfiguration config;
   private String keyPath = null;
   private String x509CertPath = null;
   private boolean selfSignedCert = false;
 
   public HttpsHandler() {
-
     this.selfSignedCert = true;
   }
 
   public HttpsHandler(String keyPath, String x509CertPath) {
+    this.config = null;
     this.keyPath = keyPath;
     this.x509CertPath = x509CertPath;
+  }
+
+  public HttpsHandler(TLSConfiguration config) {
+    this.config = config;
   }
 
   public ChannelContext buildChannelContext(SocketChannel channel) {
@@ -51,7 +57,11 @@ public class HttpsHandler extends HttpHandler {
     if (selfSignedCert) {
       return new TLS(secureChannelContext);
     } else {
-      return new TLS(secureChannelContext, keyPath, x509CertPath);
+      if (this.config != null) {
+        return new TLS(secureChannelContext, config);
+      } else {
+        return new TLS(secureChannelContext, keyPath, x509CertPath);
+      }
     }
   }
 }

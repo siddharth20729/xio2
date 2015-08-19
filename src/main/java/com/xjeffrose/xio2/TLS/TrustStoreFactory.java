@@ -53,7 +53,7 @@ public class TrustStoreFactory {
       x509Certificate = (X509Certificate) cf.generateCertificate(new FileInputStream("caPath"));
 
       KeyStore ts = KeyStore.getInstance("PKCS12");
-      ts.load(null, config.truststorePassphrase);
+      ts.load(null, "".toCharArray());
       ts.setCertificateEntry(x509Certificate.getIssuerX500Principal().getName(), x509Certificate);
 
       return ts;

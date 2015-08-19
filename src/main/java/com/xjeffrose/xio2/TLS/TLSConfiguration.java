@@ -20,24 +20,19 @@ package com.xjeffrose.xio2.TLS;
 public class TLSConfiguration {
   public String fqdn = null;
   public String version = null;
-  public String keystorePath = null;
-  public char[] keystorePassphrase = null;
-  public String truststorePath = null;
-  public char[] truststorePassphrase = null;
+  public String password = null;
+  public String privateKeyPath = null;
+  public String x509CertPath = null;
+  public char[] passwordCharArray = null;
 
   TLSConfiguration() { }
-
-  public static Builder newBuilder() {
-    return new Builder();
-  }
 
   public static class Builder {
     public String fqdn = null;
     public String version = null;
-    public String keystorePath = null;
-    public String keystorePassphrase = null;
-    public String truststorePath = null;
-    public String truststorePassphrase = null;
+    public String password = null;
+    private String privateKeyPath = null;
+    private String x509CertPath = null;
 
     public Builder fqdn(String fqdn) {
       this.fqdn = fqdn;
@@ -49,23 +44,19 @@ public class TLSConfiguration {
       return this;
     }
 
-    public Builder keystorePath(String keystorePath) {
-      this.keystorePath = keystorePath;
+    public Builder password(String password) {
+      //TODO: Maybe pass this is as an env var?
+      this.password = password;
       return this;
     }
 
-    public Builder keystorePassphrase(String keystorePassphrase) {
-      this.keystorePassphrase = keystorePassphrase;
+    public Builder privateKeyPath(String privateKeyPath) {
+      this.privateKeyPath = privateKeyPath;
       return this;
     }
 
-    public Builder truststorePath(String truststorePath) {
-      this.truststorePath = truststorePath;
-      return this;
-    }
-
-    public Builder truststorePassphrase(String truststorePassphrase) {
-      this.truststorePassphrase = truststorePassphrase;
+    public Builder x509CertPath(String x509CertPath) {
+      this.x509CertPath = x509CertPath;
       return this;
     }
 
@@ -73,10 +64,10 @@ public class TLSConfiguration {
       TLSConfiguration config = new TLSConfiguration();
       config.fqdn = fqdn;
       config.version = version;
-      config.keystorePath = keystorePath;
-      config.keystorePassphrase = keystorePassphrase.toCharArray();
-      config.truststorePath = truststorePath;
-      config.truststorePassphrase = truststorePassphrase.toCharArray();
+      config.password = password;
+      config.passwordCharArray = password.toCharArray();
+      config.privateKeyPath = privateKeyPath;
+      config.x509CertPath = x509CertPath;
 
       return config;
     }

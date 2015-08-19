@@ -7,7 +7,7 @@
     <version>0.9.7-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>xio2</name>
-    <description>A modern I/O API for Java</description>
+    <description>A modern I/O Library for Java</description>
     <url>https://github.com/xjdr/xio.git</url>
 
     <developers>
@@ -67,7 +67,7 @@
     </distributionManagement>
 
     <dependencies>
-        <!-- Junit and okhttp are only required for development and testing -->
+        <!-- Junit jetty and okhttp are only required for development and testing -->
 
         <dependency>
             <groupId>junit</groupId>

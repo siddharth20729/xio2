@@ -18,6 +18,7 @@ package com.xjeffrose.xio2.TLS;
 import com.xjeffrose.log.Log;
 import com.xjeffrose.xio2.SecureChannelContext;
 
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
@@ -33,52 +34,34 @@ import javax.net.ssl.SSLParameters;
 public class TLS {
   private static final Logger log = Log.getLogger(TLS.class.getName());
 
+  private final TLSConfiguration config;
+
   private SSLEngineResult sslResult;
   private ByteBuffer decryptedRequest;
   private ByteBuffer rawResponse;
   private SocketChannel channel;
-  private String version = "TLSv1";
   private boolean selfSignedCert = false;
   private boolean client = false;
-  private String privateKeyPath;
-  private String x509CrtPath;
-  private String password;
-  private char[] passwordCharArray;
 
-  public SSLEngine engine;
+  public final SSLEngine engine;
   public ByteBuffer encryptedRequest;
   public ByteBuffer encryptedResponse;
-
-  private void setPassword(String password) {
-    this.password = password;
-    passwordCharArray = this.password.toCharArray();
-  }
 
   public TLS(SecureChannelContext ctx) {
     this.channel = ctx.channel;
     this.selfSignedCert = true;
-    setPassword("selfsignedcert");
 
     try {
-      genEngine();
+      this.config = new TLSConfiguration.Builder()
+          .fqdn(InetAddress.getLocalHost().getHostName())
+          .version("TLSv1")
+          .password("selfsignedcert")
+          .build();
+
+      this.engine = genEngine();
     } catch (Exception e) {
       log.log(Level.SEVERE, "Failed to create the engine", e);
-      throw new RuntimeException(e);
-    }
-
-    ctx.engine = engine;
-  }
-
-  public TLS(SecureChannelContext ctx, String version) {
-    this.channel = ctx.channel;
-    this.version = version;
-    this.selfSignedCert = true;
-    setPassword("selfsignedcert");
-
-    try {
-      genEngine();
-    } catch (Exception e) {
-      log.log(Level.SEVERE, "Failed to generate the TLS engine", e);
+      System.exit(-1);
       throw new RuntimeException(e);
     }
 
@@ -86,13 +69,17 @@ public class TLS {
   }
 
   public TLS(SecureChannelContext ctx, String privateKeyPath, String x509CrtPath) {
-    this.privateKeyPath = privateKeyPath;
-    this.x509CrtPath = x509CrtPath;
-    setPassword("");
     this.channel = ctx.channel;
-
     try {
-      genEngine();
+      this.config = new TLSConfiguration.Builder()
+          .fqdn(InetAddress.getLocalHost().getHostName())
+          .version("TLSv1")
+          .privateKeyPath(privateKeyPath)
+          .x509CertPath(x509CrtPath)
+          .password("passwordsAreGood")
+          .build();
+
+      this.engine = genEngine();
     } catch (Exception e) {
       log.log(Level.SEVERE, "Failed to generate the TLS engine", e);
       throw new RuntimeException(e);
@@ -101,14 +88,12 @@ public class TLS {
     ctx.engine = engine;
   }
 
-  public TLS(SecureChannelContext ctx, String privateKeyPath, String x509CrtPath, String password) {
-    this.privateKeyPath = privateKeyPath;
-    this.x509CrtPath = x509CrtPath;
+  public TLS(SecureChannelContext ctx, TLSConfiguration config) {
     this.channel = ctx.channel;
-    setPassword(password);
+    this.config = config;
 
     try {
-      genEngine();
+      this.engine = genEngine();
     } catch (Exception e) {
       log.log(Level.SEVERE, "Failed to create the engine", e);
       throw new RuntimeException(e);
@@ -120,9 +105,14 @@ public class TLS {
   public TLS(SocketChannel channel) {
     this.channel = channel;
     this.client = true;
-
     try {
-      genEngine();
+      this.config = new TLSConfiguration.Builder()
+          .fqdn(InetAddress.getLocalHost().getHostName())
+          .version("TLSv1")
+          .password("passwordsAreGood")
+          .build();
+
+      this.engine = genEngine();
     } catch (Exception e) {
       log.log(Level.SEVERE, "Failed to create the engine", e);
       throw new RuntimeException(e);
@@ -130,18 +120,18 @@ public class TLS {
 
   }
 
-  private void genEngine() {
+  private SSLEngine genEngine() {
     try {
       KeyStore ks;
       KeyManagerFactory kmf = null;
       if (!client) {
         if (selfSignedCert) {
-          ks = KeyStoreFactory.Generate(SelfSignedX509CertGenerator.generate("example.com"), password);
+          ks = KeyStoreFactory.Generate(SelfSignedX509CertGenerator.generate("example.com"), "selfsignedcert");
         } else {
-          ks = KeyStoreFactory.Generate(X509CertificateGenerator.generate(privateKeyPath, x509CrtPath), password);
+          ks = KeyStoreFactory.Generate(X509CertificateGenerator.generate(config.privateKeyPath, config.x509CertPath), config.password);
         }
         kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, passwordCharArray);
+        kmf.init(ks, config.passwordCharArray);
       }
 
       // TODO: Allow for truststore and call truststore path
@@ -149,7 +139,7 @@ public class TLS {
 //      TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
 //      tmf.init(ts);
 
-      SSLContext sslCtx = SSLContext.getInstance(version);
+      SSLContext sslCtx = SSLContext.getInstance(config.version);
 
       if (client) {
         sslCtx.init(null, TrustStoreFactory.Generate(), null);
@@ -159,17 +149,17 @@ public class TLS {
       }
 
       SSLParameters params = new SSLParameters();
-      params.setProtocols(new String[]{version});
+      params.setProtocols(new String[]{config.version});
 
-      engine = sslCtx.createSSLEngine();
+      final SSLEngine engine = sslCtx.createSSLEngine();
       engine.setSSLParameters(params);
       engine.setNeedClientAuth(false);
       engine.setUseClientMode(client);
+      return engine;
     } catch (Exception e) {
       log.log(Level.SEVERE, "Cannot create the engine", e);
       throw new RuntimeException(e);
     }
-
   }
 
   public void handleSSLResult(boolean network) {
