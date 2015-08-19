@@ -32,6 +32,7 @@ public class Acceptor extends Thread {
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private final Selector selector;
   private final EventLoopPool eventLoopPool;
+  private final String name;
   private Handler handler;
 
   public Acceptor(ServerSocketChannel serverChannel,
@@ -41,6 +42,8 @@ public class Acceptor extends Thread {
     this.handler = handler;
 
     try {
+      name = "Acceptor[" + serverChannel.getLocalAddress() + "]";
+      setName(name);
       selector = Selector.open();
       serverChannel.register(selector, SelectionKey.OP_ACCEPT);
     } catch (Exception e) {
