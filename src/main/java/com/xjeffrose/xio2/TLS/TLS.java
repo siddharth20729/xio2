@@ -81,7 +81,8 @@ public class TLS {
 
       this.engine = genEngine();
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Failed to generate the TLS engine", e);
+      log.log(Level.SEVERE, "Failed to create the engine", e);
+      System.exit(-1);
       throw new RuntimeException(e);
     }
 
@@ -96,6 +97,7 @@ public class TLS {
       this.engine = genEngine();
     } catch (Exception e) {
       log.log(Level.SEVERE, "Failed to create the engine", e);
+      System.exit(-1);
       throw new RuntimeException(e);
     }
 
