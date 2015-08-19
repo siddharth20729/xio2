@@ -192,14 +192,14 @@ public class ClientTest {
 
   @Test
   public void testProxyByPath() throws Exception {
-    new Thread(new SimpleTestServer(9041)).start();
+    new Thread(new SimpleTestServer(9054)).start();
 
     //Give Jetty a Min to Wake up and run
     Thread.sleep(500);
     Server client_int = Http.newServer();
     HttpHandler testHandler = new HttpHandler();
-    testHandler.addRoute("/test/path", new ProxyHttpService("localhost:9041"));
-    client_int.serve(9040, testHandler);
+    testHandler.addRoute("/test/path", new ProxyHttpService("localhost:9054"));
+    client_int.serve(9053, testHandler);
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/test/path")
@@ -207,7 +207,7 @@ public class ClientTest {
 
     req.headers.set("X-TEST-HEADER", "Test/header/value");
 
-    Client client = Http.newClient("localhost:9040");
+    Client client = Http.newClient("localhost:9053");
     HttpObject resp = client.call(req);
 
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
@@ -223,14 +223,14 @@ public class ClientTest {
 
   @Test
   public void testProxyByPathWithWildCard() throws Exception {
-    new Thread(new SimpleTestServer(9041)).start();
+    new Thread(new SimpleTestServer(9042)).start();
 
     //Give Jetty a Min to Wake up and run
     Thread.sleep(500);
     Server client_int = Http.newServer();
     HttpHandler testHandler = new HttpHandler();
-    testHandler.addRoute("*", new ProxyHttpService("localhost:9041"));
-    client_int.serve(9040, testHandler);
+    testHandler.addRoute(".*", new ProxyHttpService("localhost:9042"));
+    client_int.serve(9043, testHandler);
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/test/path/wildcard")
@@ -238,7 +238,7 @@ public class ClientTest {
 
     req.headers.set("X-TEST-HEADER", "Test/header/value");
 
-    Client client = Http.newClient("localhost:9040");
+    Client client = Http.newClient("localhost:9043");
     HttpObject resp = client.call(req);
 
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
@@ -293,18 +293,18 @@ public class ClientTest {
       }
     });
 
-    service_int.serve(9043, proxiedHandler);
+    service_int.serve(9046, proxiedHandler);
 
     Server client_int = Http.newServer();
     HttpsHandler testHandler = new HttpsHandler();
-    testHandler.addRoute("/", new ProxyHttpService("localhost:9043"));
-    client_int.serve(9042, testHandler);
+    testHandler.addRoute("/", new ProxyHttpService("localhost:9046"));
+    client_int.serve(9047, testHandler);
 
     HttpRequest req = new HttpRequest.Builder()
         .url("/")
         .build();
 
-    Client client = Http.newTLSClient("localhost:9042");
+    Client client = Http.newTLSClient("localhost:9047");
     HttpObject resp = client.call(req);
 
     assertEquals(resp.getHttpVersion(), "HTTP/1.1");
