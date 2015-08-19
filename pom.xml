@@ -4,7 +4,7 @@
 
     <groupId>com.xjeffrose</groupId>
     <artifactId>xio2</artifactId>
-    <version>0.10.1-SNAPSHOT</version>
+    <version>0.10.0</version>
     <packaging>jar</packaging>
     <name>xio2</name>
     <description>A modern I/O Library for Java</description>
@@ -40,7 +40,7 @@
         <url>https://github.com/xjdr/xio2/</url>
         <connection>scm:git:https://github.com/xjdr/xio2.git</connection>
         <developerConnection>scm:git:git@github.com:xjdr/xio2.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v0.10.0</tag>
     </scm>
 
     <issueManagement>
