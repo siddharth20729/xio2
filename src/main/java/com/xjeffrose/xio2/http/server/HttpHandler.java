@@ -25,7 +25,6 @@ import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpRequestParser;
 import com.xjeffrose.xio2.http.HttpResponse;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,8 +51,8 @@ public class HttpHandler implements Handler {
     this.defaultService = new NotFound();
   }
 
-  public ChannelContext buildChannelContext(SocketChannel channel) {
-    return new ChannelContext(channel, this);
+  public ChannelContext buildChannelContext(SocketChannel channel, String requestId) {
+    return new ChannelContext(channel, this, requestId);
   }
 
   @Override

@@ -19,7 +19,6 @@ package com.xjeffrose.xio2.http.server;
 
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.TLS.TLS;
-import com.xjeffrose.xio2.TLS.TLSConfiguration;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -30,7 +29,7 @@ public class HttpsHandlerTest {
   public void testShortcut() throws Exception {
     HttpsHandler handler = new HttpsHandler("src/test/resources/privateKey.pem", "src/test/resources/cert.pem");
 
-    SecureChannelContext ctx = new SecureChannelContext(null, handler);
+    SecureChannelContext ctx = new SecureChannelContext(null, handler, "");
     TLS tls = handler.buildTLS(ctx);
 
     assertTrue("tls engine has been created", tls.engine != null);
@@ -40,7 +39,7 @@ public class HttpsHandlerTest {
   public void testSelfSigned() throws Exception {
     HttpsHandler handler = new HttpsHandler();
 
-    SecureChannelContext ctx = new SecureChannelContext(null, handler);
+    SecureChannelContext ctx = new SecureChannelContext(null, handler, "");
     TLS tls = handler.buildTLS(ctx);
 
     assertTrue("tls engine has been created", tls.engine != null);

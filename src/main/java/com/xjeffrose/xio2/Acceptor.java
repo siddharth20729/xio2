@@ -34,6 +34,7 @@ public class Acceptor extends Thread {
   private final EventLoopPool eventLoopPool;
   private final String name;
   private Handler handler;
+  private int requestCount = 0;
 
   public Acceptor(ServerSocketChannel serverChannel,
                   EventLoopPool eventLoopPool,
@@ -60,6 +61,10 @@ public class Acceptor extends Thread {
     selector.wakeup();
   }
 
+  private String requestId() {
+    return name + ":" + requestCount;
+  }
+
   public void run() {
     while (running()) {
       try {
@@ -77,6 +82,7 @@ public class Acceptor extends Thread {
 
         try {
           if (key.isValid() && key.isAcceptable()) {
+            requestCount++;
             ServerSocketChannel server = (ServerSocketChannel) key.channel();
             SocketChannel channel = server.accept();
             if (handler.firewall().isAddrBlackListed(channel.getRemoteAddress())) {
@@ -85,7 +91,7 @@ public class Acceptor extends Thread {
               break;
             }
             EventLoop next = eventLoopPool.next();
-            next.addContext(handler.buildChannelContext(channel));
+            next.addContext(handler.buildChannelContext(channel, requestId()));
           } else if (!key.isValid()) {
             log.info("Key " + key + " is no longer valid.");
             key.cancel();

@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 public class ChannelContext {
   private static final Logger log = Log.getLogger(ChannelContext.class.getName());
+  private final String requestId;
 
   private int nread = 1;
   public Handler handler;
@@ -33,9 +35,10 @@ public class ChannelContext {
   public Request req;
   public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
 
-  public ChannelContext(SocketChannel channel, Handler handler) {
+  public ChannelContext(SocketChannel channel, Handler handler, String requestId) {
     this.channel = channel;
     this.handler = handler;
+    this.requestId = requestId;
   }
 
   public boolean isSecure() {

@@ -12,8 +12,8 @@ public class SecureChannelContext extends ChannelContext {
   private ByteBuffer encryptedRequest = ByteBuffer.allocateDirect(4096);
   public SSLEngine engine;
 
-  public SecureChannelContext(SocketChannel channel, Handler handler) {
-    super(channel, handler);
+  public SecureChannelContext(SocketChannel channel, Handler handler, String requestId) {
+    super(channel, handler, requestId);
   }
 
   public boolean isSecure() {

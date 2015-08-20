@@ -43,8 +43,8 @@ public class HttpsHandler extends HttpHandler {
     this.config = config;
   }
 
-  public ChannelContext buildChannelContext(SocketChannel channel) {
-    return new SecureChannelContext(channel, this);
+  public ChannelContext buildChannelContext(SocketChannel channel, String requestId) {
+    return new SecureChannelContext(channel, this, requestId);
   }
 
   @Override

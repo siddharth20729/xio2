@@ -4,12 +4,9 @@ import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Firewall;
 import com.xjeffrose.xio2.Handler;
 import com.xjeffrose.xio2.RateLimiter;
-import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.TLS.TLS;
 import com.xjeffrose.xio2.TLS.TLSConfiguration;
-import com.xjeffrose.xio2.http.Http;
-import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public class TcpHandler implements Handler {
@@ -66,11 +63,11 @@ public class TcpHandler implements Handler {
   }
 
   @Override
-  public ChannelContext buildChannelContext(SocketChannel channel) {
+  public ChannelContext buildChannelContext(SocketChannel channel, String requestId) {
     if (tls) {
-      return new SecureChannelContext(channel, this);
+      return new SecureChannelContext(channel, this, requestId);
     } else {
-      return new ChannelContext(channel, this);
+      return new ChannelContext(channel, this, requestId);
     }
   }
 

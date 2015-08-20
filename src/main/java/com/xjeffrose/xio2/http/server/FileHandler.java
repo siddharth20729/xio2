@@ -22,15 +22,12 @@ import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Firewall;
 import com.xjeffrose.xio2.Handler;
 import com.xjeffrose.xio2.RateLimiter;
-import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.SecureChannelContext;
 import com.xjeffrose.xio2.http.Http;
 import com.xjeffrose.xio2.http.HttpRequest;
 import com.xjeffrose.xio2.http.HttpRequestParser;
 import com.xjeffrose.xio2.http.HttpResponse;
-import com.xjeffrose.xio2.util.BB;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Paths;
@@ -49,8 +46,8 @@ public class FileHandler implements Handler {
   }
 
   @Override
-  public ChannelContext buildChannelContext(SocketChannel channel) {
-    return new ChannelContext(channel, this);
+  public ChannelContext buildChannelContext(SocketChannel channel, String requestId) {
+    return new ChannelContext(channel, this, requestId);
   }
 
   @Override

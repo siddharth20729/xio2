@@ -3,7 +3,6 @@ package com.xjeffrose.xio2.http.server;
 import com.xjeffrose.xio2.ChannelContext;
 import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.http.HttpRequest;
-import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -18,7 +17,7 @@ public class HttpHandlerTest {
         called.set(true);
       }
     });
-    ChannelContext ctx = new ChannelContext(null, null);
+    ChannelContext ctx = new ChannelContext(null, null, "");
     ctx.req = HttpRequest.newBuilder().url("http://example.com/foo/bar/baz").build();
     handler.handle(ctx);
     assertTrue("Default handler was invoked", called.get());

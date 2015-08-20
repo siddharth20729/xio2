@@ -12,7 +12,7 @@ public interface Handler {
 
   void handleFatalError(ChannelContext ctx);
 
-  ChannelContext buildChannelContext(SocketChannel channel);
+  ChannelContext buildChannelContext(SocketChannel channel, String requestId);
 
   void secureContext(SecureChannelContext secureChannelContext);
 
