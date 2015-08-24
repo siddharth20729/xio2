@@ -1,5 +1,6 @@
 package com.xjeffrose.xio2;
 
+import com.sun.javafx.image.ByteToBytePixelConverter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -14,6 +15,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -22,6 +26,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLEngineResult;
+import javax.net.ssl.SSLException;
 
 public class SSLSpike {
   private static final Logger log = Logger.getLogger(SSLSpike.class.getName());
@@ -77,19 +85,27 @@ public class SSLSpike {
       }
     }
   }
+  public interface Protocol {
+    void onConnect();
+    void onInputReady(ByteBuffer buffer, SelectionKey key) throws IOException;
+    ByteBuffer onOutputReady() throws IOException;
+  }
   public class Connection extends Selectable {
     private final SocketChannel channel;
+    private final Protocol protocol;
     private InetSocketAddress address;
-    protected ByteBuffer inputBuffer;
+    private ByteBuffer inputBuffer;
+    private ByteBuffer outputBuffer;
     private SelectionKey key;
-    public Connection(SocketChannel channel) {
+    public Connection(SocketChannel channel, Protocol protocol) {
       this.channel = channel;
+      this.protocol = protocol;
     }
     public void configure(Selector selector) {
       try {
         this.address = (InetSocketAddress)channel.getLocalAddress();
         channel.configureBlocking(false);
-        onConnect();
+        protocol.onConnect();
         key = channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, this);
       } catch (IOException e) {
         log.log(Level.SEVERE, "Error configuring Connection for address '" + new Address(address) + "'", e);
@@ -98,13 +114,19 @@ public class SSLSpike {
     @Override
     public void fill() throws IOException {
       if (inputBuffer == null) {
-        int capacity = getChannel().getOption(StandardSocketOptions.SO_RCVBUF);
+        int capacity = channel.getOption(StandardSocketOptions.SO_RCVBUF);
         log.info("Allocating " + capacity + " bytes for inputBuffer");
         inputBuffer = ByteBuffer.allocateDirect(capacity);
       }
-      int nread = getChannel().read(inputBuffer);
+      log.info("inputBuffer " + inputBuffer);
+      if (inputBuffer.position() > 0) {
+        inputBuffer.compact();
+      }
+      log.info("inputBuffer " + inputBuffer);
+      int nread = channel.read(inputBuffer);
       log.info("Read " + nread + " bytes ");
       if (inputBuffer.position() == inputBuffer.capacity()) {
+        log.info("inputBuffer " + inputBuffer);
         int capacity = inputBuffer.capacity() * 2;
         log.info("Allocating " + capacity + " bytes for inputBuffer");
         ByteBuffer tmp = ByteBuffer.allocateDirect(capacity);
@@ -112,20 +134,185 @@ public class SSLSpike {
         tmp.put(inputBuffer);
         inputBuffer = tmp;
       }
+      log.info("inputBuffer " + inputBuffer);
+      inputBuffer.flip();
+      log.info("inputBuffer " + inputBuffer);
+      protocol.onInputReady(inputBuffer, key);
     }
     @Override
     public void flush() throws IOException {
-      int nwrote = getChannel().write(buffer);
-      log.info("wrote " + nwrote + " bytes");
+      if (outputBuffer == null) {
+        int capacity = channel.getOption(StandardSocketOptions.SO_SNDBUF);
+        log.info("Allocating " + capacity + " bytes for outputBuffer");
+        outputBuffer = ByteBuffer.allocateDirect(capacity);
+        outputBuffer.limit(0);
+      }
+      ByteBuffer buffer = protocol.onOutputReady();
+      log.info("outputBuffer " + outputBuffer);
+      log.info("buffer " + buffer);
+      if (buffer != null && buffer.remaining() > 0) {
+        outputBuffer.limit(outputBuffer.limit()+buffer.remaining());
+        outputBuffer.put(buffer);
+        outputBuffer.flip();
+//        long nwrote = channel.write(new ByteBuffer[] {outputBuffer, buffer});
 //      getKey().interestOps(getKey().interestOps() ^ SelectionKey.OP_WRITE);
 //      log.info("wrote request");
+      }
+      if (outputBuffer.remaining() > 0) {
+        int nwrote = channel.write(outputBuffer);
+        log.info("wrote " + nwrote + " bytes");
+        outputBuffer.compact();
+        if (outputBuffer.position() == 0) {
+          outputBuffer.limit(0);
+        }
+      }
     }
-    public void onConnect() {}
-    public SocketChannel getChannel() {
-      return channel;
+//    public SocketChannel getChannel() {
+//      return channel;
+//    }
+//    public SelectionKey getKey() {
+//      return key;
+//    }
+  }
+  public class TLSConnection implements Protocol {
+    final private Protocol protocol;
+    private SSLContext sslCtx;
+    private SSLEngine engine;
+    private ArrayList<ByteBuffer> netInputBuffers = new ArrayList<>();
+    private ByteBuffer netInputBuffer;
+    private ByteBuffer netOutputBuffer;
+    private ByteBuffer appInputBuffer;
+    private ByteBuffer appOutputBuffer;
+    private void handleSSLEngineResult(SSLEngineResult sslEngineResult) throws SSLException {
+      log.info("handleSSLEngineResult " + sslEngineResult);
+      handleHandshakeStatus(sslEngineResult.getHandshakeStatus());
+      if (sslEngineResult.getStatus() == SSLEngineResult.Status.OK && sslEngineResult.bytesProduced() == 0) {
+        if (sslEngineResult.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_UNWRAP && bufferHasData(netInputBuffer)) {
+          handleSSLEngineResult(unwrap());
+        } else if (sslEngineResult.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_WRAP && bufferHasData(appOutputBuffer)) {
+          handleSSLEngineResult(wrap());
+        }
+      }
     }
-    public SelectionKey getKey() {
-      return key;
+    private boolean bufferHasData(ByteBuffer buffer) {
+      return !(buffer.position() == 0 && buffer.limit() == buffer.capacity());
+    }
+    private void appendToBuffer(ByteBuffer src, ByteBuffer dst) {
+      dst.mark();
+      log.info("dst " + dst);
+      if (dst.limit() != dst.capacity()) {
+        dst.position(dst.limit());
+        dst.limit(dst.capacity());
+      }
+      log.info("dst " + dst + " src " + src);
+      dst.put(src);
+      log.info("dst " + dst + " src " + src);
+      dst.limit(dst.position());
+      log.info("dst " + dst);
+      dst.reset();
+      log.info("dst " + dst);
+    }
+    private void logBufferStatus(String message) {
+      log.info(message + " " +
+          "BUFFER STATUS \n" +
+              "   netInputBuffer: " + netInputBuffer + "\n" +
+              "   netOutputBuffer: " + netOutputBuffer + "\n" +
+              "   appInputBuffer: " + appInputBuffer + "\n" +
+              "   appOutputBuffer: " + appOutputBuffer + "\n"
+      );
+    }
+    private SSLEngineResult unwrap() throws SSLException {
+      return engine.unwrap(netInputBuffer, appInputBuffer);
+    }
+    private SSLEngineResult wrap() throws SSLException {
+      return engine.wrap(appOutputBuffer, netOutputBuffer);
+    }
+    private void handleHandshakeStatus(SSLEngineResult.HandshakeStatus handshakeStatus) throws SSLException {
+      log.info("handleHandshakeStatus " +handshakeStatus);
+      switch (handshakeStatus) {
+        case NEED_TASK:
+          engine.getDelegatedTask().run();
+          break;
+        case NEED_UNWRAP:
+//          handleSSLEngineResult(unwrap());
+          break;
+        case NEED_WRAP:
+//          handleSSLEngineResult(wrap());
+          break;
+        case NOT_HANDSHAKING:
+          break;
+        case FINISHED:
+          break;
+      }
+    }
+    public TLSConnection(Protocol protocol) {
+      this.protocol = protocol;
+    }
+    @Override
+    public void onConnect() {
+      try {
+        sslCtx = SSLContext.getInstance("TLS");
+        sslCtx.init(null, null, null);
+        engine = sslCtx.createSSLEngine();
+        engine.setNeedClientAuth(false);
+        engine.setUseClientMode(true);
+        netInputBuffer = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+        netOutputBuffer = ByteBuffer.allocateDirect(engine.getSession().getPacketBufferSize());
+        appInputBuffer = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
+        appOutputBuffer = ByteBuffer.allocateDirect(engine.getSession().getApplicationBufferSize());
+        protocol.onConnect();
+      } catch (NoSuchAlgorithmException | KeyManagementException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    @Override
+    public void onInputReady(ByteBuffer buffer, SelectionKey key) throws IOException {
+      log.info("INPUT INPUT INPUT INPUT INPUT INPUT INPUT INPUT INPUT INPUT");
+      logBufferStatus("before if");
+      if (buffer.remaining() > 0) {
+        log.info("BUFFER " + buffer);
+        appendToBuffer(buffer, netInputBuffer);
+      }
+      logBufferStatus("before unwrap");
+      handleSSLEngineResult(unwrap());
+      logBufferStatus("after unwrap");
+      if (netInputBuffer.position() != 0) {
+        netInputBuffer.compact();
+        netInputBuffer.flip();
+      }
+      logBufferStatus("after compact");
+//      log.info("appInputBuffer " + appInputBuffer);
+      appInputBuffer.flip();
+      protocol.onInputReady(appInputBuffer, key);
+      appInputBuffer.compact();
+    }
+    @Override
+    public ByteBuffer onOutputReady() throws IOException {
+      log.info("OUTPUT OUTPUT OUTPUT OUTPUT OUTPUT OUTPUT OUTPUT OUTPUT OUTPUT OUTPUT");
+      ByteBuffer buffer = protocol.onOutputReady();
+      logBufferStatus("before if");
+      if (buffer != null && buffer.remaining() > 0) {
+        appendToBuffer(buffer, appOutputBuffer);
+      }
+      logBufferStatus("before wrap");
+      handleSSLEngineResult(wrap());
+      logBufferStatus("before compact");
+      if (appOutputBuffer.position() != 0) {
+        appOutputBuffer.compact();
+      }
+      if (netOutputBuffer.position() != 0) {
+        logBufferStatus("before flip");
+        netOutputBuffer.flip();
+        buffer = ByteBuffer.allocateDirect(netOutputBuffer.remaining());
+        logBufferStatus("before put");
+        buffer.put(netOutputBuffer);
+        logBufferStatus("before compact");
+        netOutputBuffer.compact();
+        logBufferStatus("after compact");
+        buffer.flip();
+        return buffer;
+      }
+      return null;
     }
   }
   public class Connector extends Selectable {
@@ -252,29 +439,31 @@ public class SSLSpike {
     public HttpClientConnectionFactory(Request request) {
       this.request = request;
     }
-    public HttpClientConnection build(SocketChannel channel) {
-      return new HttpClientConnection(channel, request);
+    public Connection build(SocketChannel channel) {
+      if (request.url.getProtocol().equals("https")) {
+        return new Connection(channel, new TLSConnection(new HttpClientConnection(request)));
+      } else {
+        return new Connection(channel, new HttpClientConnection(request));
+      }
     }
   }
-  class HttpClientConnection extends Connection {
+  class HttpClientConnection implements Protocol {
     final private Request request;
     final private String CRLF = "\r\n";
-    public HttpClientConnection(SocketChannel channel, Request request) {
-      super(channel);
+    final private Pattern pattern = Pattern.compile(CRLF + CRLF, Pattern.MULTILINE);
+    private ByteBuffer outputBuffer;
+    public HttpClientConnection(Request request) {
       this.request = request;
     }
     @Override
-    public void fill() throws IOException {
-      super.fill();
-      Pattern pattern = Pattern.compile(CRLF + CRLF, Pattern.MULTILINE);
-      ByteBuffer view = inputBuffer.duplicate();
-      view.flip();
+    public void onInputReady(ByteBuffer buffer, SelectionKey key) throws IOException {
+      ByteBuffer view = buffer.duplicate();
       CharBuffer charBuffer = Charset.forName("UTF-8").decode(view);
       Matcher matcher = pattern.matcher(charBuffer);
       if (matcher.find()) {
         charBuffer.rewind();
         log.info("MATCHES " + charBuffer);
-        getKey().cancel();
+        key.cancel();
       } else {
         charBuffer.rewind();
         log.info("DOESN'T MATCH " + charBuffer.toString().replace("\r", "\\r").replace("\n", "\\n"));
@@ -297,9 +486,13 @@ public class SSLSpike {
       ;
       int capacity = builder.length();
       log.info("allocating " + capacity + " bytes");
-      ByteBuffer outputBuffer = ByteBuffer.allocateDirect(builder.length());
+      outputBuffer = ByteBuffer.allocateDirect(builder.length());
       outputBuffer.put(builder.toString().getBytes());
       outputBuffer.flip();
+    }
+    @Override
+    public ByteBuffer onOutputReady() {
+      return outputBuffer;
     }
   }
   class Request {
@@ -344,7 +537,18 @@ public class SSLSpike {
   }
   SelectorLoop selectorLoop = new SelectorLoop();
   InetSocketAddress address = new InetSocketAddress("127.0.0.1", 8080);
-  ConnectionFactory factory = Connection::new;
+  ConnectionFactory factory = client -> new Connection(client, new Protocol() {
+    @Override
+    public void onConnect() {
+    }
+    @Override
+    public void onInputReady(ByteBuffer buffer, SelectionKey key) throws IOException {
+    }
+    @Override
+    public ByteBuffer onOutputReady() {
+      return null;
+    }
+  });
   SelectorLoopStrategy strategy = () -> selectorLoop;
   Acceptor acceptor = new Acceptor(address, factory, strategy);
   Connector connector = new Connector(address, factory, strategy);
@@ -361,7 +565,8 @@ public class SSLSpike {
 //      selectorLoop.add(connector);
 //    }).start();
     Client client = new Client(HttpClientConnectionFactory::new, strategy);
-    client.execute(new Request("http://google.com/"));
+//    client.execute(new Request("https://google.com/"));
+    client.execute(new Request("https://twitter.com/"));
     //selectorLoop.add(new Connector(new InetSocketAddress("www.google.com", 80), HttpClientConnection::new, strategy));
 //    selectorLoop.add(new Connector(new InetSocketAddress("127.0.0.1", 8666), HttpClientConnection::new, strategy));
     selectorLoop.run();
