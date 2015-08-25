@@ -1,6 +1,5 @@
 package com.xjeffrose.xio2;
 
-import com.sun.javafx.image.ByteToBytePixelConverter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
