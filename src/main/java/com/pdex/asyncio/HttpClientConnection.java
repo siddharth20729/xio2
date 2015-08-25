@@ -40,12 +40,14 @@ class HttpClientConnection implements Protocol {
   public void onConnect() {
     StringBuilder builder = new StringBuilder();
     builder
-        .append("GET / HTTP/1.1")
+        .append("GET ")
+        .append(request.getPath())
+        .append(" HTTP/1.1")
         .append(CRLF)
         .append("User-Agent: curl/7.37.1")
         .append(CRLF)
         .append("Host: ")
-        .append(request.getURL().getHost())
+        .append(request.getHost())
         .append(CRLF)
         .append("Accept: */*")
         .append(CRLF)

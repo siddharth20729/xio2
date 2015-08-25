@@ -40,7 +40,8 @@ public class SSLSpike {
 //    }).start();
     Client client = new Client(HttpClientConnectionFactory::new, strategy);
 //    client.execute(new Request("https://google.com/"));
-    client.execute(new Request("https://twitter.com/"));
+    client.execute(new Request("http://google.com/"));
+//    client.execute(new Request("https://twitter.com/"));
     //selectorLoop.add(new Connector(new InetSocketAddress("www.google.com", 80), HttpClientConnection::new, strategy));
 //    selectorLoop.add(new Connector(new InetSocketAddress("127.0.0.1", 8666), HttpClientConnection::new, strategy));
     selectorLoop.run();

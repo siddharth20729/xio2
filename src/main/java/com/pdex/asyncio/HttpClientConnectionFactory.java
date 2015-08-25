@@ -10,7 +10,7 @@ public class HttpClientConnectionFactory implements ConnectionFactory {
   }
 
   public Connection build(SocketChannel channel) {
-    if (request.getURL().getProtocol().equals("https")) {
+    if (request.getProtocol().equals("https")) {
       return new Connection(channel, new TLSConnection(new HttpClientConnection(request)));
     } else {
       return new Connection(channel, new HttpClientConnection(request));
