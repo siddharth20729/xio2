@@ -16,13 +16,15 @@ public class Connection extends Selectable {
   private final SocketChannel channel;
   private final Protocol protocol;
   private InetSocketAddress address;
-  private ByteBuffer inputBuffer;
-  private ByteBuffer outputBuffer;
+  private InputBuffer inputBuffer;
+  private InputBuffer outputBuffer;
   private SelectionKey key;
+  private ChannelInterest channelInterest;
 
   public Connection(SocketChannel channel, Protocol protocol) {
     this.channel = channel;
     this.protocol = protocol;
+    log.setLevel(Level.OFF);
   }
 
   public void configure(Selector selector) {
@@ -31,6 +33,7 @@ public class Connection extends Selectable {
       channel.configureBlocking(false);
       protocol.onConnect();
       key = channel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ, this);
+      channelInterest = new NetChannelInterest(key);
     } catch (IOException e) {
       log.log(Level.SEVERE, "Error configuring Connection for address '" + new Address(address) + "'", e);
     }
@@ -41,28 +44,34 @@ public class Connection extends Selectable {
     if (inputBuffer == null) {
       int capacity = channel.getOption(StandardSocketOptions.SO_RCVBUF);
       log.info("Allocating " + capacity + " bytes for inputBuffer");
-      inputBuffer = ByteBuffer.allocateDirect(capacity);
+      inputBuffer = new InputBuffer(capacity);
     }
     log.info("inputBuffer " + inputBuffer);
-    if (inputBuffer.position() > 0) {
-      inputBuffer.compact();
+//    if (inputBuffer.position() > 0) {
+//      inputBuffer.compact();
+//    }
+    log.info("inputBuffer " + inputBuffer);
+    try (InputBuffer.Guard g = inputBuffer.openForWriting()) {
+      int nread = channel.read(g.getByteBuffer());
+      log.info("Read " + nread + " bytes ");
     }
-    log.info("inputBuffer " + inputBuffer);
-    int nread = channel.read(inputBuffer);
-    log.info("Read " + nread + " bytes ");
-    if (inputBuffer.position() == inputBuffer.capacity()) {
-      log.info("inputBuffer " + inputBuffer);
-      int capacity = inputBuffer.capacity() * 2;
-      log.info("Allocating " + capacity + " bytes for inputBuffer");
-      ByteBuffer tmp = ByteBuffer.allocateDirect(capacity);
-      inputBuffer.flip();
-      tmp.put(inputBuffer);
-      inputBuffer = tmp;
+    if (inputBuffer.getBytesAvailableForReading() > 0) {
+      try (InputBuffer.Guard g = inputBuffer.openForReading()) {
+        protocol.onInputReady(g.getByteBuffer(), key);
+      }
     }
-    log.info("inputBuffer " + inputBuffer);
-    inputBuffer.flip();
-    log.info("inputBuffer " + inputBuffer);
-    protocol.onInputReady(inputBuffer, key);
+//    if (inputBuffer.position() == inputBuffer.capacity()) {
+//      log.info("inputBuffer " + inputBuffer);
+//      int capacity = inputBuffer.capacity() * 2;
+//      log.info("Allocating " + capacity + " bytes for inputBuffer");
+//      ByteBuffer tmp = ByteBuffer.allocateDirect(capacity);
+//      inputBuffer.flip();
+//      tmp.put(inputBuffer);
+//      inputBuffer = tmp;
+//    }
+//    log.info("inputBuffer " + inputBuffer);
+//    inputBuffer.flip();
+//    log.info("inputBuffer " + inputBuffer);
   }
 
   @Override
@@ -70,27 +79,30 @@ public class Connection extends Selectable {
     if (outputBuffer == null) {
       int capacity = channel.getOption(StandardSocketOptions.SO_SNDBUF);
       log.info("Allocating " + capacity + " bytes for outputBuffer");
-      outputBuffer = ByteBuffer.allocateDirect(capacity);
-      outputBuffer.limit(0);
+      outputBuffer = new InputBuffer(capacity);
     }
     ByteBuffer buffer = protocol.onOutputReady();
     log.info("outputBuffer " + outputBuffer);
     log.info("buffer " + buffer);
     if (buffer != null && buffer.remaining() > 0) {
-      outputBuffer.limit(outputBuffer.limit() + buffer.remaining());
       outputBuffer.put(buffer);
-      outputBuffer.flip();
+//      outputBuffer.limit(outputBuffer.limit() + buffer.remaining());
+//      outputBuffer.put(buffer);
+//      outputBuffer.flip();
 //        long nwrote = channel.write(new ByteBuffer[] {outputBuffer, buffer});
 //      getKey().interestOps(getKey().interestOps() ^ SelectionKey.OP_WRITE);
 //      log.info("wrote request");
     }
-    if (outputBuffer.remaining() > 0) {
-      int nwrote = channel.write(outputBuffer);
-      log.info("wrote " + nwrote + " bytes");
-      outputBuffer.compact();
-      if (outputBuffer.position() == 0) {
-        outputBuffer.limit(0);
+    if (outputBuffer.getBytesAvailableForReading() > 0) {
+      try (InputBuffer.Guard g = outputBuffer.openForReading()) {
+        int nwrote = channel.write(g.getByteBuffer());
+        protocol.onOutputComplete(nwrote, channelInterest);
+        log.info("wrote " + nwrote + " bytes");
       }
+//      outputBuffer.compact();
+//      if (outputBuffer.position() == 0) {
+//        outputBuffer.limit(0);
+//      }
     }
   }
 //    public SocketChannel getChannel() {

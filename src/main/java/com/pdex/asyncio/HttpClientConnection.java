@@ -16,6 +16,11 @@ class HttpClientConnection implements Protocol {
   final private String CRLF = "\r\n";
   final private Pattern pattern = Pattern.compile(CRLF + CRLF, Pattern.MULTILINE);
   private ByteBuffer outputBuffer;
+  private InputBuffer inputBuffer = new InputBuffer(4096);
+  private int totalBytesWritten = 0;
+  private String header;
+  private Pattern contentLengthPattern = Pattern.compile("content-length: (\\d*)", Pattern.CASE_INSENSITIVE);
+  private long contentLength = 0;
 
   public HttpClientConnection(Request request) {
     this.request = request;
@@ -23,16 +28,35 @@ class HttpClientConnection implements Protocol {
 
   @Override
   public void onInputReady(ByteBuffer buffer, SelectionKey key) throws IOException {
-    ByteBuffer view = buffer.duplicate();
-    CharBuffer charBuffer = Charset.forName("UTF-8").decode(view);
+    inputBuffer.put(buffer);
+    CharBuffer charBuffer = inputBuffer.charView();
     Matcher matcher = pattern.matcher(charBuffer);
     if (matcher.find()) {
-      charBuffer.rewind();
-      log.info("MATCHES " + charBuffer);
-      key.cancel();
+      if (header == null) {
+        charBuffer.rewind();
+        header = pattern.split(charBuffer)[0];
+        log.info("Header: " + header);
+      }
+      if (header != null && contentLength == 0) {
+        Matcher m = contentLengthPattern.matcher(header);
+        if (m.find()) {
+          contentLength = Integer.parseInt(m.group(1));
+        }
+      }
+//      log.info("MATCHES " + inputBuffer);
+//      log.info("Header: " + header);
+//      log.info("content-length: " + contentLength);
+      if (inputBuffer.position() >= header.length() + 4 + contentLength) {
+        log.info("We got everything!");
+//        key.interestOps(0);
+        key.cancel();
+      } else {
+        log.info("Got " + inputBuffer.position() + " out of " + (header.length() + 4 + contentLength));
+      }
     } else {
-      charBuffer.rewind();
-      log.info("DOESN'T MATCH " + charBuffer.toString().replace("\r", "\\r").replace("\n", "\\n"));
+      log.info("DOESN'T MATCH " + inputBuffer);
+//      charBuffer.rewind();
+//      log.info("DOESN'T MATCH " + charBuffer.toString().replace("\r", "\\r").replace("\n", "\\n"));
     }
   }
 
@@ -50,6 +74,8 @@ class HttpClientConnection implements Protocol {
         .append(request.getHost())
         .append(CRLF)
         .append("Accept: */*")
+//        .append(CRLF)
+//        .append("Accept-Encoding: gzip, deflate")
         .append(CRLF)
         .append(CRLF)
     ;
@@ -63,5 +89,13 @@ class HttpClientConnection implements Protocol {
   @Override
   public ByteBuffer onOutputReady() {
     return outputBuffer;
+  }
+
+  @Override
+  public void onOutputComplete(int bytesWritten, ChannelInterest channelInterest) {
+    totalBytesWritten += bytesWritten;
+    if (totalBytesWritten == outputBuffer.limit()) {
+      channelInterest.unregisterWriteInterest();
+    }
   }
 }

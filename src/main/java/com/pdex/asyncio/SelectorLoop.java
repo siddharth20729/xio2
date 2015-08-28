@@ -1,6 +1,7 @@
 package com.pdex.asyncio;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Iterator;
@@ -16,6 +17,19 @@ public class SelectorLoop implements Closeable, Runnable {
   private final ConcurrentLinkedDeque<Selectable> selectablesToAdd = new ConcurrentLinkedDeque<>();
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
   private Selector selector;
+  private final QuenchStrategy quenchStrategy;
+
+  public interface QuenchStrategy {
+    void onQuench(SelectorLoop selectorLoop);
+  }
+
+  public SelectorLoop(QuenchStrategy quenchStrategy) {
+    this.quenchStrategy = quenchStrategy;
+  }
+
+  public SelectorLoop() {
+    this(selectorLoop -> {});
+  }
 
   private boolean running() {
     return isRunning.get();
@@ -25,6 +39,12 @@ public class SelectorLoop implements Closeable, Runnable {
     while (selectablesToAdd.size() > 0) {
       Selectable selectable = selectablesToAdd.pop();
       selectable.configure(selector);
+    }
+  }
+
+  private void handleQuench() {
+    if (selector.keys().size() == 0) {
+      quenchStrategy.onQuench(this);
     }
   }
 
@@ -51,6 +71,24 @@ public class SelectorLoop implements Closeable, Runnable {
     } catch (Exception e) {
       log.log(Level.SEVERE, "Error inside Read | Write loop", e);
       key.cancel();
+    }
+  }
+
+  private void doSelection() throws IOException {
+    selector.select(2000);
+
+    Set<SelectionKey> acceptKeys = selector.selectedKeys();
+    Iterator<SelectionKey> iterator = acceptKeys.iterator();
+
+    while (iterator.hasNext()) {
+      SelectionKey key = iterator.next();
+      iterator.remove();
+
+      handleSelection(key);
+
+      if (!running()) {
+        break;
+      }
     }
   }
 
@@ -82,24 +120,12 @@ public class SelectorLoop implements Closeable, Runnable {
     while (running()) {
       try {
         setupNewSelectables();
-        selector.select();
-
-        Set<SelectionKey> acceptKeys = selector.selectedKeys();
-        Iterator<SelectionKey> iterator = acceptKeys.iterator();
-
-        while (iterator.hasNext()) {
-          SelectionKey key = iterator.next();
-          iterator.remove();
-
-          handleSelection(key);
-
-          if (!running()) {
-            break;
-          }
-        }
+        handleQuench();
+        doSelection();
       } catch (Exception e) {
         log.log(Level.SEVERE, "Error in SelectorLoop", e);
       }
     }
   }
+
 }

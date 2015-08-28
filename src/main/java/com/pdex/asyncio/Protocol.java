@@ -10,4 +10,6 @@ public interface Protocol {
   void onInputReady(ByteBuffer buffer, SelectionKey key) throws IOException;
 
   ByteBuffer onOutputReady() throws IOException;
+
+  void onOutputComplete(int bytesWritten, ChannelInterest channelInterest);
 }
