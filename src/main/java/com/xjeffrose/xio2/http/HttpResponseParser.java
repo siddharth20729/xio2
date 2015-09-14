@@ -82,6 +82,13 @@ public class HttpResponseParser {
         return true;
       }
     }
+    if (state_ == state.expecting_body) {
+      log.info("content-length: " + response.headers.get("content-length"));
+      log.info("temp limit: " + temp.limit());
+      log.info("lastByteRead: " + lastByteRead + " (+1) " + (lastByteRead + 1));
+      log.info("body position: " + response.body.position);
+
+      }
     return false;
   }
 
@@ -291,9 +298,15 @@ public class HttpResponseParser {
       case expecting_newline_3:
         if (input == '\n') {
           response.headers.done();
-          if (response.headers.headerMap.containsKey("Content-Length")) {
+          if (response.headers.headerMap.containsKey("content-length")) {
+            state_ = state.expecting_body;
+            response.body.set(lastByteRead);
+//            System.out.println("content-length: " + response.headers.get("content-length"));
+//            System.out.println("temp limit: " + temp.limit());
+//            System.out.println("lastByteRead: " + lastByteRead + " (+1) " + (lastByteRead+1));
+            /*
             if (((lastByteRead + 1)
-                + Integer.parseInt(response.headers.get("Content-Length"))) == temp.limit()) {
+                + Integer.parseInt(response.headers.get("content-length"))) == temp.limit()) {
               response.body.set(lastByteRead);
               status = Status.FINISHED;
               return ParseState.good;
@@ -301,11 +314,23 @@ public class HttpResponseParser {
               status = Status.BUFFER_UNDERFLOW;
               return ParseState.bad;
             }
+            */
+            return ParseState.indeterminate;
           } else {
             //TODO: Handle better
             status = Status.FINISHED;
             return ParseState.good;
           }
+        }
+      case expecting_body:
+//            System.out.println("content-length: " + response.headers.get("content-length"));
+//            System.out.println("temp limit: " + temp.limit());
+//            System.out.println("lastByteRead: " + lastByteRead + " (+1) " + (lastByteRead+1));
+        if (response.body.position + Integer.parseInt(response.headers.get("content-length")) == (lastByteRead + 1)) {
+          status = Status.FINISHED;
+          return ParseState.good;
+        } else {
+          return ParseState.indeterminate;
         }
       default:
         return ParseState.bad;

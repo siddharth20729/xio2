@@ -31,7 +31,7 @@ public class HttpObject {
   private static final Logger log = Log.getLogger(HttpObject.class.getName());
 
 //  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4096);
-  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(20 * 1024);
+  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(2 * 1024 * 1024);
 //  public ByteBuffer inputBuffer = ByteBuffer.allocateDirect(1024 * 1024);
   public int http_version_major = 0;
   public int http_version_minor = 0;
@@ -216,7 +216,7 @@ public class HttpObject {
 
     public void newHeader() {
       if (name != null) {
-        headerMap.put(name, get());
+        headerMap.put(name.toLowerCase(), get());
         reset();
       }
     }
@@ -238,7 +238,7 @@ public class HttpObject {
     public Body() { }
 
     public void set(int position) {
-      final int size = new Integer(headers.get("Content-Length"));
+      final int size = new Integer(headers.get("content-length"));
       this.position = position + 1;
       this.limit = size;
     }

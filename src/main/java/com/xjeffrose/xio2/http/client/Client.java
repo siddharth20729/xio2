@@ -27,6 +27,7 @@ import com.xjeffrose.xio2.TLS.TLS;
 import com.xjeffrose.xio2.ChannelContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import javax.net.ssl.SSLEngineResult;
 
 //TODO: Make client higher a higher level class, maybe?
 public class Client {
@@ -49,6 +51,11 @@ public class Client {
   private LoadBalancingStrategy lbs;
   public boolean _tls = false;
   private String serverString;
+
+  private boolean needConnect = false;
+  public Client() {
+    needConnect = true;
+  }
 
   public Client(String serverString) {
     this.serverString = serverString;
@@ -123,8 +130,14 @@ public class Client {
   public HttpResponse call(HttpRequest req) {
     this.req = req;
 
+    if (needConnect) {
+      serverString = req.getServerString();
+      tls(req.isTls());
+      connect();
+    }
+
     return execute(getChannel(lbs.nextAddress()));
-  }
+  };
 
   //PROXY!!!!!!
   public void proxy(ChannelContext serverCtx) {
@@ -223,6 +236,7 @@ public class Client {
 
   private HttpResponse read(SocketChannel channel) {
     int nread = 1;
+    int totalBytes = 0;
     final HttpResponse resp = new HttpResponse();
     final HttpResponseParser parser = new HttpResponseParser();
     try {
@@ -239,14 +253,46 @@ public class Client {
 
           if (key.isValid() && key.isReadable()) {
             if (_tls) {
-              tls.encryptedResponse.clear();
+              log.info("top of the loop");
+              log.info("encryptedResponse " + tls.encryptedResponse);
+              log.info("inputBufffer " + resp.inputBuffer);
+//              tls.encryptedResponse.clear();
 
+              nread = 1;
               while (nread > 0) {
                 nread = channel.read(tls.encryptedResponse);
+                log.info("bytes read " + nread);
+                totalBytes += nread;
               }
+              log.info("Total Bytes read " + totalBytes);
+              log.info("done reading");
+              log.info("encryptedResponse " + tls.encryptedResponse);
+              log.info("inputBufffer " + resp.inputBuffer);
               tls.encryptedResponse.flip();
-              tls.engine.unwrap(tls.encryptedResponse, resp.inputBuffer);
+              log.info("post flip");
+              log.info("encryptedResponse " + tls.encryptedResponse);
+              log.info("inputBufffer " + resp.inputBuffer);
+              SSLEngineResult result;
+              do {
+                ByteBuffer slice = tls.encryptedResponse.slice();
+                result = tls.engine.unwrap(slice, resp.inputBuffer);
+                tls.encryptedResponse.position(tls.encryptedResponse.position() + result.bytesConsumed());
+                log.info("post unwrap " + result.toString());
+                log.info("encryptedResponse " + tls.encryptedResponse);
+                log.info("inputBufffer " + resp.inputBuffer);
+              } while (result.getStatus() == SSLEngineResult.Status.OK);
               tls.encryptedResponse.compact();
+              log.info("post compact");
+              log.info("encryptedResponse " + tls.encryptedResponse);
+              log.info("inputBufffer " + resp.inputBuffer);
+              /*
+              if (result.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
+                tls.encryptedResponse.flip();
+                log.info("post underflow flip");
+                log.info("encryptedResponse " + tls.encryptedResponse);
+                log.info("inputBufffer " + resp.inputBuffer);
+              }
+              */
             } else {
               while (nread > 0) {
                 nread = channel.read(resp.inputBuffer);
@@ -254,6 +300,7 @@ public class Client {
             }
             //TODO: Decouple HTTP
             boolean parserOk = parser.parse(resp);
+            log.info("parserOk " + parserOk);
             if (parserOk) {
               cleanup(channel);
               return resp;
@@ -266,8 +313,9 @@ public class Client {
               switch (parser.status) {
                 case BUFFER_UNDERFLOW:
                   //PUMP THE BRAKES SPEED RACER
-                  nread = channel.read(resp.inputBuffer);
-                  Thread.sleep(1);
+                  log.info("ARE YOU FUCKING KIDDING ME?");
+                  //nread = channel.read(resp.inputBuffer);
+                  //Thread.sleep(1);
                   break;
                 case FINISHED:
                   break;

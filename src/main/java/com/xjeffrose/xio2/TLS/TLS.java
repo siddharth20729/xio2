@@ -22,6 +22,8 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.KeyManagerFactory;
@@ -110,7 +112,7 @@ public class TLS {
     try {
       this.config = new TLSConfiguration.Builder()
           .fqdn(InetAddress.getLocalHost().getHostName())
-          .version("TLSv1")
+          .version("TLSv1.2")
           .password("passwordsAreGood")
           .build();
 
@@ -142,9 +144,11 @@ public class TLS {
 //      tmf.init(ts);
 
       SSLContext sslCtx = SSLContext.getInstance(config.version);
+//      SSLContext sslCtx = SSLContext.getInstance("TLS");
 
       if (client) {
         sslCtx.init(null, TrustStoreFactory.Generate(), null);
+//        sslCtx.init(null, null, null);
       } else {
         sslCtx.init(kmf.getKeyManagers(), null, null);
 //      sslCtx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
@@ -152,6 +156,7 @@ public class TLS {
 
       SSLParameters params = new SSLParameters();
       params.setProtocols(new String[]{config.version});
+//      params.setProtocols(new String[]{"SSLv3", "TLSv1", "TLSv1.2"});
 
       final SSLEngine engine = sslCtx.createSSLEngine();
       engine.setSSLParameters(params);
@@ -237,7 +242,8 @@ public class TLS {
           case NEED_TASK:
             Runnable task;
             while ((task = engine.getDelegatedTask()) != null) {
-              new Thread(task).start();
+              task.run();
+//              new Thread(task).start();
             }
             break;
 
@@ -272,11 +278,18 @@ public class TLS {
     return false;
   }
 
+  private List<SSLEngineResult> results = new ArrayList<>();
+
   private void unwrap() {
     try {
       sslResult = engine.unwrap(encryptedRequest, decryptedRequest);
+//      log.info("unwrap result" + sslResult);
+      results.add(sslResult);
       handleSSLResult(false);
     } catch (Exception e) {
+      for (SSLEngineResult r : results) {
+        log.info("result: " + r);
+      }
       throw new RuntimeException(e);
     }
   }
@@ -284,6 +297,7 @@ public class TLS {
   private void wrap() {
     try {
       sslResult = engine.wrap(rawResponse, encryptedResponse);
+      results.add(sslResult);
       handleSSLResult(true);
     } catch (SSLException e) {
       e.printStackTrace();

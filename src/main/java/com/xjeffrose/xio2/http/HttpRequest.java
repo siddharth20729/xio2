@@ -18,6 +18,9 @@ package com.xjeffrose.xio2.http;
 import com.xjeffrose.xio2.Request;
 import com.xjeffrose.xio2.util.BB;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
@@ -32,6 +35,30 @@ public class HttpRequest extends HttpObject implements Request {
   public static Builder newBuilder() {
     return new Builder();
   }
+
+  public String getServerString() {
+    URI uri = this.getUri();
+    int port = uri.getPort();
+    if (port == -1) {
+      switch (uri.getScheme())
+      {
+        case "https":
+          port = 443;
+          break;
+        case "http":
+          port = 80;
+          break;
+        default:
+          throw new IllegalArgumentException();
+      }
+    }
+    return uri.getHost() + ":" + port;
+  }
+
+  public boolean isTls() {
+    return getUri().getScheme().equals("https");
+  }
+
   public static class Builder {
 
     private Http.Method method = Http.Method.GET;
@@ -71,7 +98,7 @@ public class HttpRequest extends HttpObject implements Request {
       if (url == null) throw new IllegalStateException("url == null");
       if (body == null) {
         try {
-          return HttpRequest.DefaultRequest(version, method, url, url);
+          return HttpRequest.DefaultRequest(version, method, url);
         } catch (UnknownHostException e) {
           e.printStackTrace();
         }
@@ -95,7 +122,8 @@ public class HttpRequest extends HttpObject implements Request {
     req.setUri(uri);
 
     req.headers.set("User-Agent", "xio2");
-    req.headers.set("Host", InetAddress.getLocalHost().getHostName());
+    req.headers.set("Host", req.getUri().getHost());
+//    req.headers.set("Host", InetAddress.getLocalHost().getHostName());
     req.headers.set("Accept", "*/*");
 
     return req;
@@ -114,7 +142,8 @@ public class HttpRequest extends HttpObject implements Request {
     req.setUri(uri);
 
     req.headers.set("User-Agent", "xio2");
-    req.headers.set("Host", InetAddress.getLocalHost().getHostName());
+    req.headers.set("Host", req.getUri().getHost());
+//    req.headers.set("Host", InetAddress.getLocalHost().getHostName());
     req.headers.set("Accept", "*/*");
     req.headers.set("Content-Length", Integer.toString(body.length()));
     req.body.set(body);
@@ -126,7 +155,7 @@ public class HttpRequest extends HttpObject implements Request {
   public String toString() {
     final StringBuilder sb = new StringBuilder();
     sb.append(getMethod() + " ");
-    sb.append(getUri() + " ");
+    sb.append(getUri().getPath() + " ");
     sb.append(getHttpVersion() + "\r\n");
 
     headers.headerMap.keySet()

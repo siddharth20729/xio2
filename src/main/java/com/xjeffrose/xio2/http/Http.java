@@ -77,6 +77,7 @@ public class Http {
   }
 
   public enum Status {
+    NO_CLUE(-1, "I have no idea"),
     SWITCHING_PROTOCOLS(101, "Switching Protocols"),
     OK(200, "OK"),
     CREATED(201, "Created"),
@@ -110,12 +111,13 @@ public class Http {
     }
 
     public static Status fromCode(int code) {
+      System.out.println("CODE " + code);
       for (Status status : Status.values()) {
         if (status.code == code) {
           return status;
         }
       }
-      throw new IllegalArgumentException();
+      return NO_CLUE;
     }
   }
 

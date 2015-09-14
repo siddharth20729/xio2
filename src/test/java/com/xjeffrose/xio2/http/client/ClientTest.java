@@ -15,12 +15,16 @@
  */
 package com.xjeffrose.xio2.http.client;
 
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import com.xjeffrose.xio2.http.*;
 import com.xjeffrose.xio2.http.server.HttpHandler;
 import com.xjeffrose.xio2.http.server.HttpsHandler;
 import com.xjeffrose.xio2.http.server.ProxyHttpService;
 import com.xjeffrose.xio2.Server;
 import com.xjeffrose.xio2.http.server.HttpService;
+import com.xjeffrose.xio2.util.BB;
 import com.xjeffrose.xio2.util.OS;
 import org.junit.After;
 import org.junit.Before;
@@ -314,5 +318,39 @@ public class ClientTest {
     assertEquals(resp.headers.get("Server"), "xio2");
     assertEquals("CONGRATS!\n", resp.getBody());
     assertEquals("CONGRATS!\n".length(), Integer.parseInt(resp.headers.get("Content-Length")));
+  }
+
+  @Test
+  public void testActualSite() throws Exception {
+    String url = "https://www.paypal.com/home";
+//    String url = "https://www.google.com/";
+//    String url = "https://twitter.com/";
+    /*
+    OkHttpClient okClient = new OkHttpClient();
+    Request okReq = new Request.Builder()
+        .url(url)
+        .build();
+    Response okResp = okClient.newCall(okReq).execute();
+    System.out.println(okResp);
+    System.out.println(okResp.body().bytes().length);
+    System.out.println(okResp.handshake().cipherSuite());
+    System.out.println(okResp.protocol());
+    System.out.println("OUR CLIENT");
+    */
+
+//    Client client = Http.newTLSClient("www.paypal.com:443");
+//    HttpRequest req = HttpRequest.newBuilder()
+//        .url("/home")
+//        .build();
+    Client client = new Client();
+//    Client client = Http.newClient("twitter.com:80");
+    HttpRequest req = HttpRequest.newBuilder()
+        .url(url)
+        .build();
+    System.out.println(BB.BBtoString(req.toBB()));
+    HttpObject resp = client.call(req);
+
+//    System.out.println(BB.BBtoString(resp.inputBuffer));
+    assertEquals(resp.getStatus(), "200 OK");
   }
 }
